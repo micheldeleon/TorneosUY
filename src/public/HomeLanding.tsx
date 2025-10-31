@@ -61,7 +61,7 @@ export const HomeLanding: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-[#e9ebff] text-slate-900">
-  
+
       <Hero />
       {/* TORNEOS */}
       <section className="mx-auto max-w-6xl px-4 pt-10">
@@ -70,10 +70,10 @@ export const HomeLanding: React.FC = () => {
             Torneos Disponibles
           </h2>
 
+          
           <button
             type="button"
             className="hidden md:inline-flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900"
-            aria-label="Filtrar torneos"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M3 5h18v2H3zm3 6h12v2H6zm3 6h6v2H9z" />
@@ -105,7 +105,7 @@ export const HomeLanding: React.FC = () => {
         </div>
       </section>
 
-     
+
     </div>
   );
 };

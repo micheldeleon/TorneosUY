@@ -16,6 +16,6 @@ export const Faq: React.FC = () => (
         <strong>¿Dónde veo mis torneos?</strong>
         <p>Luego de iniciar sesión, accedé a tu perfil y verás tus inscripciones activas.</p>
       </li>
-    </ul>
+    </ul>  
   </div>
 );

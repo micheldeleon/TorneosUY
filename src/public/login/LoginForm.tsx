@@ -11,7 +11,6 @@ const LoginForm = () => {
     const onSubmit: SubmitHandler<FormValueLogin> = (data) => {
         console.log(data);
     };
-
     const navigate = useNavigate();
     return (
         <>

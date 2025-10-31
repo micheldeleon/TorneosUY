@@ -23,6 +23,7 @@ function App() {
   const { loading, error, data, fetch } = useApi<User[], null>(getUsers)
   return (
     <>
+    
       <button onClick={() => fetch(null)}>hola</button>
       {/* Navbar dinámico */}
       <Navbar

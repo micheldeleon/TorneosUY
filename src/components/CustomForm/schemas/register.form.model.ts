@@ -10,4 +10,4 @@ export const schema = z.object({
     message: 'Las contraseñas no coinciden',
     path: ['confirmPassword'],
 });
-export type FormValue = z.infer<typeof schema>;
+export type FormValueRegister = z.infer<typeof schema>;
