@@ -6,6 +6,8 @@ import { Logo } from "./components/Logo/Logo";
 import { Footer } from "./components/Footer/Footer";
 import LoginForm from "./public/login/LoginForm";
 import RegisterForm from "./public/register/RegisterForm";
+import { Contact } from "./public/Contact";
+import { About } from "./public/About";
 
 function App() {
   const navLinks: NavItem[] = [
@@ -31,6 +33,8 @@ function App() {
           <Route path="/faq" element={<Faq />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<RegisterForm />} />
+          <Route path="/contacto" element={<Contact />} />
+          <Route path="/quienes" element={<About />} />
         </Routes>
       </main>
 
