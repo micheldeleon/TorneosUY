@@ -1,35 +1,30 @@
-import axios, { Axios, type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
+import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
-let axiosInstace: AxiosInstance;
+let axiosInstance: AxiosInstance;
 const createAxios = (baseURL: string) => {
-    axiosInstace = axios.create({ baseURL })
-}
+    axiosInstance = axios.create({ baseURL });
+};
 
 const setupInterceptors = () => {
-    axiosInstace.interceptors.request.use(
+    axiosInstance.interceptors.request.use(
         (config: InternalAxiosRequestConfig) => {
-            const token = localStorage.get("token");
+            const token = localStorage.getItem("token");
             if (token) {
-                config.headers.set(`Authorization Bearer: ${token}`)
+                config.headers.set("Authorization", `Bearer ${token}`);
             }
-            console.log(`Request made to: ${config.url}`)
             return config;
         },
-        (error) => {
-            return Promise.reject(error)
-        }
+        (error) => Promise.reject(error)
     );
 
-    axiosInstace.interceptors.response.use(
-        (response: AxiosResponse) => {
-            console.log(`Response from : ${response.config.url}`)
-            return response;
-        }
+    axiosInstance.interceptors.response.use(
+        (response: AxiosResponse) => response,
+        (error) => Promise.reject(error)
     );
-}
+};
 
-export const initAxios = () => {
-    createAxios('localhost:8080');
+export const initAxios = (baseURL = "http://localhost:8080") => {
+    createAxios(baseURL);
     setupInterceptors();
-    return axiosInstace;
-}
+    return axiosInstance;
+};

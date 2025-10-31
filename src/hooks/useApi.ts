@@ -4,19 +4,23 @@ type Data<T> = T | null;
 type CustomError = Error | null;
 type UseApiOptions<P> = {
     autoFetch?: boolean;
-} & (P extends null ? { params?: P } : { params: P })
+    params?: P;
+}
 
 interface UseApiResult<T, P> {
     loading: boolean;
     data: Data<T>;
     error: CustomError;
-    fetch: (param: P) => void;
+    fetch: (param: P) => () => void;
 }
-export const useApi = <T, P,>(apiCall: (param?: P) => UseApiCall<T>, options?: UseApiOptions<P>): UseApiResult<T, P> => {
+export const useApi = <T, P,>(
+    apiCall: ((param: P) => UseApiCall<T>) | ((param?: P) => UseApiCall<T>),
+    options?: UseApiOptions<P>
+): UseApiResult<T, P> => {
     const [loading, setLoading] = useState<boolean>(false)
     const [data, setData] = useState<Data<T>>(null)
     const [error, setError] = useState<CustomError>(null)
-    const fetch = useCallback((param?: P) => {
+    const fetch = useCallback((param: P) => {
         const { call, controller } = apiCall(param);
         setLoading(true);
         call.then((response) => {
@@ -33,10 +37,10 @@ export const useApi = <T, P,>(apiCall: (param?: P) => UseApiCall<T>, options?: U
 
 
     useEffect(() => {
-        if (options && options.autoFetch) {
-            return fetch(options.params);
+        if (options?.autoFetch && (options.params as unknown as undefined) !== undefined) {
+            return fetch(options.params as P);
         }
-    }, [fetch, options])
+    }, [fetch, options?.autoFetch, options?.params])
 
     return { loading, data, error, fetch }
 }

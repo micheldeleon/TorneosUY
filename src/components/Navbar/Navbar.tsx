@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { UserMenu } from "../UserMenu.tsx/UserMenu";
-import { NavLinks } from "./NavLinks";
+import { NavLinks } from "../ui/NavLinks";
 import { MobileMenu } from "./MobileMenu";
 
 export interface NavItem {
@@ -53,9 +53,10 @@ export const Navbar = ({
         </div>
 
         {/* Desktop links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm">
-          <NavLinks links={links} />
-        </nav>
+        <NavLinks
+          className="hidden md:flex items-center gap-8 text-sm"
+          links={links.map((l) => ({ label: l.label, to: l.path }))}
+        />
 
         {/* User / Login */}
         <div className="hidden md:block">

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { NavLinks } from "./NavLinks";
+import { NavLinks } from "../ui/NavLinks";
 import type { NavItem } from "./Navbar";
 
 interface Props {
@@ -16,9 +16,7 @@ export const MobileMenu = ({ open, links, isAuthenticated, onLogout }: Props) =>
     }`}
   >
     <div className="mx-3 mb-3 rounded-xl bg-white/10 backdrop-blur p-2">
-      <nav className="flex flex-col">
-        <NavLinks links={links} />
-      </nav>
+      <NavLinks className="flex flex-col" links={links.map(l => ({ label: l.label, to: l.path }))} />
 
       <div className="my-2 h-px bg-white/10" />
 

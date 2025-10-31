@@ -1,16 +1,18 @@
 import { Route, Routes } from "react-router-dom";
-import { Navbar, type NavItem } from "./components/Navbar/Navbar";
+import { Navbar, type NavItem } from "./components/Navbar";
 import { HomeLanding } from "./public/HomeLanding";
 import { Faq } from "./public/FAQ";
-import { Logo } from "./components/Logo/Logo";
-import { Footer } from "./components/Footer/Footer";
+import { Logo } from "./components/Logo";
+import { Footer } from "./components/Footer";
 import LoginForm from "./public/login/LoginForm";
 import RegisterForm from "./public/register/RegisterForm";
+import Dashboard from "./private/dashboard/Dashboard";
+import TournamentDetails from "./public/tournament/TournamentDetails";
 import { Contact } from "./public/Contact";
 import { About } from "./public/About";
-import { useApi } from "./hooks/useApi";
-import { getUsers } from "./services/api.service";
-import type { User } from "./models/user.model";
+// import { useApi } from "./hooks/useApi";
+// import { getUsers } from "./services/api.service";
+// import type { User } from "./models/user.model";
 
 function App() {
   const navLinks: NavItem[] = [
@@ -19,12 +21,14 @@ function App() {
     { label: "Preguntas Frecuentes", path: "/faq" },
     { label: "Contacto", path: "/contacto" },
   ];
+  // demo: acceso rápido al perfil
+  navLinks.push({ label: "Perfil (demo)", path: "/perfil" });
 
-  const { loading, error, data, fetch } = useApi<User[], null>(getUsers)
+  // const { fetch } = useApi<User[], null>(getUsers)
   return (
     <>
     
-      <button onClick={() => fetch(null)}>hola</button>
+      {/* <button onClick={() => fetch(null)}>hola</button> */}
       {/* Navbar dinámico */}
       <Navbar
         title="TORNEOS UY"
@@ -41,6 +45,8 @@ function App() {
           <Route path="/faq" element={<Faq />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<RegisterForm />} />
+          <Route path="/perfil" element={<Dashboard />} />
+          <Route path="/torneo/:id" element={<TournamentDetails />} />
         </Routes>
       </main>
 
