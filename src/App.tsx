@@ -8,6 +8,9 @@ import LoginForm from "./public/login/LoginForm";
 import RegisterForm from "./public/register/RegisterForm";
 import { Contact } from "./public/Contact";
 import { About } from "./public/About";
+import { useApi } from "./hooks/useApi";
+import { getUsers } from "./services/api.service";
+import type { User } from "./models/user.model";
 
 function App() {
   const navLinks: NavItem[] = [
@@ -17,13 +20,15 @@ function App() {
     { label: "Contacto", path: "/contacto" },
   ];
 
+  const { loading, error, data, fetch } = useApi<User[], null>(getUsers)
   return (
     <>
+      <button onClick={() => fetch(null)}>hola</button>
       {/* Navbar dinámico */}
       <Navbar
         title="TORNEOS UY"
         links={navLinks}
-        isAuthenticated={false} // cambiar a true cuando haya sesión
+        isAuthenticated={false}
       />
 
       {/* Rutas principales */}
