@@ -30,11 +30,11 @@ function App() {
       <main className="min-h-screen">
         <Routes>
           <Route path="/" element={<HomeLanding />} />
+          <Route path="/quienes" element={<About />} />
+          <Route path="/contacto" element={<Contact />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<RegisterForm />} />
-          <Route path="/contacto" element={<Contact />} />
-          <Route path="/quienes" element={<About />} />
         </Routes>
       </main>
 
