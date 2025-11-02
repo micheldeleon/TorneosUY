@@ -3,16 +3,24 @@ import { GoogleButton, Submit, RHFInput } from "../../components/CustomForm";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { postLogin } from "../../services/api.service";
+import type { UserLogin } from "../../models/userLogin.model";
+import { useApi } from "../../hooks/useApi";
 
 const LoginForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormValueLogin>({
     resolver: zodResolver(loginSchema)
   });
+const { fetch } = useApi<UserLogin, UserLogin>(postLogin);
 
-  const onSubmit: SubmitHandler<FormValueLogin> = (data) => {
-    console.log(data);
+const onSubmit: SubmitHandler<FormValueLogin> = async (data) => {
+    const userLogin: UserLogin = {
+    username: data.email,
+    password: data.password
   };
 
+  await fetch(userLogin); // sin cast, limpio
+};
   const navigate = useNavigate();
 
   return (

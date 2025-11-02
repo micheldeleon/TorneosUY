@@ -10,6 +10,9 @@ import Dashboard from "./private/dashboard/Dashboard";
 import TournamentDetails from "./public/tournament/TournamentDetails";
 import { Contact } from "./public/Contact";
 import { About } from "./public/About";
+import type { User } from "./models/user.model";
+import { useApi } from "./hooks/useApi";
+import { getUsers } from "./services/api.service";
 // import { useApi } from "./hooks/useApi";
 // import { getUsers } from "./services/api.service";
 // import type { User } from "./models/user.model";
@@ -24,11 +27,13 @@ function App() {
   // demo: acceso rápido al perfil
   navLinks.push({ label: "Perfil (demo)", path: "/perfil" });
 
-  // const { fetch } = useApi<User[], null>(getUsers)
+  // const { fetch, data } = useApi<User[], User>(getUsers)
   return (
     <>
     
-      {/* <button onClick={() => fetch(null)}>hola</button> */}
+      {/* <button onClick={() => fetch()}>hola</button>
+      {data?.map(x=><p>{x.email}</p>
+      )} */}
       {/* Navbar dinámico */}
       <Navbar
         title="TORNEOS UY"
