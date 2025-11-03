@@ -5,6 +5,7 @@ import type { User } from "../models/user.model";
 import type { UseApiCall } from "../models/useApi.model";
 import type { UserRegister } from "../models/userRegister.model";
 import type { UserLogin } from "../models/userLogin.model";
+import type { AuthResponse } from "../models/auth.model";
 
 const BASE_URL = "http://localhost:8080";
 
@@ -22,10 +23,10 @@ export const postRegister = (user: UserRegister): UseApiCall<UserRegister> => {
         controller,
     }
 };
-export const postLogin = (user: UserLogin): UseApiCall<UserLogin> => {
+export const postLogin = (user: UserLogin): UseApiCall<AuthResponse> => {
     const controller = loadAbort();
     return {
-        call: axios.post<UserLogin>(`${BASE_URL}/login`, user,{ signal: controller.signal }),
+        call: axios.post<AuthResponse>(`${BASE_URL}/login`, user,{ signal: controller.signal }),
         controller,
     }
 };

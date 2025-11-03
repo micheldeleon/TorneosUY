@@ -5,22 +5,23 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { postLogin } from "../../services/api.service";
 import type { UserLogin } from "../../models/userLogin.model";
+import type { AuthResponse } from "../../models/auth.model";
 import { useApi } from "../../hooks/useApi";
 
 const LoginForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormValueLogin>({
     resolver: zodResolver(loginSchema)
   });
-const { fetch } = useApi<UserLogin, UserLogin>(postLogin);
+  const { fetch, data, error, loading } = useApi<AuthResponse, UserLogin>(postLogin);
 
-const onSubmit: SubmitHandler<FormValueLogin> = async (data) => {
+  const onSubmit: SubmitHandler<FormValueLogin> = (data) => {
     const userLogin: UserLogin = {
-    username: data.email,
-    password: data.password
-  };
+      username: data.email,
+      password: data.password
+    };
 
-  await fetch(userLogin); // sin cast, limpio
-};
+    fetch(userLogin);
+  };
   const navigate = useNavigate();
 
   return (
@@ -35,9 +36,19 @@ const onSubmit: SubmitHandler<FormValueLogin> = async (data) => {
             <RHFInput name="email" control={control} label="Email" error={errors.email?.message} />
             <RHFInput name="password" control={control} label="Contraseña" type="password" error={errors.password?.message} />
             <Submit txt="INGRESAR" />
-            <GoogleButton text="G" />
           </form>
+          {loading && <span className="text-blue-200 text-sm">Iniciando sesión...</span>}
+          {error && <span className="text-red-300 text-sm">{error.message}</span>}
+          {data && (
+            <div className="mt-2 text-green-200 text-sm space-y-1">
+              {"message" in data && <p>{data.message}</p>}
+              {!('message' in data) && !('token' in data) && (
+                <pre className="whitespace-pre-wrap break-all">{JSON.stringify(data, null, 2)}</pre>
+              )}
+            </div>
+          )}
 
+          <GoogleButton text="G" />
           <div className="mt-8 text-center text-white text-sm font-semibold space-y-1">
             <p className="hover:underline cursor-pointer">Olvidé mi contraseña</p>
             <p>
