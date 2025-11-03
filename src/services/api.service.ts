@@ -8,6 +8,10 @@ import type { UserLogin } from "../models/userLogin.model";
 import type { AuthResponse } from "../models/auth.model";
 
 const BASE_URL = "http://localhost:8080";
+export type ApiResponse = {
+    status: number;
+    message?: string;
+}
 
 export const getUsers = (): UseApiCall<User> => {
     const controller = loadAbort();
@@ -16,17 +20,17 @@ export const getUsers = (): UseApiCall<User> => {
         controller,
     }
 };
-export const postRegister = (user: UserRegister): UseApiCall<UserRegister> => {
+export const postRegister = (user: UserRegister): UseApiCall<ApiResponse> => {
     const controller = loadAbort();
     return {
-        call: axios.post<UserRegister>(`${BASE_URL}/users/register`, user,{ signal: controller.signal }),
+        call: axios.post<ApiResponse>(`${BASE_URL}/api/users/register`, user, { signal: controller.signal }),
         controller,
     }
 };
 export const postLogin = (user: UserLogin): UseApiCall<AuthResponse> => {
     const controller = loadAbort();
     return {
-        call: axios.post<AuthResponse>(`${BASE_URL}/login`, user,{ signal: controller.signal }),
+        call: axios.post<AuthResponse>(`${BASE_URL}/login`, user, { signal: controller.signal }),
         controller,
     }
 };

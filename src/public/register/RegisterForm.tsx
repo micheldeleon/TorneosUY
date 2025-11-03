@@ -3,7 +3,7 @@ import { GoogleButton, Submit, RHFInput } from "../../components/CustomForm";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import type { UserRegister } from "../../models/userRegister.model";
-import { postRegister } from "../../services/api.service";
+import { postRegister, type ApiResponse } from "../../services/api.service";
 import { useApi } from "../../hooks/useApi";
 
 const RegisterForm = () => {
@@ -11,8 +11,7 @@ const RegisterForm = () => {
     resolver: zodResolver(schema)
   });
 
-  const { fetch } = useApi<UserRegister, UserRegister>(postRegister);
-
+  const { fetch, data, error, loading } = useApi<ApiResponse, UserRegister>(postRegister);
   const onSubmit: SubmitHandler<FormValueRegister> = async (formData) => {
     const { confirmPassword, ...user } = formData;
     fetch(user);
@@ -34,8 +33,10 @@ const RegisterForm = () => {
             <RHFInput name="password" control={control} label="Contraseña" type="password" error={errors.password?.message} />
             <RHFInput name="confirmPassword" control={control} label="Confirmar contraseña" type="password" error={errors.confirmPassword?.message} />
             <Submit txt="INGRESAR" />
-            <GoogleButton text="G" />
           </form>
+          {data?.message}
+          {error?.message}
+          <GoogleButton text="G" />
         </div>
       </div>
     </>
