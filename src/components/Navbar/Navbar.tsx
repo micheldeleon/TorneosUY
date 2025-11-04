@@ -16,7 +16,6 @@ interface NavbarProps {
   username?: string;
   onLogout?: () => void;
 }
-
 export const Navbar = ({
   title = "Gestión de torneos",
   links,

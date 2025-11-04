@@ -24,7 +24,7 @@ export const useApi = <T, P,>(
         const { call, controller } = apiCall(param);
         setLoading(true);
         call.then((response) => {
-            console.log('respuesta', response)
+            //console.log('respuesta', response)
             setData(response.data);
             setError(null)
         }).catch((err) => {

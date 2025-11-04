@@ -1,5 +1,8 @@
-export type AuthResponse = {
-  token: string;
-  message: string;
-};
-
+export type AuthData = {
+  token: string
+  user: {
+    id: number
+    fullName: string
+    email: string
+  }
+}

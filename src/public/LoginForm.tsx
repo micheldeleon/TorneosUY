@@ -4,26 +4,35 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { loginSchema, type FormValueLogin } from "../components/CustomForm/schemas";
 import { useApi } from "../hooks/useApi";
-import type { AuthResponse } from "../models/auth.model";
-import type { UserLogin } from "../models/userLogin.model";
+import type { UserLogin, AuthData } from "../models";
 import { postLogin } from "../services/api.service";
 import { GoogleButton, RHFInput, Submit } from "../components/CustomForm";
+import { useGlobalContext } from "../context/global.context";
+import { useEffect } from "react";
 
 
 export const LoginForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormValueLogin>({
     resolver: zodResolver(loginSchema)
   });
-  const { fetch, data, error, loading } = useApi<AuthResponse, UserLogin>(postLogin);
+  const { fetch, data: response, error, loading } = useApi<AuthData, UserLogin>(postLogin);
+  const { setUser, setToken } = useGlobalContext()
+  const onSubmit: SubmitHandler<FormValueLogin> = async (data) => {
+    const userLogin: UserLogin = { username: data.email, password: data.password };
+    await fetch(userLogin);
 
-  const onSubmit: SubmitHandler<FormValueLogin> = (data) => {
-    const userLogin: UserLogin = {
-      username: data.email,
-      password: data.password
-    };
-
-    fetch(userLogin);
   };
+  useEffect(() => {
+    if (!response) return;
+    console.log('response', response)
+    if (response.token.length != 0 && response.user) {
+      console.log('hola')
+      setToken(response.token);
+      setUser(response.user);
+      navigate("/dashboard");
+    }
+  }, [response, setToken, setUser]);
+
   const navigate = useNavigate();
 
   return (
@@ -41,14 +50,7 @@ export const LoginForm = () => {
           </form>
           {loading && <span className="text-blue-200 text-sm">Iniciando sesión...</span>}
           {error && <span className="text-red-300 text-sm">{error.message}</span>}
-          {data && (
-            <div className="mt-2 text-green-200 text-sm space-y-1">
-              {"message" in data && <p>{data.message}</p>}
-              {!('message' in data) && !('token' in data) && (
-                <pre className="whitespace-pre-wrap break-all">{JSON.stringify(data, null, 2)}</pre>
-              )}
-            </div>
-          )}
+
 
           <GoogleButton text="G" />
           <div className="mt-8 text-center text-white text-sm font-semibold space-y-1">

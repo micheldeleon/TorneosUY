@@ -3,8 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { schema, type FormValueRegister } from "../components/CustomForm/schemas";
 import { useApi } from "../hooks/useApi";
-import { postRegister, type ApiResponse } from "../services/api.service";
-import type { UserRegister } from "../models/userRegister.model";
+import { postRegister } from "../services/api.service";
+import type { UserRegister, ApiResponse } from "../models";
 import { GoogleButton, RHFInput, Submit } from "../components/CustomForm";
 
 export const RegisterForm = () => {
