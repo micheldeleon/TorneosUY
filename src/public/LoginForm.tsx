@@ -49,7 +49,7 @@ export const LoginForm = () => {
             <Submit txt="INGRESAR" />
           </form>
           {loading && <span className="text-blue-200 text-sm">Iniciando sesión...</span>}
-          {error && <span className="text-red-300 text-sm">email y/o contraseña</span>}
+          {error && !loading && <span className="text-red-300 text-sm">email y/o contraseña</span>}
 
 
           <GoogleButton text="G" />
