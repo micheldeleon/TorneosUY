@@ -15,7 +15,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   secondary:
     "bg-white/10 text-white hover:bg-white/20",
   outline:
-    "border border-[#d9d9f3] text-white hover:bg-white/10",
+    "border border-muted text-white hover:bg-white/10",
   ghost:
     "bg-transparent text-inherit hover:bg-black/5",
   danger:
@@ -48,4 +48,3 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 export default Button;
-

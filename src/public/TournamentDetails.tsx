@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Badge, Button, Card, Checkbox, Progress } from "../../components/ui";
+import { Badge, Button, Card, Checkbox, Progress } from "../components";
 
 type Status = "Público" | "Privado";
 type Tournament = {
@@ -28,7 +28,7 @@ function formatDate(iso: string) {
   return new Intl.DateTimeFormat("es-UY", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(iso));
 }
 
-export default function TournamentDetails() {
+export function TournamentDetails() {
   const params = useParams();
   const id = Number(params.id);
   const t = MOCK.find((x) => x.id === id) ?? MOCK[0];
@@ -36,7 +36,7 @@ export default function TournamentDetails() {
   const statusClass = t.status === "Público" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700";
 
   return (
-    <div className="min-h-screen w-full bg-[#e9ebff] text-slate-900">
+    <div className="min-h-screen w-full bg-surface text-slate-900">
       <div className="mx-auto max-w-6xl px-4 pt-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left: summary + inscription */}
         <Card className="lg:col-span-1">
@@ -69,14 +69,14 @@ export default function TournamentDetails() {
             <Checkbox label="Acepto Términos y Condiciones" />
           </div>
 
-          <Button className="mt-4 w-full rounded-full bg-gradient-to-r from-[#3c0f7a] to-[#1c1d6a]">
+          <Button className="mt-4 w-full rounded-full bg-gradient-to-r from-brand-start to-brand-end">
             Inscribirme
           </Button>
         </Card>
 
         {/* Right: organizer + details */}
         <div className="lg:col-span-2 grid gap-6">
-          <Card className="bg-gradient-to-br from-[#3c0f7a] to-[#1c1d6a] text-white">
+          <Card className="bg-gradient-to-br from-brand-start to-brand-end text-white">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-white/10 grid place-items-center border border-white/20">
                 <span className="text-2xl font-bold">N</span>
@@ -113,4 +113,3 @@ export default function TournamentDetails() {
     </div>
   );
 }
-

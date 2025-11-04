@@ -1,14 +1,16 @@
-import { loginSchema, type FormValueLogin } from "../../components/CustomForm/schemas";
-import { GoogleButton, Submit, RHFInput } from "../../components/CustomForm";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { postLogin } from "../../services/api.service";
-import type { UserLogin } from "../../models/userLogin.model";
-import type { AuthResponse } from "../../models/auth.model";
-import { useApi } from "../../hooks/useApi";
+import { loginSchema, type FormValueLogin } from "../components/CustomForm/schemas";
+import { useApi } from "../hooks/useApi";
+import type { AuthResponse } from "../models/auth.model";
+import type { UserLogin } from "../models/userLogin.model";
+import { postLogin } from "../services/api.service";
+import { GoogleButton, RHFInput, Submit } from "../components/CustomForm";
 
-const LoginForm = () => {
+
+export const LoginForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormValueLogin>({
     resolver: zodResolver(loginSchema)
   });
@@ -26,7 +28,7 @@ const LoginForm = () => {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#2a0b57] to-[#13215a]">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-login-from to-login-to">
         <div className="w-full max-w-md px-8 py-12">
           <h1 className="text-4xl font-bold text-center text-white mb-12">
             TORNEOS UY
@@ -55,7 +57,7 @@ const LoginForm = () => {
               ¿No tienes cuenta?{" "}
               <span
                 onClick={() => navigate("/signup")}
-                className="hover:underline cursor-pointer text-[#d9d9f3]"
+                className="hover:underline cursor-pointer text-muted"
               >
                 Regístrate aquí
               </span>
@@ -67,5 +69,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
 

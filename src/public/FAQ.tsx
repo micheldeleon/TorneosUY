@@ -1,8 +1,8 @@
 import React from "react";
 
 export const Faq: React.FC = () => (
-  <div className="min-h-screen p-10 bg-[#e9ebff] text-slate-800">
-    <h1 className="text-3xl font-bold mb-6 text-[#1d1e6b]">Preguntas Frecuentes</h1>
+  <div className="min-h-screen p-10 bg-surface text-slate-800">
+    <h1 className="text-3xl font-bold mb-6 text-brand-title">Preguntas Frecuentes</h1>
     <ul className="space-y-4">
       <li>
         <strong>¿Cómo me inscribo?</strong>

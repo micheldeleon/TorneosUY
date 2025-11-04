@@ -5,4 +5,19 @@
 --color-secondary-100: #e2e2d5;
 --color-secondary-200: #888883;
 --font-body: "Nunito", ui-sans-serif, system-ui, sans-serif;
+/* Brand palette */
+--color-brand-start: #3c0f7a;
+--color-brand-end: #1c1d6a;
+--color-brand-deep: #1e1e5a;
+--color-brand-title: #1d1e6b;
+--color-brand-darker: #14144f;
+
+/* UI surfaces */
+--color-surface: #e9ebff;        /* app background */
+--color-muted: #d9d9f3;          /* inputs / subtle bg */
+--color-muted-hover: #c8c8ec;    /* hover for muted */
+
+/* Auth gradients */
+--color-login-from: #2a0b57;
+--color-login-to: #13215a;
 }

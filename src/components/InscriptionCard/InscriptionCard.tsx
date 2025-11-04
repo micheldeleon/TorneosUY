@@ -58,11 +58,10 @@ export const InscriptionCard = ({
       cta={{
         label: "Ver",
         onClick: onView,
-        className: "bg-gradient-to-r from-[#3c0f7a] to-[#1c1d6a]",
+        className: "bg-gradient-to-r from-brand-start to-brand-end",
       }}
     />
   );
 };
 
 export default InscriptionCard;
-

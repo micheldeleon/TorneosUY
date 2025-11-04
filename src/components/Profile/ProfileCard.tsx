@@ -15,7 +15,7 @@ function initialFrom(name: string) {
 
 export const ProfileCard: React.FC<ProfileCardProps> = ({ name, role = "Jugador", onEdit }) => {
   return (
-    <Card className="bg-gradient-to-br from-[#3c0f7a] to-[#1c1d6a] text-white w-full max-w-xs h-72 relative overflow-hidden">
+    <Card className="bg-gradient-to-br from-brand-start to-brand-end text-white w-full max-w-xs h-72 relative overflow-hidden">
       <button
         onClick={onEdit}
         className="absolute top-3 right-3 inline-flex items-center gap-1 text-xs opacity-80 hover:opacity-100"
@@ -39,4 +39,3 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ name, role = "Jugador"
 };
 
 export default ProfileCard;
-

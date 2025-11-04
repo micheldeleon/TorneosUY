@@ -25,7 +25,7 @@ export const HomeLanding: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full bg-[#e9ebff] text-slate-900">
+    <div className="min-h-screen w-full bg-surface text-slate-900">
       <Hero />
 
       {/* TORNEOS */}

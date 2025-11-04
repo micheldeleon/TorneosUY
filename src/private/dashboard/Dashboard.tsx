@@ -26,7 +26,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#e9ebff] text-slate-900">
+    <div className="min-h-screen w-full bg-surface text-slate-900">
       <div className="mx-auto max-w-6xl px-4 pt-10 space-y-8">
         {/* Top area */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
@@ -44,7 +44,7 @@ export default function Dashboard() {
 
           {/* Organizar torneos */}
           <Card className="md:col-span-1 flex items-center justify-center">
-            <Button className="rounded-full bg-gradient-to-r from-[#3c0f7a] to-[#1c1d6a]">
+            <Button className="rounded-full bg-gradient-to-r from-brand-start to-brand-end">
               Quiero organizar torneos.
             </Button>
           </Card>

@@ -1,12 +1,13 @@
-import { schema, type FormValueRegister } from "../../components/CustomForm/schemas";
-import { GoogleButton, Submit, RHFInput } from "../../components/CustomForm";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import type { UserRegister } from "../../models/userRegister.model";
-import { postRegister, type ApiResponse } from "../../services/api.service";
-import { useApi } from "../../hooks/useApi";
+import { schema, type FormValueRegister } from "../components/CustomForm/schemas";
+import { useApi } from "../hooks/useApi";
+import { postRegister, type ApiResponse } from "../services/api.service";
+import type { UserRegister } from "../models/userRegister.model";
+import { GoogleButton, RHFInput, Submit } from "../components/CustomForm";
 
-const RegisterForm = () => {
+export const RegisterForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormValueRegister>({
     resolver: zodResolver(schema)
   });
@@ -20,7 +21,7 @@ const RegisterForm = () => {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#2a0b57] to-[#13215a]">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-login-from to-login-to">
         <div className="w-full max-w-md px-8 py-12">
           <h1 className="text-4xl font-bold text-center text-white mb-12">
             Nombre APP
@@ -42,6 +43,4 @@ const RegisterForm = () => {
     </>
   );
 };
-
-export default RegisterForm;
 
