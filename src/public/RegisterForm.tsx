@@ -12,7 +12,7 @@ export const RegisterForm = () => {
     resolver: zodResolver(schema)
   });
 
-  const { fetch, data, error, loading } = useApi<ApiResponse, UserRegister>(postRegister);
+  const { fetch, data, error } = useApi<ApiResponse, UserRegister>(postRegister);
   const onSubmit: SubmitHandler<FormValueRegister> = async (formData) => {
     const { confirmPassword, ...user } = formData;
     fetch(user);

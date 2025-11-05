@@ -6,5 +6,5 @@ export * from "./Avatar";
 export * from "./Input";
 export * from "./Dropdown";
 export * from "./SectionHeader";
-export * from "./DescriptionList";
+export * from "./DetailsUserForm/DescriptionList";
 export * from "./Checkbox";
