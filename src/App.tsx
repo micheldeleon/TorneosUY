@@ -75,7 +75,7 @@ function App() {
           <Logo text="VIBEZ" />
           <Logo text="logitech" />
         </div>
-      </section>
+      </section> 
 
       <Footer />
 

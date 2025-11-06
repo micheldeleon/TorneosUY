@@ -7,6 +7,7 @@ export interface RHFInputProps<TFieldValues extends FieldValues>
   control: Control<TFieldValues>;
   label: string;
   error?: string;
+  classname?: string;
 }
 
 export function RHFInput<TFieldValues extends FieldValues>({
@@ -34,6 +35,7 @@ export function RHFInput<TFieldValues extends FieldValues>({
             placeholder={label}
             value={(field.value as any) ?? ""}
             hasError={Boolean(error)}
+            className={rest.className}
             {...rest}
           />
         )}

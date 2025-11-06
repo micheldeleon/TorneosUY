@@ -37,7 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const base =
-    "inline-flex items-center justify-center rounded-md font-semibold transition focus:outline-none disabled:opacity-60";
+    "inline-flex items-center justify-center rounded-md font-semibold transition focus:outline-none disabled:opacity-60 ";
   const classes = `${base} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
   return (

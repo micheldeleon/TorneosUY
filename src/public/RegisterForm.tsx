@@ -1,6 +1,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { schema, type FormValueRegister } from "../components/CustomForm/schemas";
 import { useApi } from "../hooks/useApi";
 import { postRegister } from "../services/api.service";
@@ -18,6 +19,8 @@ export const RegisterForm = () => {
     fetch(user);
     console.log("Datos enviados:", user);
   };
+
+  const navigate = useNavigate();
 
   return (
     <>
@@ -38,6 +41,18 @@ export const RegisterForm = () => {
           {data?.message}
           {error?.message}
           <GoogleButton text="G" />
+
+          <div className="mt-8 text-center text-white text-sm font-semibold space-y-1">
+            <p>
+              ¿Ya tienes cuenta?{" "}
+              <span
+                onClick={() => navigate("/login")}
+                className="hover:underline cursor-pointer text-muted"
+              >
+                Inicia sesión aquí
+              </span>
+            </p>
+          </div>
         </div>
       </div>
     </>
