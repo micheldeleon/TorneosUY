@@ -36,20 +36,20 @@ export function TournamentDetails() {
   const statusClass = t.status === "Público" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700";
 
   return (
-    <div className="min-h-screen w-full bg-surface text-slate-900">
+    <div className="min-h-screen w-full bg-surface text-slate-100">
       <div className="mx-auto max-w-6xl px-4 pt-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left: summary + inscription */}
         <Card className="lg:col-span-1">
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2 text-slate-600">
+            <div className="flex items-center gap-2 text-slate-200">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 text-sm">⚽</span>
               <span className="text-xs">{t.category}</span>
             </div>
             <Badge className={statusClass}>{t.status}</Badge>
           </div>
-          <h2 className="mt-2 text-base font-semibold text-slate-800">{t.title}</h2>
+          <h2 className="mt-2 text-base font-semibold text-slate-100">{t.title}</h2>
 
-          <dl className="mt-4 space-y-2 text-sm text-slate-700">
+          <dl className="mt-4 space-y-2 text-sm text-slate-200">
             <div className="flex items-center justify-between">
               <dt className="opacity-70">Costo:</dt>
               <dd className="font-semibold">{formatCurrency(t.price)}</dd>
@@ -102,7 +102,7 @@ export function TournamentDetails() {
 
             <div className="mt-4">
               <div className="text-sm font-semibold mb-1">Detalles:</div>
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-slate-300">
                 Se juega en 1 sola jornada, partidos de 30 min, en caso de empate se define por penales.
                 Se juega solo 1 partido por llave, no es ida y vuelta.
               </p>

@@ -14,7 +14,8 @@
 --color-brand-items: #EAEDFB;
 
 /* UI surfaces */
---color-surface: #16161F;        /* app background */
+--color-surface: #181a1b;        /* app background */
+--color-surface-dark: #161616;    /* cards / modals */
 --color-muted: #EAEDFB;          /* inputs / subtle bg */
 --color-muted-hover: #c8c8ec;    /* hover for muted */
 

@@ -40,7 +40,7 @@ export const LoginForm = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-login-from to-login-to">
         <div className="w-full max-w-md px-8 py-12">
           <h1 className="text-4xl font-bold text-center text-white mb-12">
-            TORNEOS UY
+            TuTorneo
           </h1>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
