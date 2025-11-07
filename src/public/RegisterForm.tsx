@@ -36,7 +36,7 @@ export const RegisterForm = () => {
             <RHFInput name="email" control={control} label="Email" error={errors.email?.message} />
             <RHFInput name="password" control={control} label="Contraseña" type="password" error={errors.password?.message} />
             <RHFInput name="confirmPassword" control={control} label="Confirmar contraseña" type="password" error={errors.confirmPassword?.message} />
-            <Submit txt="INGRESAR" />
+            <Submit txt="REGISTRARSE" />
           </form>
           {data?.message}
           {error?.message}

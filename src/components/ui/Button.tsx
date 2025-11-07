@@ -11,7 +11,7 @@ export interface ButtonProps
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-indigo-800 text-white hover:bg-indigo-700",
+    "bg-indigo-800 hover:text-white hover:bg-indigo-700 text-white",
   secondary:
     "bg-white/10 text-white hover:bg-white/20",
   outline:
@@ -37,7 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const base =
-    "inline-flex items-center justify-center rounded-md font-semibold transition focus:outline-none disabled:opacity-60 ";
+    "inline-flex  items-center justify-center rounded-md font-semibold transition focus:outline-none disabled:opacity-60 ";
   const classes = `${base} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
   return (

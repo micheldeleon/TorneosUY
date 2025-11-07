@@ -21,7 +21,7 @@ const TOURNAMENTS: Readonly<Tournament[]> = [
 ];
 
 export const HomeLanding: React.FC = () => {
-  const page = 2;
+  const page = 1;
   const navigate = useNavigate();
 
   return (
@@ -31,13 +31,13 @@ export const HomeLanding: React.FC = () => {
       {/* TORNEOS */}
       <section className="mx-auto max-w-6xl px-4 pt-10">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-center mx-auto md:mx-0 text-lg font-semibold text-slate-700">
+          <h2 className="text-center mx-auto md:mx-0 text-lg font-semibold text-slate-100">
             Torneos Disponibles
           </h2>
 
           <button
             type="button"
-            className="hidden md:inline-flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900"
+            className="hidden md:inline-flex items-center gap-2 text-sm text-slate-100 hover:text-slate-300"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M3 5h18v2H3zm3 6h12v2H6zm3 6h6v2H9z" />
@@ -84,7 +84,7 @@ export const HomeLanding: React.FC = () => {
         </div>
 
         {/* Paginación */}
-        <div className="mt-8 flex items-center justify-center gap-6 text-slate-700">
+        <div className="mt-8 flex items-center justify-center gap-6 text-slate-100">
           <button className="hover:underline text-sm">&lt;</button>
           <span className="text-sm">{page}</span>
           <button className="hover:underline text-sm">&gt;</button>
