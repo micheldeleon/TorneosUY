@@ -28,7 +28,7 @@ export default function Dashboard() {
   }, [fetch]);
 
   return (
-    <div className="min-h-screen w-full bg-surface text-slate-900">
+    <div className="min-h-screen w-full bg-surface text-slate-100">
       <div className="mx-auto max-w-6xl px-4 pt-10 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           <ProfileCard name={data?.name ?? "Usuario"} onEdit={() => alert("Editar perfil")} />
