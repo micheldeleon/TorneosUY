@@ -1,95 +1,179 @@
-import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { UserMenu } from "../UserMenu.tsx/UserMenu";
-import { NavLinks } from "../ui/NavLinks";
-import { MobileMenu } from "./MobileMenu";
+import { Trophy, Menu, X } from "lucide-react";
+import { Button } from "../ui/Button";
+import { useState } from "react";
 
 export interface NavItem {
   label: string;
-  path: string;
+  sectionId?: string;
+  path?: string;
 }
 
 interface NavbarProps {
-  title?: string;
+  title: string;
   links: NavItem[];
-  isAuthenticated?: boolean;
-  username?: string;
-  onLogout?: () => void;
+  isAuthenticated: boolean;
+  onLogout: () => void;
 }
-export const Navbar = ({
-  title = "Gestión de torneos",
-  links,
-  isAuthenticated = false,
-  username,
-  onLogout,
-}: NavbarProps) => {
-  const [open, setOpen] = useState(false);
+
+export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar al navegar
-  useEffect(() => setOpen(false), [location.pathname]);
-
-  // Cerrar al hacer clic fuera
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node))
-        setOpen(false);
-    };
-    if (open) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
+  const handleNavClick = (link: NavItem) => {
+    if (link.sectionId && location.pathname === "/") {
+      const element = document.getElementById(link.sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-20 bg-gradient-to-r from-brand-start to-brand-end text-white">
-      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#2a1a4a]/95 backdrop-blur-sm border-b border-purple-900/20">
+      <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
+            <Trophy className="w-5 h-5 text-purple-900" /> {/* Cambiar por logo */}
+          </div>
+          <span className="text-white">{title}</span>
+        </Link>
+        
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-6">
+          {links.map((link) => (
+            link.sectionId ? (
+              <button
+                key={link.sectionId}
+                onClick={() => handleNavClick(link)}
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                {link.label}
+              </button>
+            ) : link.path ? (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="text-gray-300 hover:text-white transition-colors"
+              >
+                {link.label}
+              </Link>
+            ) : null
+          ))}
+        </div>
+
         <div className="flex items-center gap-3">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/10">
-            🏆
-          </span>
-          <span className="font-semibold">{title}</span>
-        </div>
-
-        {/* Desktop links */}
-        <NavLinks
-          className="hidden md:flex items-center gap-8 text-sm"
-          links={links.map((l) => ({ label: l.label, to: l.path }))}
-        />
-
-        {/* User / Login */}
-        <div className="hidden md:block">
           {isAuthenticated ? (
-            <UserMenu username={username ?? "Usuario"} onLogout={onLogout} />
+            <div className="hidden md:flex items-center gap-2">
+              <Link to="/perfil">
+                <Button className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
+                  Mi Perfil
+                </Button>
+              </Link>
+              <Button
+                onClick={onLogout}
+                variant="outline"
+                className="border-purple-600 text-purple-300 hover:bg-purple-600/10"
+              >
+                Salir
+              </Button>
+            </div>
           ) : (
-            <Link
-              to="/login"
-              className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-semibold hover:bg-white/20 transition"
-            >
-              Ingresar
-            </Link>
+            <div className="hidden md:flex items-center gap-2">
+              <Link to="/login">
+                <Button
+                  variant="outline"
+                  className="border-purple-600 text-purple-300 hover:bg-purple-600/10"
+                >
+                  Iniciar Sesión
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
+                  Registrarse
+                </Button>
+              </Link>
+            </div>
           )}
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden text-white"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
+      </nav>
 
-        {/* Botón hamburguesa */}
-        <button
-          aria-label="Abrir menú"
-          onClick={() => setOpen((v) => !v)}
-          className="md:hidden inline-flex items-center justify-center h-9 w-9 rounded-lg bg-white/10 hover:bg-white/20 transition"
-        >
-          {!open ? "☰" : "✕"}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      <div ref={menuRef}>
-        <MobileMenu
-          open={open}
-          links={links}
-          isAuthenticated={isAuthenticated}
-          onLogout={onLogout}
-        />
-      </div>
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-[#2a1a4a] border-t border-purple-900/20">
+          <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
+            {links.map((link) => (
+              link.sectionId ? (
+                <button
+                  key={link.sectionId}
+                  onClick={() => {
+                    handleNavClick(link);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-gray-300 hover:text-white transition-colors text-left"
+                >
+                  {link.label}
+                </button>
+              ) : link.path ? (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="text-gray-300 hover:text-white transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ) : null
+            ))}
+            
+            <div className="border-t border-purple-900/20 pt-4 mt-2 space-y-2">
+              {isAuthenticated ? (
+                <>
+                  <Link to="/perfil" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
+                      Mi Perfil
+                    </Button>
+                  </Link>
+                  <Button
+                    onClick={() => {
+                      onLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    variant="outline"
+                    className="w-full border-purple-600 text-purple-300 hover:bg-purple-600/10"
+                  >
+                    Salir
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button
+                      variant="outline"
+                      className="w-full border-purple-600 text-purple-300 hover:bg-purple-600/10"
+                    >
+                      Iniciar Sesión
+                    </Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
+                      Registrarse
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
-};
+}
