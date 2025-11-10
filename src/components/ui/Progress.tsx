@@ -8,7 +8,8 @@ export const Progress: React.FC<ProgressProps> = ({ value, className = "", ...pr
   const clamped = Math.max(0, Math.min(100, value));
   return (
     <div className={`mt-1 h-1.5 w-full overflow-hidden rounded-full bg-transparent border border-white/10 ${className}`} {...props}>
-      <div className="h-full bg-gradient-to-r from-brand-start to-brand-end" style={{ width: `${clamped}%` }} />
+      <div className="h-full bg-gradient-to-r from-purple-600 to-purple-800" style={{ width: `${clamped}%` }} />
+      
     </div>
   );
 };

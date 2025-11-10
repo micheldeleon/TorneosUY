@@ -91,8 +91,8 @@ export const HomeLanding: React.FC = () => {
 
             const statusClass =
               t.status === "Público"
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-rose-100 text-rose-700";
+                ? "bg-gradient-to-r from-purple-600 to-green-800 text-white border-surface"
+                : "bg-gradient-to-r from-purple-600 to-red-800 text-white border-surface";
 
             return (
               <TournamentCard
@@ -118,6 +118,8 @@ export const HomeLanding: React.FC = () => {
           <span className="text-sm">{page}</span>
           <button className="hover:underline text-sm">&gt;</button>
         </div>
+
+        
       </section>
     </div>
   );

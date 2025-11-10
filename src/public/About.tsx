@@ -51,9 +51,8 @@ export function About() {
             <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
               <h3 className="text-white text-xl mb-4">Nuestra Historia</h3>
               <p className="text-gray-400">
-                Fundada en 2024, TuTorneo surgió de la necesidad de simplificar la organización de torneos 
-                deportivos y eSports. Desde entonces, hemos ayudado a miles de organizadores y jugadores 
-                a conectarse y competir.
+                Fundada en 2025, TuTorneo surgió de la necesidad de simplificar la organización de torneos 
+                deportivos y eSports.
               </p>
             </div>
 

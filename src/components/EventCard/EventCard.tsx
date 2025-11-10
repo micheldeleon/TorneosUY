@@ -64,7 +64,7 @@ export const EventCard: React.FC<EventCardProps> = ({
           onClick={cta.onClick}
           disabled={cta.disabled}
           size="sm"
-          className={`mt-4 w-full rounded-full ${cta.className ?? ""}`}
+          className="mt-4 w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
         >
           {cta.label}
         </Button>
