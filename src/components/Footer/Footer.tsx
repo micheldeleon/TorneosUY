@@ -1,15 +1,13 @@
 
 export const Footer = () => (
-    <footer className="mt-10">
-        <div className="bg-gradient-to-r from-brand-start to-brand-end text-white">
-            <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between text-[12px]">
-                <div className="flex items-center gap-4 opacity-90">
-                    <span>ORT</span>
-                    <span>•</span>
-                    <span>CIE</span>
-                </div>
-                <div className="opacity-90">© 2025 Nuestra empresa</div>
-            </div>
+    <footer className="bg-[#0f0f0f] border-t border-gray-800 py-8 px-4">
+        <div className="container mx-auto text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className="text-white">TuTorneo</span>
+          </div>
+          <p className="text-gray-500">
+            © 2025 TuTorneo. Todos los derechos reservados.
+          </p>
         </div>
-    </footer>
+      </footer>
 );

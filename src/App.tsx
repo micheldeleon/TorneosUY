@@ -1,11 +1,12 @@
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Navbar, type NavItem } from "./components/Navbar";
-import { HomeLanding, Contact, Faq, About, LoginForm, TournamentDetails, RegisterForm } from "./public";
+import { HomeLanding, LoginForm, TournamentDetails, RegisterForm, About, Contact, Faq } from "./public";
 import { Logo } from "./components/Logo";
 import { Footer } from "./components/Footer";
 import Dashboard from "./private/dashboard/Dashboard";
-import { useGlobalContext } from "./context/global.context";
+import { GlobalProvider, useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
+import { Button } from "./components/ui/Button";
 
 function App() {
   const { token, logout } = useGlobalContext()

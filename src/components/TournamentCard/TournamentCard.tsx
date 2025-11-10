@@ -6,6 +6,7 @@ interface TournamentCardProps {
   costText: string;
   dateText: string;
   statusClass: string;
+  statusLabel: string;
   participantsText: string;
   progress: number;
   isDisabled?: boolean;
@@ -18,6 +19,7 @@ export function TournamentCard({
   costText,
   dateText,
   statusClass,
+  statusLabel,
   participantsText,
   progress,
   isDisabled = false,
@@ -27,7 +29,7 @@ export function TournamentCard({
     <EventCard
       discipline={discipline}
       title={title}
-      statusLabel="Estado"
+      statusLabel={statusLabel}
       statusClassName={statusClass}
       rows={[
         { label: "Costo:", value: costText },

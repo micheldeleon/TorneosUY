@@ -74,6 +74,7 @@ export const HomeLanding: React.FC = () => {
                 costText={costText}
                 dateText={dateText}
                 participantsText={participantsText}
+                statusLabel={t.status}
                 statusClass={statusClass}
                 progress={progress}
                 isDisabled={t.participants >= t.capacity}
