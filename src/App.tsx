@@ -15,8 +15,8 @@ function App() {
 
   const hideChrome = location.pathname.startsWith("/login") || location.pathname.startsWith("/signup");
 
- const navLinks: NavItem[] = [
-    { label: "Inicio", sectionId: "inicio"},
+  const navLinks: NavItem[] = [
+    { label: "Inicio", sectionId: "inicio" },
     { label: "¿Quiénes somos?", sectionId: "quienes-somos" },
     { label: "Preguntas Frecuentes", sectionId: "preguntas-frecuentes" },
     { label: "Contacto", sectionId: "contacto" },
@@ -42,14 +42,7 @@ function App() {
       <main className="min-h-screen">
         <Routes>
 
-          <Route path="/" element={
-            <>
-              <HomeLanding />
-              <About />
-              <Contact />
-              <Faq />
-            </>
-          } />
+          <Route path="/" element={<HomeLanding />} />
           <Route path="/quienes" element={<About />} />
           <Route path="/contacto" element={<Contact />} />
           <Route path="/faq" element={<Faq />} />

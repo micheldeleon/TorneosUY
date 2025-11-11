@@ -37,18 +37,18 @@ export function Faq() {
   ];
 
   return (
-    <div className="min-h-screen bg-surface-dark pt-32 pb-20 px-4">
+    <div className="min-h-screen bg-surface pt-32 pb-20 px-4">
       <div className="container mx-auto">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-white text-4xl mb-4 text-center">Preguntas Frecuentes</h1>
           <p className="text-gray-400 text-center mb-12">
             Encuentra respuestas a las preguntas más comunes sobre TuTorneo
           </p>
-          
+
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
-              <AccordionItem 
-                key={index} 
+              <AccordionItem
+                key={index}
                 value={`item-${index}`}
                 className="bg-[#2a2a2a] border-gray-800 rounded-lg px-6 data-[state=open]:border-purple-600/50"
               >

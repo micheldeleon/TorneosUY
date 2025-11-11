@@ -1,5 +1,8 @@
 
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 @theme {
 --color-primary: #ff6363;
 --color-secondary-100: #e2e2d5;
@@ -22,4 +25,25 @@
 /* Auth gradients */
 --color-login-from: #1E0840;
 --color-login-to: #13215a;
+
+
+}
+
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+/* ESTA ES LA PARTE NUEVA IMPORTANTE */
+@utility animate-accordion-down {
+  animation: accordion-down 0.3s ease-out;
+}
+
+@utility animate-accordion-up {
+  animation: accordion-up 0.3s ease-out;
 }

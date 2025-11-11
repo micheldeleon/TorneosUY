@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Trophy, Menu, X } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useState } from "react";
@@ -19,13 +19,19 @@ interface NavbarProps {
 export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleNavClick = (link: NavItem) => {
-    if (link.sectionId && location.pathname === "/") {
+    if (!link.sectionId) return;
+
+    if (location.pathname === "/") {
       const element = document.getElementById(link.sectionId);
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "start" });
       }
+    } else {
+      // si estamos en otra ruta, navegamos a / y le pasamos el id en state
+      navigate("/", { state: { scrollTo: link.sectionId } });
     }
   };
 

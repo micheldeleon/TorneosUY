@@ -1,7 +1,11 @@
 
 import { TournamentCard } from "../components/TournamentCard/TournamentCard";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
+import { useEffect } from "react";
+import { About } from "./About";
+import { Faq } from "./FAQ";
+import { Contact } from "./Contact";
 
 type Tournament = {
   id: number;
@@ -15,11 +19,11 @@ type Tournament = {
 };
 
 const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+  const element = document.getElementById(sectionId);
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+};
 
 const TOURNAMENTS: Readonly<Tournament[]> = [
   { id: 1, title: "Campeonato Fútbol 5 x Campomar", category: "Fútbol", status: "Público", price: 500, date: "2025-10-21", participants: 5, capacity: 16 },
@@ -31,6 +35,29 @@ const TOURNAMENTS: Readonly<Tournament[]> = [
 export const HomeLanding: React.FC = () => {
   const page = 1;
   const navigate = useNavigate();
+  const location = useLocation();
+
+
+  useEffect(() => {
+    // prioridad: hash, luego state.scrollTo
+    const hashId = location.hash ? location.hash.replace("#", "") : null;
+    const stateId = (location.state as any)?.scrollTo ?? null;
+    const idToScroll = hashId ?? stateId;
+    if (!idToScroll) return;
+
+    // delay pequeño para asegurar que DOM está listo
+    const t = setTimeout(() => {
+      const el = document.getElementById(idToScroll);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        // fallback: ir arriba
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 50);
+
+    return () => clearTimeout(t);
+  }, [location]);
 
   return (
     <div className="min-h-screen w-full bg-surface text-slate-900">
@@ -63,16 +90,16 @@ export const HomeLanding: React.FC = () => {
         </div>
       </section>
       {/* TORNEOS */}
-      <section className="mx-auto max-w-6xl px-4 pt-20 pb-20">
+      <section id="torneos" className="mx-auto max-w-6xl px-4 pt-20 pb-20">
         <div className="flex items-center justify-between mb-12">
-            <div>
-              <h2 className="text-white text-3xl mb-2">Torneos Disponibles</h2>
-              <p className="text-gray-400">Únete a la competencia y demuestra tu habilidad</p>
-            </div>
-            <Button variant="outline" className="border-purple-600 text-purple-300 hover:bg-purple-600/10">
-              <span className="mr-2">⚙️</span> Filtrar
-            </Button>
+          <div>
+            <h2 className="text-white text-3xl mb-2">Torneos Disponibles</h2>
+            <p className="text-gray-400">Únete a la competencia y demuestra tu habilidad</p>
           </div>
+          <Button variant="outline" className="border-purple-600 text-purple-300 hover:bg-purple-600/10">
+            <span className="mr-2">⚙️</span> Filtrar
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4  mb-8">
           {TOURNAMENTS.map(t => {
@@ -118,8 +145,15 @@ export const HomeLanding: React.FC = () => {
           <span className="text-sm">{page}</span>
           <button className="hover:underline text-sm">&gt;</button>
         </div>
-
-        
+      </section>
+      <section id="quienes-somos">
+        <About />
+      </section>
+      <section id="preguntas-frecuentes">
+        <Faq />
+      </section>
+      <section id="contacto">
+        <Contact />
       </section>
     </div>
   );
