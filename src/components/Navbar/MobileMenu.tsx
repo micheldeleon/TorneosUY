@@ -16,7 +16,10 @@ export const MobileMenu = ({ open, links, isAuthenticated, onLogout }: Props) =>
     }`}
   >
     <div className="mx-3 mb-3 rounded-xl bg-white/10 backdrop-blur p-2">
-      <NavLinks className="flex flex-col" links={links.map(l => ({ label: l.label, to: l.path }))} />
+      <NavLinks
+        className="flex flex-col"
+        links={links.filter(l => l.path).map(l => ({ label: l.label, to: l.path! }))}
+      />
 
       <div className="my-2 h-px bg-white/10" />
 

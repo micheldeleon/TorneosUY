@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import type { UserDetails } from "../../../models/userDetails.model";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, TrendingUp } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { schema as detailsSchema, type FormValueDetails } from "./details.form.model";
 import { Button } from "../Button";
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Trophy, Calendar, Users, Award, TrendingUp, Edit, Wallet, PiggyBank } from "lucide-react";
+import { Trophy, Calendar, Award, TrendingUp, PiggyBank } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -73,7 +73,7 @@ export default function Dashboard() {
       <div className="container mx-auto max-w-6xl">
         <div className="mb-8">
           <h1 className="text-white text-4xl mb-2">Mi Perfil</h1>
-          <p className="text-gray-400">Gestiona tus torneos y configuración</p>
+          <p className="text-gray-400">Gestiona tus datos y configuración</p>
         </div>
 
         {error && (
@@ -82,48 +82,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <Trophy className="w-8 h-8 text-purple-400" />
-            </div>
-            <div className="text-2xl text-white mb-1">{userStats.torneosParticipados}</div>
-            <div className="text-gray-400 text-sm">Torneos Participados</div>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <Award className="w-8 h-8 text-yellow-400" />
-            </div>
-            <div className="text-2xl text-white mb-1">{userStats.torneosGanados}</div>
-            <div className="text-gray-400 text-sm">Torneos Ganados</div>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <TrendingUp className="w-8 h-8 text-blue-400" />
-            </div>
-            <div className="text-2xl text-white mb-1">{userStats.proximosTorneos}</div>
-            <div className="text-gray-400 text-sm">Próximos Torneos</div>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <PiggyBank className="w-8 h-8 text-green-400" />
-            </div>
-            <div className="text-2xl text-white mb-1">{userStats.ganancia}</div>
-            <div className="text-gray-400 text-sm">Ganancia</div>
-          </Card>
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
-            <div className="flex items-center justify-between mb-2">
-              <Calendar className="w-8 h-8 text-red-400" />
-            </div>
-            <div className="text-2xl text-white mb-1">{userStats.fechaCreacion}</div>
-            <div className="text-gray-400 text-sm">Juega desde</div>
-          </Card>
-        </div>
-
+        
         {/* Profile Info Grid */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           {/* Profile Card with Photo */}
@@ -175,6 +134,49 @@ export default function Dashboard() {
             >
               Quiero organizar torneos
             </Button>
+          </Card>
+        </div>
+            
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Trophy className="w-8 h-8 text-purple-400" />
+            </div>
+            <div className="text-2xl text-white mb-1">{userStats.torneosParticipados}</div>
+            <div className="text-gray-400 text-sm">Torneos Participados</div>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Award className="w-8 h-8 text-yellow-400" />
+            </div>
+            <div className="text-2xl text-white mb-1">{userStats.torneosGanados}</div>
+            <div className="text-gray-400 text-sm">Torneos Ganados</div>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <TrendingUp className="w-8 h-8 text-blue-400" />
+            </div>
+            <div className="text-2xl text-white mb-1">{userStats.proximosTorneos}</div>
+            <div className="text-gray-400 text-sm">Próximos Torneos</div>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <PiggyBank className="w-8 h-8 text-green-400" />
+            </div>
+            <div className="text-2xl text-white mb-1">{userStats.ganancia}</div>
+            <div className="text-gray-400 text-sm">Ganancia</div>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Calendar className="w-8 h-8 text-red-400" />
+            </div>
+            <div className="text-2xl text-white mb-1">{userStats.fechaCreacion}</div>
+            <div className="text-gray-400 text-sm">Juega desde</div>
           </Card>
         </div>
 
