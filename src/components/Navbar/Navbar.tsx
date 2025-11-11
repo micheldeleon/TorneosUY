@@ -2,6 +2,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Trophy, Menu, X } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 export interface NavItem {
   label: string;
@@ -44,7 +46,7 @@ export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps)
           </div>
           <span className="text-white">{title}</span>
         </Link>
-        
+
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
           {links.map((link) => (
@@ -104,82 +106,114 @@ export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps)
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-white"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <motion.div
+              animate={{ rotate: mobileMenuOpen ? 90 : 0 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </motion.div>
           </button>
         </div>
       </nav>
 
       {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-[#2a1a4a] border-t border-purple-900/20">
-          <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
-            {links.map((link) => (
-              link.sectionId ? (
-                <button
-                  key={link.sectionId}
-                  onClick={() => {
-                    handleNavClick(link);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="text-gray-300 hover:text-white transition-colors text-left"
-                >
-                  {link.label}
-                </button>
-              ) : link.path ? (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="text-gray-300 hover:text-white transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ) : null
-            ))}
-            
-            <div className="border-t border-purple-900/20 pt-4 mt-2 space-y-2">
-              {isAuthenticated ? (
-                <>
-                  <Link to="/perfil" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
-                      Mi Perfil
-                    </Button>
-                  </Link>
-                  <Button
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{
+              duration: 0.35,
+              ease: [0.22, 1, 0.36, 1]
+            }}
+            className="
+        md:hidden 
+        border-t 
+        border-purple-900/20 
+        overflow-hidden
+        bg-[#2a1a4a]/95
+        backdrop-blur-md
+        shadow-[0_0_25px_2px_rgba(118,0,255,0.25)]
+      "
+          >
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
+              {links.map((link) =>
+                link.sectionId ? (
+                  <button
+                    key={link.sectionId}
                     onClick={() => {
-                      onLogout();
+                      handleNavClick(link);
                       setMobileMenuOpen(false);
                     }}
-                    variant="outline"
-                    className="w-full border-purple-600 text-purple-300 hover:bg-purple-600/10"
+                    className="text-gray-300 hover:text-white transition-colors text-left"
                   >
-                    Salir
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                    {link.label}
+                  </button>
+                ) : link.path ? (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className="text-gray-300 hover:text-white transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ) : null
+              )}
+
+              {/* Botones de login / logout */}
+              <div className="border-t border-purple-900/20 pt-4 mt-2 space-y-2">
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/perfil" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full mb-2 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
+                        Mi Perfil
+                      </Button>
+                    </Link>
                     <Button
+                      onClick={() => {
+                        onLogout();
+                        setMobileMenuOpen(false);
+                      }}
                       variant="outline"
                       className="w-full border-purple-600 text-purple-300 hover:bg-purple-600/10"
                     >
-                      Iniciar Sesión
+                      Salir
                     </Button>
-                  </Link>
-                  <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
-                      Registrarse
-                    </Button>
-                  </Link>
-                </>
-              )}
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button
+                        variant="outline"
+                        className="w-full mb-2 border-purple-600 text-purple-300 hover:bg-purple-600/10"
+                      >
+                        Iniciar Sesión
+                      </Button>
+                    </Link>
+                    <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
+                        Registrarse
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
     </header>
   );
 }
