@@ -1,41 +1,54 @@
-import React from "react";
+import { User, Edit } from "lucide-react";
+import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 
-export interface ProfileCardProps {
+interface ProfileCardProps {
   name: string;
-  role?: string;
-  onEdit?: () => void;
+  email?: string;
+  imageUrl?: string;
+  onEdit: () => void;
 }
 
-function initialFrom(name: string) {
-  const n = name?.trim();
-  if (!n) return "?";
-  return n[0]?.toUpperCase() ?? "?";
-}
+export function ProfileCard({ name, email, imageUrl, onEdit }: ProfileCardProps) {
+  const getInitials = (fullName: string) => {
+    return fullName
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
-export const ProfileCard: React.FC<ProfileCardProps> = ({ name, role = "Jugador", onEdit }) => {
   return (
-    <Card className="bg-gradient-to-br from-brand-start to-brand-end text-white w-full max-w-xs h-72 relative overflow-hidden">
-      <button
-        onClick={onEdit}
-        className="absolute top-3 right-3 inline-flex items-center gap-1 text-xs opacity-80 hover:opacity-100"
-      >
-        <span>✎</span>
-        <span>Editar</span>
-      </button>
-
-      <div className="mt-6 mx-auto grid place-items-center">
-        <div className="w-28 h-28 rounded-full bg-white/10 grid place-items-center border border-white/20">
-          <span className="text-4xl font-bold">{initialFrom(name)}</span>
+    <Card className="bg-[#2a2a2a] border-gray-800 p-6">
+      <div className="flex flex-col items-center text-center space-y-4">
+        {/* Avatar */}
+        <div className="relative">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={name}
+              className="w-24 h-24 rounded-full object-cover border-2 border-purple-600"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center border-2 border-purple-600">
+              <span className="text-white text-2xl">{getInitials(name)}</span>
+            </div>
+          )}
+          <button
+            onClick={onEdit}
+            className="absolute bottom-0 right-0 w-8 h-8 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center border-2 border-[#2a2a2a] transition-colors"
+          >
+            <Edit className="w-4 h-4 text-white" />
+          </button>
         </div>
-      </div>
 
-      <div className="mt-6 text-center">
-        <div className="text-sm font-semibold">{name}</div>
-        <div className="text-[12px] opacity-80">{role}</div>
+        {/* User Info */}
+        <div>
+          <h3 className="text-white text-xl mb-1">{name}</h3>
+          {email && <p className="text-gray-400 text-sm">{email}</p>}
+        </div>
       </div>
     </Card>
   );
-};
-
-export default ProfileCard;
+}

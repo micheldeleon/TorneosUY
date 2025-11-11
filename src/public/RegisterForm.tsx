@@ -29,6 +29,9 @@ export const RegisterForm = () => {
           <h1 className="text-4xl font-bold text-center text-white mb-12">
             TuTorneo
           </h1>
+          <h2 className="text-2xl text-center text-white mb-8">
+            Crear Cuenta
+          </h2>
 
           <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
             <RHFInput name="name" control={control} label="Nombre" error={errors.name?.message} />

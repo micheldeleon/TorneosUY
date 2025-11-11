@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import type { UserDetails } from "../../../models/userDetails.model";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertTriangle, TrendingUp } from "lucide-react";
 import { schema as detailsSchema, type FormValueDetails } from "./details.form.model";
 import { Button } from "../Button";
 
@@ -40,6 +41,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm<FormValueDetails>({
     resolver: zodResolver(detailsSchema),
     defaultValues: defaults ?? undefined,
@@ -58,15 +60,40 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
   };
 
   if (!data || !defaults) {
-    // Render mínimo para no romper si todavía no hay data
     return <form className={className} {...props}>Cargando...</form>;
   }
+
+  // observar valores requeridos para mostrar alerta - en futuro cambiar por boolean de usuario
+  const [nameVal, lastNameVal, dobVal, ciVal, phoneVal] = watch([
+    "name",
+    "lastName",
+    "dateOfBirth",
+    "nationalId",
+    "phoneNumber",
+  ]);
+
+  const isAnyRequiredEmpty =
+    [nameVal, lastNameVal, dobVal, ciVal, phoneVal].some(
+      (v) => v === undefined || v === null || String(v).trim() === ""
+    );
 
   return (
     <form className={className} onSubmit={handleSubmit(onSubmit)} {...props}>
 
+      {/* Alerta amarilla si falta algun campo requerido */}
+      {isAnyRequiredEmpty && (
+        <div
+          role="alert"
+          className="mb-4 rounded bg-surface-dark border-l-4 border-yellow-400 p-3 text-yellow-800 text-sm"
+          
+        >
+          <AlertTriangle className="w-6 h-6 text-yellow-400 mb-2" />
+          <p className="text-yellow-400">Si no completa los datos no podrá participar en torneos.</p> 
+        </div>
+      )}
+
       <div className={`flex items-start ${dense ? "py-1" : "py-2"}`}>
-        <label className="text-sm font-semibold opacity-80 mr-4 w-1/3">Nombre</label>
+        <label className="text-sm opacity-80 mr-4 w-1/3 text-white">Nombre</label>
         <div className="w-2/3">
           <Controller
             name="name"
@@ -75,19 +102,19 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
               <input
                 type="text"
                 readOnly={!isEditing}
-                className="text-sm border border-slate-300 rounded px-2 py-1 w-full"
+                className="text-white text-sm border border-slate-300 rounded px-2 py-1 w-full"
                 {...field}
               />
             )}
           />
           {errors.name && (
-            <p className="text-xs text-rose-600 mt-1">{errors.name.message}</p>
+            <p className="text-white text-xs text-rose-600 mt-1">{errors.name.message}</p>
           )}
         </div>
       </div>
 
       <div className={`flex items-start ${dense ? "py-1" : "py-2"}`}>
-        <label className="text-sm font-semibold opacity-80 mr-4 w-1/3">Apellido</label>
+        <label className="text-sm text-white opacity-80 mr-4 w-1/3">Apellido</label>
         <div className="w-2/3">
           <Controller
             name="lastName"
@@ -96,7 +123,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
               <input
                 type="text"
                 readOnly={!isEditing}
-                className="text-sm border border-slate-300 rounded px-2 py-1 w-full"
+                className="text-white text-sm border border-slate-300 rounded px-2 py-1 w-full"
                 {...field}
               />
             )}
@@ -108,37 +135,16 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
       </div>
 
       <div className={`flex items-start ${dense ? "py-1" : "py-2"}`}>
-        <label className="text-sm font-semibold opacity-80 mr-4 w-1/3">Email</label>
-        <div className="w-2/3">
-          <Controller
-            name="email"
-            control={control}
-            render={({ field }) => (
-              <input
-                type="email"
-                readOnly={!isEditing}
-                className="text-sm border border-slate-300 rounded px-2 py-1 w-full"
-                {...field}
-              />
-            )}
-          />
-          {errors.email && (
-            <p className="text-xs text-rose-600 mt-1">{errors.email.message}</p>
-          )}
-        </div>
-      </div>
-
-      <div className={`flex items-start ${dense ? "py-1" : "py-2"}`}>
-        <label className="text-sm font-semibold opacity-80 mr-4 w-1/3">Fecha de nacimiento</label>
+        <label className="text-sm text-white opacity-80 mr-4 w-1/3">Fecha de nacimiento</label>
         <div className="w-2/3">
           <Controller
             name="dateOfBirth"
             control={control}
             render={({ field }) => (
               <input
-                type="text"
+                type="date"
                 readOnly={!isEditing}
-                className="text-sm border border-slate-300 rounded px-2 py-1 w-full"
+                className="text-white text-sm border border-slate-300 rounded px-2 py-1 w-full"
                 {...field}
               />
             )}
@@ -150,7 +156,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
       </div>
 
       <div className={`flex items-start ${dense ? "py-1" : "py-2"}`}>
-        <label className="text-sm font-semibold opacity-80 mr-4 w-1/3">CI</label>
+        <label className="text-sm text-white opacity-80 mr-4 w-1/3">CI</label>
         <div className="w-2/3">
           <Controller
             name="nationalId"
@@ -159,7 +165,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
               <input
                 type="text"
                 readOnly={!isEditing}
-                className="text-sm border border-slate-300 rounded px-2 py-1 w-full"
+                className="text-white text-sm border border-slate-300 rounded px-2 py-1 w-full"
                 {...field}
               />
             )}
@@ -171,7 +177,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
       </div>
 
       <div className={`flex items-start ${dense ? "py-1" : "py-2"}`}>
-        <label className="text-sm font-semibold opacity-80 mr-4 w-1/3">Teléfono</label>
+        <label className="text-sm text-white opacity-80 mr-4 w-1/3">Teléfono</label>
         <div className="w-2/3">
           <Controller
             name="phoneNumber"
@@ -180,7 +186,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
               <input
                 type="text"
                 readOnly={!isEditing}
-                className="text-sm border border-slate-300 rounded px-2 py-1 w-full"
+                className="text-white text-sm border border-slate-300 rounded px-2 py-1 w-full"
                 {...field}
               />
             )}
@@ -192,7 +198,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
       </div>
 
       <div className={`flex items-start ${dense ? "py-1" : "py-2"}`}>
-        <label className="text-sm font-semibold opacity-80 mr-4 w-1/3">Dirección</label>
+        <label className="text-sm text-white opacity-80 mr-4 w-1/3">Dirección</label>
         <div className="w-2/3">
           <Controller
             name="address"
@@ -201,7 +207,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
               <input
                 type="text"
                 readOnly={!isEditing}
-                className="text-sm border border-slate-300 rounded px-2 py-1 w-full"
+                className="text-white text-sm border border-slate-300 rounded px-2 py-1 w-full"
                 {...field}
               />
             )}
@@ -213,7 +219,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
       </div>
 
       <div className={`flex items-start ${dense ? "py-1" : "py-2"}`}>
-        <label className="text-sm font-semibold opacity-80 mr-4 w-1/3">Departamento</label>
+        <label className="text-sm text-white opacity-80 mr-4 w-1/3">Departamento</label>
         <div className="w-2/3">
           <Controller
             name="departmentId"
@@ -222,7 +228,7 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
               <input
                 type="number"
                 readOnly={!isEditing}
-                className="text-sm border border-slate-300 rounded px-2 py-1 w-full"
+                className="text-white text-sm border border-slate-300 rounded px-2 py-1 w-full"
                 value={field.value}
                 onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
               />

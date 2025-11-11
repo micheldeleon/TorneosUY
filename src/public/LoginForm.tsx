@@ -26,7 +26,6 @@ export const LoginForm = () => {
     if (!response) return;
     console.log('response', response)
     if (response.token.length != 0 && response.user) {
-      console.log('hola')
       setToken(response.token);
       setUser(response.user);
       navigate("/dashboard");
@@ -39,9 +38,13 @@ export const LoginForm = () => {
     <>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-login-from to-login-to">
         <div className="w-full max-w-md px-8 py-12">
-          <h1 className="text-4xl font-bold text-center text-white mb-12">
+          <h1 className="text-4xl font-bold text-center text-white mb-3">
             TuTorneo
           </h1>
+          
+          <h2 className="text-2xl text-center text-white mb-8">
+            Iniciar Sesión
+          </h2>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
             <RHFInput name="email" control={control} label="Email" error={errors.email?.message} />

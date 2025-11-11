@@ -71,20 +71,7 @@ function App() {
         </Routes>
       </main>
 
-      {/* Patrocinadores */}
-      {!hideChrome && (
-        <section className="mx-auto max-w-6xl px-4 pt-10 pb-16">
-          <h3 className="text-center text-slate-700 font-semibold mb-6 ">
-            Patrocinadores
-          </h3>
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 items-center ">
-            <Logo text="XBOX" />
-            <Logo text="Uruguay Natural" />
-            <Logo text="VIBEZ" />
-            <Logo text="logitech" />
-          </div>
-        </section>
-      )}
+      
 
       {!hideChrome && <Footer />}
 

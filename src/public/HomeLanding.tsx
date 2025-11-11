@@ -1,11 +1,12 @@
-
 import { TournamentCard } from "../components/TournamentCard/TournamentCard";
 import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { About } from "./About";
 import { Faq } from "./FAQ";
 import { Contact } from "./Contact";
+import { Logo } from "../components/Logo";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Tournament = {
   id: number;
@@ -33,10 +34,11 @@ const TOURNAMENTS: Readonly<Tournament[]> = [
 ];
 
 export const HomeLanding: React.FC = () => {
-  const page = 1;
   const navigate = useNavigate();
   const location = useLocation();
 
+  // hook movido dentro del componente (corrección)
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     // prioridad: hash, luego state.scrollTo
@@ -140,11 +142,27 @@ export const HomeLanding: React.FC = () => {
         </div>
 
         {/* Paginación */}
-        <div className="mt-8 flex items-center justify-center gap-6 text-slate-100">
-          <button className="hover:underline text-sm">&lt;</button>
-          <span className="text-sm">{page}</span>
-          <button className="hover:underline text-sm">&gt;</button>
-        </div>
+        
+        <div className="flex items-center justify-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <span className="text-gray-400">
+              {currentPage}
+            </span>
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+          </div>
       </section>
       <section id="quienes-somos">
         <About />
@@ -155,6 +173,20 @@ export const HomeLanding: React.FC = () => {
       <section id="contacto">
         <Contact />
       </section>
+      {/* Patrocinadores */}
+
+      <section className="mx-auto max-w-6xl px-4 pt-10 pb-16">
+        <h3 className="text-center text-slate-100 font-semibold mb-6 ">
+          Patrocinadores
+        </h3>
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 items-center ">
+          <Logo text="XBOX" />
+          <Logo text="Uruguay Natural" />
+          <Logo text="VIBEZ" />
+          <Logo text="logitech" />
+        </div>
+      </section>
+
     </div>
   );
 };

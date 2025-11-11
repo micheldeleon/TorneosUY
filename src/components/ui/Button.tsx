@@ -11,7 +11,7 @@ export interface ButtonProps
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-brand-start to-brand-end text-white hover:cursor-pointer",
+    "bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white hover:cursor-pointer",
   secondary:
     "bg-white/10 text-white hover:bg-white/20",
   outline:
