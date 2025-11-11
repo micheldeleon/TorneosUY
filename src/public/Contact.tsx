@@ -11,7 +11,7 @@ export function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] pt-32 pb-20 px-4">
+    <div className="min-h-screen bg-[#1a1a1a] pt-20 pb-20 px-4">
       <div className="container mx-auto">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-white text-4xl mb-4 text-center">Contacto</h1>

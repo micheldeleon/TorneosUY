@@ -2,7 +2,7 @@ import { Award, Target, Users } from "lucide-react";
 
 export function About() {
   return (
-    <div className="min-h-screen bg-[#1a1a1a] pt-32 pb-20 px-4">
+    <div className="min-h-screen bg-surface-dark pt-20 pb-20 px-4">
       <div className="container mx-auto">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-white text-4xl mb-8 text-center">¿Quiénes Somos?</h1>

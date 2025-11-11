@@ -15,7 +15,7 @@
 
 /* UI surfaces */
 --color-surface: #181a1b;        /* app background */
---color-surface-dark: #161616;    /* cards / modals */
+--color-surface-dark: #0f0f0f;    /* cards / modals */
 --color-muted: #EAEDFB;          /* inputs / subtle bg */
 --color-muted-hover: #c8c8ec;    /* hover for muted */
 

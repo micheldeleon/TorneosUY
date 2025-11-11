@@ -35,7 +35,7 @@ export const HomeLanding: React.FC = () => {
   return (
     <div className="min-h-screen w-full bg-surface text-slate-900">
       {/* <Hero /> */}
-      <section id="inicio" className="pt-32 pb-20 px-4">
+      <section id="inicio" className="pt-32 pb-20 px-4 bg-surface-dark">
         <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto space-y-6">
             <h1 className="text-5xl md:text-6xl text-white tracking-tight">
@@ -63,7 +63,7 @@ export const HomeLanding: React.FC = () => {
         </div>
       </section>
       {/* TORNEOS */}
-      <section className="mx-auto max-w-6xl px-4 pt-10">
+      <section className="mx-auto max-w-6xl px-4 pt-20 pb-20">
         <div className="flex items-center justify-between mb-12">
             <div>
               <h2 className="text-white text-3xl mb-2">Torneos Disponibles</h2>
