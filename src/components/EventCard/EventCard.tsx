@@ -1,5 +1,6 @@
 import { Badge, Button, Card, Progress } from "../ui";
 import React from "react";
+import {Trophy} from "lucide-react";
 
 export interface EventRow {
   label: string;
@@ -36,8 +37,8 @@ export const EventCard: React.FC<EventCardProps> = ({
     <Card>
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2 text-slate-200">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-xs">
-            {icon as any}
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-purple-800 text-gray-200 text-xs">
+            <Trophy className="w-4 h-4" />
           </span>
           <span className="text-xs">{discipline}</span>
         </div>
