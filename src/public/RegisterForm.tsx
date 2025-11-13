@@ -1,26 +1,55 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { schema, type FormValueRegister } from "../components/CustomForm/schemas";
 import { useApi } from "../hooks/useApi";
-import { postRegister } from "../services/api.service";
-import type { UserRegister, ApiResponse } from "../models";
+import { postRegister, postLogin } from "../services/api.service";
+import type { UserRegister, ApiResponse, AuthData, UserLogin } from "../models";
 import { GoogleButton, RHFInput, Submit } from "../components/CustomForm";
+import { useEffect, useState } from "react";
+import { useGlobalContext } from "../context/global.context";
 
 export const RegisterForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormValueRegister>({
     resolver: zodResolver(schema)
   });
 
-  const { fetch, data, error } = useApi<ApiResponse, UserRegister>(postRegister);
+  const { fetch: registerFetch, data: registerData, error: registerError, loading: registering } = useApi<ApiResponse, UserRegister>(postRegister);
+  const { fetch: loginFetch, data: loginData, error: loginError, loading: loggingIn } = useApi<AuthData, UserLogin>(postLogin);
+
+  const [lastUser, setLastUser] = useState<UserRegister | null>(null);
+  const { setUser, setToken } = useGlobalContext();
+  const navigate = useNavigate();
+
   const onSubmit: SubmitHandler<FormValueRegister> = async (formData) => {
     const { confirmPassword, ...user } = formData;
-    fetch(user);
-    console.log("Datos enviados:", user);
+    setLastUser(user);
+
+    registerFetch(user); 
   };
 
-  const navigate = useNavigate();
+  // cuando register responde con éxito intentamos loguear automáticamente
+  useEffect(() => {
+    if (!registerData || registerError) return;
+
+    // registro OK si tiene status 200
+    if (registerData._status === 200 && lastUser) {
+      loginFetch({
+        username: lastUser.email,
+        password: lastUser.password
+      });
+    }
+  }, [registerData, registerError, lastUser]);
+
+  // cuando login responde guardamos token/user y navegamos
+  useEffect(() => {
+    if (!loginData) return;
+    if ((loginData as any).token) {
+      setToken((loginData as any).token);
+      setUser((loginData as any).user);
+      navigate("/dashboard");
+    }
+  }, [loginData]);
 
   return (
     <>
@@ -39,10 +68,14 @@ export const RegisterForm = () => {
             <RHFInput name="email" control={control} label="Email" error={errors.email?.message} />
             <RHFInput name="password" control={control} label="Contraseña" type="password" error={errors.password?.message} />
             <RHFInput name="confirmPassword" control={control} label="Confirmar contraseña" type="password" error={errors.confirmPassword?.message} />
-            <Submit txt="REGISTRARSE" />
+            <Submit txt={registering || loggingIn ? "Procesando..." : "REGISTRARSE"} />
           </form>
-          {data?.message}
-          {error?.message}
+
+          {/* mensajes */}
+          {registerData?.message && <p className="text-sm text-green-300 mt-3">{registerData.message}</p>}
+          {registerError?.message && <p className="text-sm text-rose-400 mt-3">{registerError.message}</p>}
+          {loginError?.message && <p className="text-sm text-rose-400 mt-3">Login automático falló: {loginError.message}</p>}
+
           <GoogleButton text="G" />
 
           <div className="mt-8 text-center text-white text-sm font-semibold space-y-1">
