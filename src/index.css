@@ -38,7 +38,7 @@
   to { height: 0; }
 }
 
-/* ESTA ES LA PARTE NUEVA IMPORTANTE */
+
 @utility animate-accordion-down {
   animation: accordion-down 0.3s ease-out;
 }
@@ -47,21 +47,21 @@
   animation: accordion-up 0.3s ease-out;
 }
 
-/* variables - ajustá a tu tema */
+
 :root {
   --input-bg: #1E1E1E;   /* fondo del input */
   --input-color: #FFFFFF;/* color del texto */
   --input-radius: 8px;   /* border-radius si corresponde */
 }
 
-/* estilo base de tus inputs (ejemplo) */
+/* Estilos globales para inputs, textareas y selects */
 input, textarea, select {
   background: var(--input-bg);
   color: var(--input-color);
   border-radius: var(--input-radius);
 }
 
-/* Chrome / Edge / Safari - override autofill (incluye hover/focus/active) */
+/* Chrome, Safari, Edge */
 input:-webkit-autofill,
 textarea:-webkit-autofill,
 select:-webkit-autofill,
