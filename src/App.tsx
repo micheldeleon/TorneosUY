@@ -6,6 +6,7 @@ import { Footer } from "./components/Footer";
 import Dashboard from "./private/dashboard/Dashboard";
 import { useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
+import { RegisterFormNew } from "./public/RegisterFormNew";
 
 
 function App() {
@@ -65,7 +66,7 @@ function App() {
             path="/signup"
             element={
               <PrivateRoute isPrivate={false}>
-                <RegisterForm />
+                <RegisterFormNew />
               </PrivateRoute>
             } />
         </Routes>
