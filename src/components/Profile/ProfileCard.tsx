@@ -1,5 +1,4 @@
-import { User, Edit } from "lucide-react";
-import { Button } from "../ui/Button";
+import { Edit } from "lucide-react";
 import { Card } from "../ui/Card";
 
 interface ProfileCardProps {

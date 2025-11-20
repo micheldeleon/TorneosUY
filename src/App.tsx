@@ -1,11 +1,12 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Navbar, type NavItem } from "./components/Navbar";
 import { HomeLanding, LoginForm, TournamentDetails, RegisterForm, About, Contact, Faq } from "./public";
-import { Logo } from "./components/Logo";
+import { useEffect, useState } from "react";
 import { Footer } from "./components/Footer";
 import Dashboard from "./private/dashboard/Dashboard";
 import { useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
+import { SplashScreen } from "./public/SplashScreen";
 import { CreateTournament } from "./private/tournament/CreateTournament";
 
 
@@ -13,6 +14,8 @@ function App() {
   const { token, logout } = useGlobalContext()
   const navigate = useNavigate();
   const location = useLocation();
+
+
 
   const hideChrome = location.pathname.startsWith("/login") || location.pathname.startsWith("/signup");
 
@@ -26,6 +29,19 @@ function App() {
     logout();
     navigate("/");
   };
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1200); // 1.2s
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <SplashScreen />; // pantalla de carga
+  }
   return (
     <>
 
@@ -80,7 +96,7 @@ function App() {
         </Routes>
       </main>
 
-      
+
 
       {!hideChrome && <Footer />}
 

@@ -2,7 +2,6 @@ import axios from "axios";
 import { loadAbort } from "./utilities/loadAbort.utility";
 import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData } from "../models";
 import type { UserDetails } from "../models/userDetails.model";
-import { email } from "zod";
 import type { UserFind } from "../models/userFind.model";
 
 

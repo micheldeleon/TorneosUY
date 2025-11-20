@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle } from "lucide-react";
 import { schema as detailsSchema, type FormValueDetails } from "./details.form.model";
 import { Button } from "../Button";
+import { updateUserDetails } from "../../../services/api.service";
 
 export interface DescriptionListProps extends React.FormHTMLAttributes<HTMLFormElement> {
   data?: UserDetails | null;
@@ -22,13 +23,18 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
+  const toDateInputValue = (isoString: string) => {
+    if (!isoString) return "";
+    return isoString.split("T")[0]; // corta antes de la T → "2002-11-11"
+  };
+
   const defaults: FormValueDetails | null = useMemo(() => {
     if (!data) return null;
     return {
       name: data.name ?? "",
       lastName: data.lastName ?? "",
       email: data.email ?? "",
-      dateOfBirth: data.dateOfBirth ?? "",
+      dateOfBirth: toDateInputValue(data.dateOfBirth) ?? "",
       nationalId: data.nationalId ?? "",
       phoneNumber: data.phoneNumber ?? "",
       address: data.address ?? "",
@@ -53,11 +59,36 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
     if (defaults) reset(defaults);
   }, [defaults, reset]);
 
-  const onSubmit: SubmitHandler<FormValueDetails> = (values) => {
-    onValidSubmit?.(values);
-    if (!onValidSubmit) console.log("Detalles enviados:", values);
-    setIsEditing(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const onSubmit: SubmitHandler<FormValueDetails> = async (values) => {
+    setServerError(null); // limpio errores antes de enviar
+
+    try {
+      if (!data?.id) {
+        setServerError("El ID del usuario no está disponible");
+        return;
+      }
+
+      const userToUpdate = { ...values, id: data.id };
+      const { call } = updateUserDetails(userToUpdate);
+
+      const response = await call;
+
+      console.log("Perfil actualizado:", response.data);
+      setIsEditing(false);
+    } catch (error: any) {
+      console.error("Error al actualizar perfil:", error);
+
+      // Si hay error del backend → lo mostramos
+      if (error?.response?.data) {
+        setServerError(error.response.data);
+      } else {
+        setServerError("Ocurrió un error inesperado");
+      }
+    }
   };
+
 
   if (!data || !defaults) {
     return <form className={className} {...props}>Cargando...</form>;
@@ -85,10 +116,10 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
         <div
           role="alert"
           className="mb-4 rounded bg-surface-dark border-l-4 border-yellow-400 p-3 text-yellow-800 text-sm"
-          
+
         >
           <AlertTriangle className="w-6 h-6 text-yellow-400 mb-2" />
-          <p className="text-yellow-400">Si no completa los datos no podrá participar en torneos.</p> 
+          <p className="text-yellow-400">Si no completa los datos no podrá participar en torneos.</p>
         </div>
       )}
 
@@ -256,7 +287,13 @@ export const DescriptionList: React.FC<DescriptionListProps> = ({
           Guardar
         </Button>
       </div>
+      {serverError && (
+        <div className="mb-4 rounded bg-red-900 border-l-4 border-red-500 p-3 text-red-300 text-sm">
+          {serverError}
+        </div>
+      )}
     </form>
+
   );
 };
 
