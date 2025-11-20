@@ -81,7 +81,7 @@ export const HomeLanding: React.FC = () => {
                 Ver Torneos
               </Button>
               <Button
-                onClick={() => scrollToSection("contacto")}
+                onClick={() => navigate("/crearTorneo")}
                 variant="outline"
                 className="border-purple-600 text-purple-300 hover:bg-purple-600/10 px-8 py-6"
               >

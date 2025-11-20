@@ -1,0 +1,502 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { useState } from "react";
+import { createTournamentSchema, type FormValueCreateTournament } from "../../components/CustomForm/schemas/createTournament.form.model";
+import { RHFInput, RHFSelect, RHFCheckbox, RHFTextarea, Submit } from "../../components/CustomForm";
+import { Trophy, Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Award } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog";
+import { toast } from "sonner";
+
+const disciplineOptions = [
+  { value: "lol", label: "League of Legends" },
+  { value: "valorant", label: "Valorant" },
+  { value: "csgo", label: "CS:GO" },
+  { value: "dota2", label: "Dota 2" },
+  { value: "fortnite", label: "Fortnite" },
+  { value: "fifa", label: "FIFA" },
+];
+
+const formatOptions: Record<string, { value: string; label: string }[]> = {
+  lol: [
+    { value: "5v5", label: "5v5 - Clásico" },
+    { value: "3v3", label: "3v3 - Twisted Treeline" },
+  ],
+  valorant: [
+    { value: "5v5", label: "5v5 - Competitivo" },
+    { value: "spike-rush", label: "Spike Rush" },
+  ],
+  csgo: [
+    { value: "5v5", label: "5v5 - Competitivo" },
+    { value: "2v2", label: "2v2 - Wingman" },
+  ],
+  dota2: [
+    { value: "5v5", label: "5v5 - Clásico" },
+  ],
+  fortnite: [
+    { value: "solo", label: "Solo" },
+    { value: "duo", label: "Dúo" },
+    { value: "squad", label: "Squad" },
+  ],
+  fifa: [
+    { value: "1v1", label: "1v1" },
+    { value: "2v2", label: "2v2 - Pro Clubs" },
+  ],
+};
+
+export const CreateTournament = () => {
+  const { control, handleSubmit, watch, formState: { errors, isValid } } = useForm<FormValueCreateTournament>({
+    resolver: zodResolver(createTournamentSchema),
+    mode: "onChange",
+    defaultValues: {
+      discipline: "",
+      format: "",
+      name: "",
+      registrationDeadline: "",
+      startAt: "",
+      endAt: "",
+      minParticipantsPerTeam: 1,
+      maxParticipantsPerTeam: 5,
+      minParticipantsPerTournament: 2,
+      maxParticipantsPerTournament: 16,
+      registrationCost: 0,
+      prize: "",
+      isPrivate: false,
+      password: "",
+      acceptTerms: false,
+    }
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const selectedDiscipline = watch("discipline");
+  const selectedFormat = watch("format");
+  const isPrivate = watch("isPrivate");
+  const acceptTerms = watch("acceptTerms");
+
+  const isDisciplineSelected = selectedDiscipline !== "";
+  const isFormatSelected = selectedFormat !== "";
+
+  const onSubmit: SubmitHandler<FormValueCreateTournament> = async (data) => {
+    setLoading(true);
+
+    // Simulamos una llamada a la API
+    setTimeout(() => {
+      console.log("Datos del torneo:", data);
+      toast.success("¡Torneo creado exitosamente!", {
+        description: `El torneo "${data.name}" ha sido creado.`,
+      });
+      setLoading(false);
+    }, 2000);
+  };
+
+  const availableFormats = selectedDiscipline ? formatOptions[selectedDiscipline] || [] : [];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a1e] via-[#1a1232] to-[#1a0d2e] px-4 py-32 relative overflow-hidden">
+      {/* Background gradient effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mix-blend-screen filter blur-3xl opacity-25 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-violet-500 to-purple-700 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="max-w-4xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-yellow-500/50 transform hover:scale-110 hover:rotate-3 transition-all duration-300 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-transparent opacity-50 rounded-2xl"></div>
+              <Trophy className="w-9 h-9 text-purple-900 relative z-10" />
+            </div>
+          </div>
+          <h1 className="text-white text-5xl mb-2 drop-shadow-lg">Crear Torneo</h1>
+          <p className="text-purple-300">Configura tu torneo con todos los detalles necesarios</p>
+        </div>
+
+        {/* Main Card */}
+        <div className="bg-gradient-to-br from-[#2a1f3d]/80 via-[#1f1635]/80 to-[#2a1f3d]/80 border border-purple-500/30 rounded-2xl p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
+          {/* Card glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-pink-600/10 rounded-2xl"></div>
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500 rounded-full filter blur-3xl opacity-20"></div>
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-pink-500 rounded-full filter blur-3xl opacity-20"></div>
+
+          <div className="relative z-10">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Step 1: Disciplina */}
+              <div className="p-6 bg-gradient-to-br from-purple-900/20 to-transparent rounded-xl border border-purple-500/20">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white">1</span>
+                  </div>
+                  <h3 className="text-white text-xl">Selecciona la Disciplina</h3>
+                </div>
+                <RHFSelect
+                  name="discipline"
+                  control={control}
+                  label="Disciplina"
+                  placeholder="Elige un juego"
+                  options={disciplineOptions}
+                  error={errors.discipline?.message}
+                />
+              </div>
+
+              {/* Step 2: Formato */}
+              <div
+                className={`p-6 bg-gradient-to-br from-purple-900/20 to-transparent rounded-xl border border-purple-500/20 transition-all duration-500 ${isDisciplineSelected ? "opacity-100 animate-fade-in" : "opacity-50"
+                  }`}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all ${isDisciplineSelected
+                    ? "bg-gradient-to-br from-purple-600 to-pink-600"
+                    : "bg-gray-600"
+                    }`}>
+                    <span className="text-white">2</span>
+                  </div>
+                  <h3 className={`text-xl transition-colors ${isDisciplineSelected ? "text-white" : "text-gray-500"
+                    }`}>
+                    Selecciona el Formato
+                  </h3>
+                </div>
+                <RHFSelect
+                  name="format"
+                  control={control}
+                  label="Formato"
+                  placeholder="Elige un formato"
+                  options={availableFormats}
+                  disabled={!isDisciplineSelected}
+                  error={errors.format?.message}
+                />
+              </div>
+
+              {/* Step 3: Detalles del Torneo */}
+              <div
+                className={`p-6 bg-gradient-to-br from-purple-900/20 to-transparent rounded-xl border border-purple-500/20 transition-all duration-500 ${isFormatSelected ? "opacity-100 animate-fade-in" : "opacity-50"
+                  }`}
+              >
+                <div className="flex items-center gap-2 mb-6">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all ${isFormatSelected
+                    ? "bg-gradient-to-br from-purple-600 to-pink-600"
+                    : "bg-gray-600"
+                    }`}>
+                    <span className="text-white">3</span>
+                  </div>
+                  <h3 className={`text-xl transition-colors ${isFormatSelected ? "text-white" : "text-gray-500"
+                    }`}>
+                    Detalles del Torneo
+                  </h3>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Nombre del Torneo */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-purple-300 mb-2">
+                      <FileText className="w-5 h-5" />
+                      <span>Información Básica</span>
+                    </div>
+                    <RHFInput
+                      name="name"
+                      control={control}
+                      label="Nombre del Torneo"
+                      placeholder="Ej: Copa TuTorneo 2024"
+                      error={errors.name?.message}
+                      disabled={!isFormatSelected}
+                    />
+                  </div>
+
+                  {/* Fechas */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-purple-300 mb-2">
+                      <Calendar className="w-5 h-5" />
+                      <span>Fechas Importantes</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <RHFInput
+                        name="registrationDeadline"
+                        control={control}
+                        label="Fecha Límite de Inscripción"
+                        type="date"
+                        error={errors.registrationDeadline?.message}
+                        disabled={!isFormatSelected}
+                      />
+                      <RHFInput
+                        name="startAt"
+                        control={control}
+                        label="Fecha de Inicio"
+                        type="date"
+                        error={errors.startAt?.message}
+                        disabled={!isFormatSelected}
+                      />
+                      <RHFInput
+                        name="endAt"
+                        control={control}
+                        label="Fecha de Fin"
+                        type="date"
+                        error={errors.endAt?.message}
+                        disabled={!isFormatSelected}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Participantes por Equipo */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-purple-300 mb-2">
+                      <Users className="w-5 h-5" />
+                      <span>Configuración de Equipos</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <RHFInput
+                        name="minParticipantsPerTeam"
+                        control={control}
+                        label="Mínimo por Equipo"
+                        type="number"
+                        placeholder="1"
+                        error={errors.minParticipantsPerTeam?.message}
+                        disabled={!isFormatSelected}
+                      />
+                      <RHFInput
+                        name="maxParticipantsPerTeam"
+                        control={control}
+                        label="Máximo por Equipo"
+                        type="number"
+                        placeholder="5"
+                        error={errors.maxParticipantsPerTeam?.message}
+                        disabled={!isFormatSelected}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Participantes del Torneo */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-purple-300 mb-2">
+                      <Users className="w-5 h-5" />
+                      <span>Capacidad del Torneo</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <RHFInput
+                        name="minParticipantsPerTournament"
+                        control={control}
+                        label="Mínimo de Participantes"
+                        type="number"
+                        placeholder="2"
+                        error={errors.minParticipantsPerTournament?.message}
+                        disabled={!isFormatSelected}
+                      />
+                      <RHFInput
+                        name="maxParticipantsPerTournament"
+                        control={control}
+                        label="Máximo de Participantes"
+                        type="number"
+                        placeholder="16"
+                        error={errors.maxParticipantsPerTournament?.message}
+                        disabled={!isFormatSelected}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Costo y Premio */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-purple-300 mb-2">
+                      <DollarSign className="w-5 h-5" />
+                      <span>Economía del Torneo</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <RHFInput
+                        name="registrationCost"
+                        control={control}
+                        label="Costo de Inscripción"
+                        type="number"
+                        placeholder="0.00"
+                        error={errors.registrationCost?.message}
+                        disabled={!isFormatSelected}
+                      />
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-purple-300">
+                          <Award className="w-4 h-4" />
+                        </div>
+                        <RHFTextarea
+                          name="prize"
+                          control={control}
+                          label="Premio (Opcional)"
+                          placeholder="Ej: $1000 USD + Trofeo"
+                          rows={2}
+                          disabled={!isFormatSelected}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Torneo Privado */}
+                  <div className="space-y-4 p-4 bg-purple-900/10 rounded-lg border border-purple-500/20">
+                    <RHFCheckbox
+                      name="isPrivate"
+                      control={control}
+                      label="Torneo Privado"
+                      disabled={!isFormatSelected}
+                    />
+
+                    {isPrivate && (
+                      <div className="mt-4 animate-fade-in">
+                        <div className="relative">
+                          <RHFInput
+                            name="password"
+                            control={control}
+                            label="Contraseña del Torneo"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Ingresa una contraseña"
+                            error={errors.password?.message}
+                            disabled={!isFormatSelected}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-[38px] text-purple-400 hover:text-purple-300 transition-colors"
+                          >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Términos y Condiciones */}
+                  <div className="space-y-4 p-4 bg-blue-900/10 rounded-lg border border-blue-500/20">
+                    <RHFCheckbox
+                      name="acceptTerms"
+                      control={control}
+                      label={
+                        <span className="text-purple-200">
+                          Acepto los{" "}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <button
+                                type="button"
+                                className="text-purple-400 hover:text-purple-300 underline"
+                              >
+                                términos y condiciones
+                              </button>
+                            </DialogTrigger>
+                            <DialogContent className="bg-[#1a0d2e] border-purple-500/30 text-white max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle className="text-2xl text-purple-300">Términos y Condiciones</DialogTitle>
+                                <DialogDescription className="text-purple-200">
+                                  Por favor, lee cuidadosamente los siguientes términos
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 text-sm text-purple-100">
+                                <section>
+                                  <h3 className="text-lg text-purple-300 mb-2">1. Aceptación de Términos</h3>
+                                  <p>Al crear un torneo en TuTorneo, aceptas cumplir con estos términos y condiciones.</p>
+                                </section>
+                                <section>
+                                  <h3 className="text-lg text-purple-300 mb-2">2. Responsabilidades del Organizador</h3>
+                                  <p>Como organizador, eres responsable de:</p>
+                                  <ul className="list-disc list-inside ml-4 space-y-1">
+                                    <li>Proporcionar información precisa sobre el torneo</li>
+                                    <li>Cumplir con las fechas establecidas</li>
+                                    <li>Administrar equitativamente el torneo</li>
+                                    <li>Resolver disputas de manera justa</li>
+                                  </ul>
+                                </section>
+                                <section>
+                                  <h3 className="text-lg text-purple-300 mb-2">3. Normas de Conducta</h3>
+                                  <p>Los torneos deben mantener un ambiente respetuoso y profesional. No se permiten comportamientos tóxicos, discriminatorios o abusivos.</p>
+                                </section>
+                                <section>
+                                  <h3 className="text-lg text-purple-300 mb-2">4. Gestión de Premios</h3>
+                                  <p>El organizador es responsable de la distribución de premios según lo establecido en la descripción del torneo.</p>
+                                </section>
+                                <section>
+                                  <h3 className="text-lg text-purple-300 mb-2">5. Cancelación y Modificaciones</h3>
+                                  <p>Los organizadores pueden cancelar o modificar torneos con previo aviso a los participantes. En caso de cancelación, se debe reembolsar cualquier costo de inscripción.</p>
+                                </section>
+                                <section>
+                                  <h3 className="text-lg text-purple-300 mb-2">6. Privacidad de Datos</h3>
+                                  <p>TuTorneo se compromete a proteger la información personal de todos los usuarios según nuestra política de privacidad.</p>
+                                </section>
+                                <section>
+                                  <h3 className="text-lg text-purple-300 mb-2">7. Suspensión de Cuenta</h3>
+                                  <p>TuTorneo se reserva el derecho de suspender o eliminar torneos que violen estos términos o las leyes aplicables.</p>
+                                </section>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </span>
+                      }
+                      error={errors.acceptTerms?.message}
+                      disabled={!isFormatSelected}
+                    />
+                    {!acceptTerms && isFormatSelected && (
+                      <div className="flex items-start gap-2 text-blue-300 text-sm mt-2">
+                        <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        <p>Debes aceptar los términos y condiciones para crear el torneo</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-4">
+                <Submit
+                  txt={loading ? "Creando torneo..." : "Crear Torneo"}
+                />
+                {!isValid && isFormatSelected && (
+                  <p className="text-yellow-400 text-sm text-center mt-3 flex items-center justify-center gap-2">
+                    <Info className="w-4 h-4" />
+                    Por favor, completa todos los campos obligatorios correctamente
+                  </p>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Info Box */}
+        <div className="mt-6 p-4 bg-gradient-to-br from-blue-900/20 to-transparent border border-blue-500/20 rounded-xl backdrop-blur-sm">
+          <div className="flex items-start gap-3 text-blue-200">
+            <Info className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1 text-sm">
+              <p className="text-blue-100">Los campos se desbloquean progresivamente:</p>
+              <ul className="list-disc list-inside ml-2 space-y-1">
+                <li>Selecciona primero la disciplina</li>
+                <li>Luego elige el formato de juego</li>
+                <li>Finalmente completa los detalles del torneo</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+      `}</style>
+    </div>
+  );
+};

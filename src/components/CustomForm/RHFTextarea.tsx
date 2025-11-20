@@ -1,18 +1,18 @@
 import { type Control, Controller } from "react-hook-form";
-import { Input } from "../ui/Input";
+import { Textarea } from "../ui/Textarea";
 import { Label } from "../ui/Label";
 
-interface RHFInputProps {
+interface RHFTextareaProps {
   name: string;
   control: Control<any>;
   label: string;
-  type?: string;
   error?: string;
   placeholder?: string;
   disabled?: boolean;
+  rows?: number;
 }
 
-export function RHFInput({ name, control, label, type = "text", error, placeholder, disabled = false }: RHFInputProps) {
+export function RHFTextarea({ name, control, label, error, placeholder, disabled = false, rows = 3 }: RHFTextareaProps) {
   return (
     <div className="space-y-2">
       <Label htmlFor={name} className={`${disabled ? "text-purple-400/40" : "text-purple-200"}`}>
@@ -22,23 +22,13 @@ export function RHFInput({ name, control, label, type = "text", error, placehold
         name={name}
         control={control}
         render={({ field }) => (
-          <Input
+          <Textarea
             {...field}
             id={name}
-            type={type}
             placeholder={placeholder || label}
+            rows={rows}
             disabled={disabled}
-            onChange={(e) => {
-              // Si es type="number", convertir a número
-              if (type === "number") {
-                const value = e.target.value;
-                field.onChange(value === "" ? 0 : parseFloat(value));
-              } else {
-                field.onChange(e);
-              }
-            }}
-            value={field.value ?? ""}
-            className={`bg-[#1a0d2e]/50 border-purple-500/30 text-white placeholder:text-purple-400/40 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all shadow-lg shadow-purple-900/20 ${
+            className={`bg-[#1a0d2e]/50 border-purple-500/30 text-white placeholder:text-purple-400/40 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all shadow-lg shadow-purple-900/20 resize-none ${
               error ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""
             } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           />

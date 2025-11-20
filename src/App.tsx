@@ -6,6 +6,7 @@ import { Footer } from "./components/Footer";
 import Dashboard from "./private/dashboard/Dashboard";
 import { useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
+import { CreateTournament } from "./private/tournament/CreateTournament";
 
 
 function App() {
@@ -68,6 +69,14 @@ function App() {
                 <RegisterForm />
               </PrivateRoute>
             } />
+          <Route
+            path="/crearTorneo"
+            element={
+              <PrivateRoute isPrivate={true}>
+                <CreateTournament />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </main>
 
