@@ -1,11 +1,13 @@
-import axios from "axios";
 import { loadAbort } from "./utilities/loadAbort.utility";
+import { getAxiosInstance } from "./axios.service";
 import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData } from "../models";
 import type { UserDetails } from "../models/userDetails.model";
 import type { UserFind } from "../models/userFind.model";
+import axios from "axios";
 
 
 const BASE_URL = "http://localhost:8080";
+const axiosInstance = getAxiosInstance();
 
 
 export const getUsers = (): UseApiCall<User> => {
@@ -33,7 +35,7 @@ export const postLogin = (user: UserLogin): UseApiCall<AuthData> => {
 export const getUsersByIdAndEmail = (user: UserFind): UseApiCall<UserDetails> => {
     const controller = loadAbort();
     console.log('user', user)
-    const call = axios.get<UserDetails>(
+    const call = axiosInstance.get<UserDetails>(
         `${BASE_URL}/api/users`,
         {
             params: { id: user.id, email: user.email },
