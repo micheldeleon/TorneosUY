@@ -7,7 +7,7 @@ import Dashboard from "./private/dashboard/Dashboard";
 import { useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
 import { SplashScreen } from "./public/SplashScreen";
-import { CreateTournament } from "./private/tournament/CreateTournament";
+import CreateTournament from "./private/tournament/CreateTournament";
 
 
 function App() {

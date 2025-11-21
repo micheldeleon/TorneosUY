@@ -1,49 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createTournamentSchema, type FormValueCreateTournament } from "../../components/CustomForm/schemas/createTournament.form.model";
 import { RHFInput, RHFSelect, RHFCheckbox, RHFTextarea, Submit } from "../../components/CustomForm";
 import { Trophy, Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Award } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog";
 import { toast } from "sonner";
+import { useApi } from "../../hooks/useApi";
 
-const disciplineOptions = [
-  { value: "lol", label: "League of Legends" },
-  { value: "valorant", label: "Valorant" },
-  { value: "csgo", label: "CS:GO" },
-  { value: "dota2", label: "Dota 2" },
-  { value: "fortnite", label: "Fortnite" },
-  { value: "fifa", label: "FIFA" },
-];
+import { getDisciplines, getFormatsByDiscipline } from "../../services/api.service";
 
-const formatOptions: Record<string, { value: string; label: string }[]> = {
-  lol: [
-    { value: "5v5", label: "5v5 - Clásico" },
-    { value: "3v3", label: "3v3 - Twisted Treeline" },
-  ],
-  valorant: [
-    { value: "5v5", label: "5v5 - Competitivo" },
-    { value: "spike-rush", label: "Spike Rush" },
-  ],
-  csgo: [
-    { value: "5v5", label: "5v5 - Competitivo" },
-    { value: "2v2", label: "2v2 - Wingman" },
-  ],
-  dota2: [
-    { value: "5v5", label: "5v5 - Clásico" },
-  ],
-  fortnite: [
-    { value: "solo", label: "Solo" },
-    { value: "duo", label: "Dúo" },
-    { value: "squad", label: "Squad" },
-  ],
-  fifa: [
-    { value: "1v1", label: "1v1" },
-    { value: "2v2", label: "2v2 - Pro Clubs" },
-  ],
-};
 
-export const CreateTournament = () => {
+export default function CreateTournament() {
   const { control, handleSubmit, watch, formState: { errors, isValid } } = useForm<FormValueCreateTournament>({
     resolver: zodResolver(createTournamentSchema),
     mode: "onChange",
@@ -54,10 +22,10 @@ export const CreateTournament = () => {
       registrationDeadline: "",
       startAt: "",
       endAt: "",
-      minParticipantsPerTeam: 1,
-      maxParticipantsPerTeam: 5,
-      minParticipantsPerTournament: 2,
-      maxParticipantsPerTournament: 16,
+      minParticipantsPerTeam: 0,
+      maxParticipantsPerTeam: 0,
+      minParticipantsPerTournament: 0,
+      maxParticipantsPerTournament: 0,
       registrationCost: 0,
       prize: "",
       isPrivate: false,
@@ -66,10 +34,42 @@ export const CreateTournament = () => {
     }
   });
 
+  const selectedDiscipline = watch("discipline");
+
+  const { data: disciplinesData } = useApi(getDisciplines, { autoFetch: true });
+
+  const { data: formatsData, fetch: fetchFormats } =
+    useApi(getFormatsByDiscipline);
+
+  useEffect(() => {
+    if (selectedDiscipline) {
+      fetchFormats(selectedDiscipline);
+    }
+
+    
+  }, [selectedDiscipline]);
+
+
+
+  const disciplineOptions = Array.isArray(disciplinesData)
+    ? disciplinesData.map(d => ({
+      label: d.name,
+      value: d.id.toString()
+    }))
+    : [];
+
+
+  const formatOptions = Array.isArray(formatsData)
+    ? formatsData.map(f => ({
+      label: f.name,
+      value: f.id.toString()
+    }))
+    : [];
+
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const selectedDiscipline = watch("discipline");
   const selectedFormat = watch("format");
   const isPrivate = watch("isPrivate");
   const acceptTerms = watch("acceptTerms");
@@ -90,7 +90,7 @@ export const CreateTournament = () => {
     }, 2000);
   };
 
-  const availableFormats = selectedDiscipline ? formatOptions[selectedDiscipline] || [] : [];
+  const availableFormats = isDisciplineSelected ? formatOptions : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a1e] via-[#1a1232] to-[#1a0d2e] px-4 py-32 relative overflow-hidden">
