@@ -20,7 +20,12 @@ export const LoginForm = () => {
     }
   });
 
-  const { fetch, data: response, error, loading } = useApi<AuthData, UserLogin>(postLogin);
+  const { fetch, 
+    data: response, 
+    error, 
+    loading 
+  } = useApi<AuthData, UserLogin>(postLogin);
+  
   const { setUser, setToken } = useGlobalContext();
   const navigate = useNavigate();
 

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { Trophy, Calendar, DollarSign, Users, MapPin, ArrowLeft, Phone, Star, Award } from "lucide-react";
+import { Trophy, Calendar,  Users, ArrowLeft, Phone, Star, Award } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Checkbox } from "../components/ui/Checkbox";

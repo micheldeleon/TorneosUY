@@ -17,14 +17,14 @@ export const getUsers = (): UseApiCall<User> => {
         controller,
     }
 };
-export const postRegister = (user: UserRegister): UseApiCall<ApiResponse> => {
+export const postRegister = (user?: UserRegister): UseApiCall<ApiResponse> => {
     const controller = loadAbort();
     return {
         call: axios.post<ApiResponse>(`${BASE_URL}/api/users/register`, user, { signal: controller.signal }),
         controller,
     }
 };
-export const postLogin = (user: UserLogin): UseApiCall<AuthData> => {
+export const postLogin = (user?: UserLogin): UseApiCall<AuthData> => {
     const controller = loadAbort();
     return {
         call: axios.post<AuthData>(`${BASE_URL}/login`, user, { signal: controller.signal }),
@@ -32,8 +32,13 @@ export const postLogin = (user: UserLogin): UseApiCall<AuthData> => {
     }
 };
 
-export const getUsersByIdAndEmail = (user: UserFind): UseApiCall<UserDetails> => {
+export const getUsersByIdAndEmail = (user?: UserFind): UseApiCall<UserDetails> => {
     const controller = loadAbort();
+
+    if (!user) {
+        throw new Error("User params missing in getUsersByIdAndEmail");
+    }
+    
     console.log('user', user)
     const call = axiosInstance.get<UserDetails>(
         `${BASE_URL}/api/users`,
@@ -46,7 +51,7 @@ export const getUsersByIdAndEmail = (user: UserFind): UseApiCall<UserDetails> =>
     return { call, controller };
 };
 
-export const updateUserDetails = (user: UserDetails): UseApiCall<ApiResponse> => {
+export const updateUserDetails = (user?: UserDetails): UseApiCall<ApiResponse> => {
     const controller = loadAbort();
     return {
         call: axios.put<ApiResponse>(`${BASE_URL}/api/users/profile`, user, { signal: controller.signal }),
@@ -74,4 +79,14 @@ export const getFormatsByDiscipline = (disciplineId?: string): UseApiCall<any[]>
         controller,
     };
 };
+
+export const getAllTournaments = (): UseApiCall<any[]> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<any[]>(`${BASE_URL}/api/tournaments/all`, {
+            signal: controller.signal,
+        }),
+        controller,
+    };
+}    
 
