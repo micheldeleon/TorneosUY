@@ -1,8 +1,6 @@
 import { loadAbort } from "./utilities/loadAbort.utility";
 import { getAxiosInstance } from "./axios.service";
-import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData } from "../models";
-import type { UserDetails } from "../models/userDetails.model";
-import type { UserFind } from "../models/userFind.model";
+import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData, CreateTournament, UserDetails, TournamentDetails, UserFind, TournamentCreated } from "../models";
 import axios from "axios";
 
 
@@ -38,7 +36,7 @@ export const getUsersByIdAndEmail = (user?: UserFind): UseApiCall<UserDetails> =
     if (!user) {
         throw new Error("User params missing in getUsersByIdAndEmail");
     }
-    
+
     console.log('user', user)
     const call = axiosInstance.get<UserDetails>(
         `${BASE_URL}/api/users`,
@@ -88,5 +86,35 @@ export const getAllTournaments = (): UseApiCall<any[]> => {
         }),
         controller,
     };
-}    
+};
+
+export const getTournamentById = (id?: number): UseApiCall<TournamentDetails> => {
+    const controller = loadAbort();
+
+    if (!id) throw new Error("Tournament id is required");
+
+    const call = axiosInstance.get<TournamentDetails>(
+        `/api/tournaments/${id}`,
+        { signal: controller.signal }
+    );
+
+    return { call, controller };
+};
+
+export const createTournament = (
+    params?: { organizerId: number; tournament: CreateTournament }
+): UseApiCall<TournamentCreated> => {
+
+    const controller = loadAbort();
+
+    return {
+        call: axiosInstance.post<TournamentCreated>(
+            `/api/tournaments/organizer/${params?.organizerId}`,
+            params?.tournament,
+            { signal: controller.signal }
+        ),
+        controller
+    };
+};
+
 

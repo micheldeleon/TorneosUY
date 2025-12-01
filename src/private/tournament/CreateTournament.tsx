@@ -5,13 +5,40 @@ import { createTournamentSchema, type FormValueCreateTournament } from "../../co
 import { RHFInput, RHFSelect, RHFCheckbox, RHFTextarea, Submit } from "../../components/CustomForm";
 import { Trophy, Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Award } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog";
-import { toast } from "sonner";
 import { useApi } from "../../hooks/useApi";
-
-import { getDisciplines, getFormatsByDiscipline } from "../../services/api.service";
-
+import type { CreateTournament } from "../../models/createTournament.model";
+import { createTournament } from "../../services/api.service";
+import { getDisciplines, getFormatsByDiscipline, getUsersByIdAndEmail } from "../../services/api.service";
+import { useNavigate } from "react-router-dom";
+import type { UserDetails } from "../../models/userDetails.model";
+import type { UserFind } from "../../models/userFind.model";
+import type { TournamentCreated } from "../../models";
 
 export default function CreateTournament() {
+
+  const navigate = useNavigate();
+
+  const { fetch } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
+
+  const { data, fetch: createTournamentFetch } = useApi<TournamentCreated, { organizerId: number; tournament: CreateTournament }>(createTournament);
+
+  // Llamar a la API al montar el componente
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      navigate("/login");
+      return;
+    }
+    try {
+      const user: UserFind = JSON.parse(storedUser);
+      fetch(user);
+    } catch (e) {
+      console.error("JSON inválido en localStorage.user", e);
+      navigate("/login");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const { control, handleSubmit, watch, formState: { errors, isValid } } = useForm<FormValueCreateTournament>({
     resolver: zodResolver(createTournamentSchema),
     mode: "onChange",
@@ -46,7 +73,7 @@ export default function CreateTournament() {
       fetchFormats(selectedDiscipline);
     }
 
-    
+
   }, [selectedDiscipline]);
 
 
@@ -68,7 +95,7 @@ export default function CreateTournament() {
 
 
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   const selectedFormat = watch("format");
   const isPrivate = watch("isPrivate");
@@ -77,18 +104,38 @@ export default function CreateTournament() {
   const isDisciplineSelected = selectedDiscipline !== "";
   const isFormatSelected = selectedFormat !== "";
 
-  const onSubmit: SubmitHandler<FormValueCreateTournament> = async (data) => {
-    setLoading(true);
+  const onSubmit: SubmitHandler<FormValueCreateTournament> = async (formData) => {
 
-    // Simulamos una llamada a la API
-    setTimeout(() => {
-      console.log("Datos del torneo:", data);
-      toast.success("¡Torneo creado exitosamente!", {
-        description: `El torneo "${data.name}" ha sido creado.`,
-      });
-      setLoading(false);
-    }, 2000);
+    const user: UserFind = JSON.parse(localStorage.getItem("user")!);
+    const organizerId = user.id;
+
+    const payload: CreateTournament = {
+      disciplineId: Number(formData.discipline),
+      formatId: Number(formData.format),
+      name: formData.name,
+      startAt: new Date(formData.startAt).toISOString(),
+      endAt: new Date(formData.endAt).toISOString(),
+      registrationDeadline: new Date(formData.registrationDeadline).toISOString(),
+      privateTournament: formData.isPrivate,
+      password: formData.isPrivate ? formData.password ?? null : null,
+      minParticipantsPerTeam: Number(formData.minParticipantsPerTeam),
+      maxParticipantsPerTeam: Number(formData.maxParticipantsPerTeam),
+      minParticipantsPerTournament: Number(formData.minParticipantsPerTournament),
+      maxParticipantsPerTournament: Number(formData.maxParticipantsPerTournament),
+      registrationCost: Number(formData.registrationCost),
+      prize: formData.prize,
+    };
+
+    createTournamentFetch({ organizerId, tournament: payload });
   };
+
+  useEffect(() => {
+    console.log("Tournament creation data:", data);
+    if (data?._status === 200 || data?._status === 201) {
+      navigate(`/torneo/${data.id}`);
+    }
+  }, [data]);
+
 
   const availableFormats = isDisciplineSelected ? formatOptions : [];
 

@@ -4,7 +4,10 @@ export * from "./useApi.model"
 export * from "./user.model"
 export * from "./userLogin.model"
 export * from "./userRegister.model"
-
-
+export * from "./userDetails.model"
+export * from "./tournamentDetails.model"
+export * from "./createTournament.model"
+export * from "./userFind.model"
+export * from "./tournamentCreated.model"
 
 

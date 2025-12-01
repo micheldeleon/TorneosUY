@@ -6,50 +6,28 @@ import { About } from "./About";
 import { Faq } from "./FAQ";
 import { Contact } from "./Contact";
 import { Logo } from "../components/Logo";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getAllTournaments } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
-
-type Tournament = {
-  id: number;
-  title: string;
-  category: string;
-  status: "Público" | "Privado";
-  price: number;
-  date: string;
-  participants: number;
-  capacity: number;
-};
+import type { TournamentDetails } from "../models";
 
 export const HomeLanding: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   // ✅ Tipado correcto
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [tournaments, setTournaments] = useState<TournamentDetails[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const {
-    data: response,
-    loading,
-    error,
+    data: response
   } = useApi(getAllTournaments, { autoFetch: true });
 
   useEffect(() => {
     if (!response) return;
 
-    const mapped = response.map((t: any): Tournament => ({
-      id: t.id,
-      title: t.name,
-      category: t.discipline?.name ?? "Sin disciplina",
-      status: t.privateTournament ? "Privado" as const : "Público" as const,
-      price: t.registrationCost ?? 0,
-      date: t.startAt?.split("T")[0] ?? "2025-01-01",
-      participants: t.teams?.length ?? 0,
-      capacity: t.maxParticipantsPerTournament ?? 0,
-    }));
-
-    setTournaments(mapped);
+    // Ahora response YA ES TournamentDetails[] y no necesita conversión
+    setTournaments(response);
   }, [response]);
 
   useEffect(() => {
@@ -99,24 +77,25 @@ export const HomeLanding: React.FC = () => {
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           {paginated.map(t => {
-            const costText = t.price === 0 ? "Gratis" : new Intl.NumberFormat("es-UY", { style: "currency", currency: "UYU", maximumFractionDigits: 0 }).format(t.price);
-            const dateText = new Intl.DateTimeFormat("es-UY", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(t.date));
-            const participantsText = `${t.participants} / ${t.capacity}`;
-            const progress = t.capacity > 0 ? (t.participants / t.capacity) * 100 : 0;
-            const statusClass = t.status === "Público" ? "bg-gradient-to-r from-purple-600 to-green-800 text-white" : "bg-gradient-to-r from-purple-600 to-red-800 text-white";
-
+            const costText = t.registrationCost === 0 ? "Gratis" : new Intl.NumberFormat("es-UY", { style: "currency", currency: "UYU", maximumFractionDigits: 0 }).format(t.registrationCost);
+            const dateText = new Intl.DateTimeFormat("es-UY", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(t.startAt));
+            const participantsText = `${t.teamsInscribed} / ${t.maxParticipantsPerTournament}`;
+            const progress = t.maxParticipantsPerTournament > 0 ? (t.teamsInscribed / t.maxParticipantsPerTournament) * 100 : 0;
+            const statusClass = !t.privateTournament ? "bg-green-600/20 text-green-300 border-green-600/50" : "bg-rose-600/20 text-rose-300 border-rose-600/50";
+            const esPrivado = t.privateTournament ? "Privado" : "Público";
+            
             return (
               <TournamentCard
                 key={t.id}
-                discipline={t.category}
-                title={t.title}
+                discipline={String(t.disciplineId)}
+                title={t.name}
                 costText={costText}
                 dateText={dateText}
                 participantsText={participantsText}
-                statusLabel={t.status}
+                statusLabel={esPrivado}
                 statusClass={statusClass}
                 progress={progress}
-                isDisabled={t.participants >= t.capacity}
+                isDisabled={t.teamsInscribed >= t.maxParticipantsPerTournament}
                 onRegister={() => navigate(`/torneo/${t.id}`)}
               />
             );

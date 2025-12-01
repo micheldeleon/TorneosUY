@@ -1,0 +1,17 @@
+export type TournamentDetails = {
+  id: number;
+  disciplineId: number;
+  teamsInscribed: number;
+  name: string;
+  createdAt: string;
+  startAt: string;
+  endAt: string;
+  registrationDeadline: string;
+  privateTournament: boolean;
+  prize: string;
+  registrationCost: number;
+  minParticipantsPerTeam: number;
+  maxParticipantsPerTeam: number;
+  minParticipantsPerTournament: number;
+  maxParticipantsPerTournament: number;
+};

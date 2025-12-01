@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "toDoList",
+		"java.compile.nullAnalysis.mode": "automatic"
+	}
+}

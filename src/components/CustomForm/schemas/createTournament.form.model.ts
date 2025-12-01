@@ -25,14 +25,14 @@ export const createTournamentSchema = z.object({
 }).refine((data) => {
   const reg = new Date(data.registrationDeadline);
   const start = new Date(data.startAt);
-  return reg < start;
+  return reg <= start;
 }, {
-  message: "La fecha límite debe ser antes del inicio",
+  message: "La fecha límite debe ser antes o el mismo día del inicio",
   path: ["registrationDeadline"],
 }).refine((data) => {
   const start = new Date(data.startAt);
   const end = new Date(data.endAt);
-  return start < end;
+  return start <= end;
 }, {
   message: "La fecha de inicio debe ser antes del fin",
   path: ["endAt"],
