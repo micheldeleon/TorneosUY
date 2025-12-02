@@ -1,4 +1,3 @@
-import { TournamentCard } from "../components/TournamentCard/TournamentCard";
 import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
 import { useEffect, useState } from "react";
@@ -10,12 +9,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getAllTournaments } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails } from "../models";
+import { TournamentCardAlt } from "../components/TournamentCard/TournamentCardAlt";
 
 export const HomeLanding: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Tipado correcto
+
   const [tournaments, setTournaments] = useState<TournamentDetails[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -26,7 +26,7 @@ export const HomeLanding: React.FC = () => {
   useEffect(() => {
     if (!response) return;
 
-    // Ahora response YA ES TournamentDetails[] y no necesita conversión
+    
     setTournaments(response);
   }, [response]);
 
@@ -80,23 +80,21 @@ export const HomeLanding: React.FC = () => {
             const costText = t.registrationCost === 0 ? "Gratis" : new Intl.NumberFormat("es-UY", { style: "currency", currency: "UYU", maximumFractionDigits: 0 }).format(t.registrationCost);
             const dateText = new Intl.DateTimeFormat("es-UY", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(t.startAt));
             const participantsText = `${t.teamsInscribed} / ${t.maxParticipantsPerTournament}`;
-            const progress = t.maxParticipantsPerTournament > 0 ? (t.teamsInscribed / t.maxParticipantsPerTournament) * 100 : 0;
-            const statusClass = !t.privateTournament ? "bg-green-600/20 text-green-300 border-green-600/50" : "bg-rose-600/20 text-rose-300 border-rose-600/50";
             const esPrivado = t.privateTournament ? "Privado" : "Público";
             
             return (
-              <TournamentCard
+              <TournamentCardAlt
                 key={t.id}
-                discipline={String(t.disciplineId)}
-                title={t.name}
-                costText={costText}
-                dateText={dateText}
-                participantsText={participantsText}
-                statusLabel={esPrivado}
-                statusClass={statusClass}
-                progress={progress}
-                isDisabled={t.teamsInscribed >= t.maxParticipantsPerTournament}
-                onRegister={() => navigate(`/torneo/${t.id}`)}
+                tournament={{
+                  id: t.id,
+                  tipo: t.discipline.name || "Sin Disciplina",
+                  nombre: t.name,
+                  fecha: dateText,
+                  formato: t.format.name,
+                  participantes: participantsText,
+                  costo: costText,
+                  badge: esPrivado,
+                }}
               />
             );
           })}

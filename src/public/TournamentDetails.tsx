@@ -27,17 +27,18 @@ export function TournamentDetails() {
   const { id } = useParams();
 
   const {
-    data: t,
+    data,
     loading,
     error,
     fetch
   } = useApi<TournamentDetails, number>(getTournamentById);
 
+  const t = data;
+
   // Se ejecuta una vez cuando cargue el componente
   useEffect(() => {
     if (id) {
       fetch(Number(id));
-      
     }
   }, [id, fetch]);
 
@@ -79,7 +80,7 @@ export function TournamentDetails() {
   };
 
   const esPrivado = t.privateTournament ? "Privado" : "Público";
-
+  console.log(t);
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] pt-32 pb-20 px-4">
@@ -102,7 +103,7 @@ export function TournamentDetails() {
                   <div className="w-8 h-8 bg-purple-900/30 rounded-full flex items-center justify-center">
                     <Trophy className="w-4 h-4 text-purple-400" />
                   </div>
-                  <span className="text-gray-400 text-sm">Disciplina id:{t.disciplineId}</span> {/* Cambiar por nombre de disciplina */}
+                  <span className="text-gray-400 text-sm">{t.discipline.name}</span>
                 </div>
                 <Badge className={statusClass}>{esPrivado}</Badge>
               </div>
@@ -197,8 +198,19 @@ export function TournamentDetails() {
             <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
               <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm mb-6">
                 <div className="text-gray-400">Formato:</div>
-                {/* <div className="text-white">{t.format}</div> */}
-                <div className="text-white">Nombre del formato</div> {/* Reemplazar con t.format cuando esté disponible */}
+                <div className="text-white">{t.format.name}</div>
+                {t.format.name === "Liga" && (
+                  <>
+                    <div className="text-gray-400">Puntos por victoria: </div>
+                    <div className="text-white">{t.format.winPoints}</div>
+
+                    <div className="text-gray-400">Puntos por empate:</div>
+                    <div className="text-white">{t.format.drawPoints}</div>
+
+                    <div className="text-gray-400">Puntos por derrota: </div>
+                    <div className="text-white">{t.format.lossPoints}</div>
+                  </>
+                )}
 
                 {/* <div className="text-gray-400">Lugar:</div>
                 <div className="text-white">{t.place}</div> */}

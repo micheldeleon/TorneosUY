@@ -4,6 +4,7 @@ import { HomeLanding, LoginForm, TournamentDetails, RegisterForm, About, Contact
 import { useEffect, useState } from "react";
 import { Footer } from "./components/Footer";
 import Dashboard from "./private/dashboard/Dashboard";
+import DashboardAlt from "./private/dashboard/DashboardAlt";
 import { useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
 import { SplashScreen } from "./public/SplashScreen";
@@ -66,6 +67,13 @@ function App() {
           <Route path="/torneo/:id" element={<TournamentDetails />} />
           <Route
             path="/perfil"
+            element={
+              <PrivateRoute isPrivate={true}>
+                <DashboardAlt />
+              </PrivateRoute>
+            } />
+          <Route
+            path="/perfil2"
             element={
               <PrivateRoute isPrivate={true}>
                 <Dashboard />

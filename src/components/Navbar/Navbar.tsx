@@ -41,7 +41,7 @@ export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps)
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#2a1a4a]/95 backdrop-blur-sm border-b border-purple-900/20">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-600 rounded-lg flex items-center justify-center">
             <Trophy className="w-5 h-5 text-purple-900" /> {/* Cambiar por logo */}
           </div>
           <span className="text-white">{title}</span>

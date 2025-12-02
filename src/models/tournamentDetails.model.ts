@@ -1,6 +1,6 @@
 export type TournamentDetails = {
   id: number;
-  disciplineId: number;
+  disciplineId?: number;
   teamsInscribed: number;
   name: string;
   createdAt: string;
@@ -14,4 +14,20 @@ export type TournamentDetails = {
   maxParticipantsPerTeam: number;
   minParticipantsPerTournament: number;
   maxParticipantsPerTournament: number;
+  organizerId?: number;
+  _status?: number;
+  format: {
+    winPoints?: number;
+    drawPoints?: number;
+    lossPoints?: number;
+    id: number;
+    name: string;
+    generaFixture: boolean;
+  };
+  discipline: {
+    id: number;
+    name: string | null;
+    collective: boolean;
+    formats?: null;
+  };
 };

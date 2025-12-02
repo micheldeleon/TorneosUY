@@ -152,8 +152,8 @@ export default function CreateTournament() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-yellow-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-yellow-500/50 transform hover:scale-110 hover:rotate-3 transition-all duration-300 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-transparent opacity-50 rounded-2xl"></div>
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-800 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-pink-500/50 transform hover:scale-110 hover:rotate-3 transition-all duration-300 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-300 to-transparent opacity-50 rounded-2xl"></div>
               <Trophy className="w-9 h-9 text-purple-900 relative z-10" />
             </div>
           </div>
