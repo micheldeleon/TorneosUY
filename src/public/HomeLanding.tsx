@@ -57,7 +57,7 @@ export const HomeLanding: React.FC = () => {
       <section id="inicio" className="pt-32 pb-20 px-4 bg-surface-dark">
         <div className="container mx-auto text-center">
           <h1 className="text-5xl md:text-6xl text-white tracking-tight">Organizá - Jugá - Ganá</h1>
-          <p className="text-gray-400 text-xl">La plataforma definitiva para organizar torneos</p>
+          <p className="text-gray-400 text-xl mt-5 mb-2">La plataforma definitiva para organizar torneos</p>
           <div className="flex gap-4 justify-center pt-4">
             <Button onClick={() => document.getElementById("torneos")?.scrollIntoView({ behavior: "smooth" })} className="bg-gradient-to-r from-purple-600 to-purple-800 text-white px-8 py-6">Ver Torneos</Button>
             <Button onClick={() => navigate("/crearTorneo")} variant="outline" className="border-purple-600 text-purple-300 px-8 py-6">Organizar Torneo</Button>
