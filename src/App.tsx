@@ -9,6 +9,7 @@ import { useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
 import { SplashScreen } from "./public/SplashScreen";
 import CreateTournament from "./private/tournament/CreateTournament";
+import { TournamentDetailsAlt } from "./public/TournamentDetailsAlt";
 
 
 function App() {
@@ -64,7 +65,7 @@ function App() {
           <Route path="/quienes" element={<About />} />
           <Route path="/contacto" element={<Contact />} />
           <Route path="/faq" element={<Faq />} />
-          <Route path="/torneo/:id" element={<TournamentDetails />} />
+          <Route path="/torneo/:id" element={<TournamentDetailsAlt />} />
           <Route
             path="/perfil"
             element={
