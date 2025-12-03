@@ -13,8 +13,10 @@ import { Avatar, AvatarFallback } from "../components/ui/Avatar";
 import { Separator } from "../components/ui/Separator";
 import { useEffect, useState } from "react";
 import { useApi } from "../hooks/useApi";
-import type { TournamentDetails } from "../models";
-import { getTournamentById } from "../services/api.service";
+import type { TournamentDetails, UserDetails } from "../models";
+import { getTournamentById, getUserDetailsById } from "../services/api.service";
+
+
 
 function formatCurrency(value: number) {
     return value === 0
@@ -29,7 +31,7 @@ function formatDate(iso: string) {
 export function TournamentDetailsAlt() {
     const navigate = useNavigate();
     const [acceptedTerms, setAcceptedTerms] = useState(false);
-
+    
     const { id } = useParams();
 
     const {
@@ -40,21 +42,27 @@ export function TournamentDetailsAlt() {
     } = useApi<TournamentDetails, number>(getTournamentById);
 
     const t = data;
-
-    // Se ejecuta una vez cuando cargue el componente
+    
     useEffect(() => {
         if (id) {
             fetch(Number(id));
         }
     }, [id, fetch]);
 
-
     useEffect(() => {
-        if (!id) return;
-        // fetch devuelve una función cleanup (() => controller.abort())
+        if (!id) return;    
         const cleanup = fetch(Number(id));
         return cleanup;
     }, [id, fetch]);
+
+    // Fetch organizer details when organizerId is available
+    const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(getUserDetailsById);
+
+    useEffect(() => {
+        if (t?.organizerId) {
+            fetchOrganizer(t.organizerId);
+        }
+    }, [t?.organizerId, fetchOrganizer]);
 
     // Mostrar error SOLO si hay error
     if (error) {
@@ -76,9 +84,12 @@ export function TournamentDetailsAlt() {
 
     const progress = t.maxParticipantsPerTournament > 0 ? (t.teamsInscribed / t.maxParticipantsPerTournament) * 100 : 0;
 
-    const organizador = "Ignacio Barcelo"; // Reemplazar con t.organizerName cuando esté disponible
-    const organizerRating = 4; // Reemplazar con t.organizerRating cuando esté disponible
+    
 
+    const organizerName = organizerData ? `${organizerData.name} ${organizerData.lastName}` : "Ignacio Barcelo";
+    const organizerRating = 0; // Placeholder: no rating in UserDetails model
+
+    console.log(organizerData);
     // Get organizer initials
     const getInitials = (name: string) => {
         return name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -165,23 +176,26 @@ export function TournamentDetailsAlt() {
                             <div className="flex items-center gap-4">
                                 <Avatar className="w-16 h-16 border-2 border-white/20">
                                     <AvatarFallback className="bg-white/10 text-white text-xl">
-                                        {getInitials(organizador)} {/*TODO Reemplazar con t.organizerName cuando esté disponible*/}
+                                        {getInitials(organizerName)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
                                     <p className="text-white/80 text-sm">Organizado por</p>
-                                    <h3 className="text-white">{organizador}</h3> {/* TODO Reemplazar con t.organizerName cuando esté disponible */}
+                                    <h3 className="text-white">{organizerName}</h3>
+                                    {organizerData?.email && (
+                                        <p className="text-white/80 text-sm">{organizerData.email}</p>
+                                    )}
                                     <div className="flex items-center gap-1 mt-1">
                                         {Array.from({ length: 5 }).map((_, i) => (
                                             <Star
                                                 key={i}
-                                                className={`w-4 h-4 ${i < Math.floor(organizerRating)
+                                                className={`w-4 h-4 ${i < Math.floor(organizerData?.reputation || organizerRating)
                                                     ? "fill-yellow-400 text-yellow-400"
                                                     : "text-white/30"
                                                     }`}
                                             />
                                         ))}
-                                        <span className="text-white/80 text-sm ml-1">{organizerRating}/5</span>
+                                        <span className="text-white/80 text-sm ml-1">{organizerData?.reputation || organizerRating}/5</span>
                                     </div>
                                 </div>
                                 <Button

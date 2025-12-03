@@ -49,6 +49,14 @@ export const getUsersByIdAndEmail = (user?: UserFind): UseApiCall<UserDetails> =
     return { call, controller };
 };
 
+export const getUserDetailsById = (id?: number): UseApiCall<UserDetails> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<UserDetails>(`${BASE_URL}/api/users?id=${id}`, { signal: controller.signal }),
+        controller,
+    }
+};;
+
 export const updateUserDetails = (user?: UserDetails): UseApiCall<ApiResponse> => {
     const controller = loadAbort();
     return {

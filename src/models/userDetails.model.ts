@@ -8,4 +8,5 @@ export type UserDetails = {
     phoneNumber: string,
     address: string,
     departmentId: number
+    reputation?: number,
 }
