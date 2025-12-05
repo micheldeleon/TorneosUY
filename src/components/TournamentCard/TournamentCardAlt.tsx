@@ -130,7 +130,7 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
             </div>
           </div>
         </div>
-
+        
         {/* Action Button */}
         <Link to={`/torneo/${tournament.id}`} className="block">
           <Button 

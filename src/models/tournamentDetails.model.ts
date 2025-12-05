@@ -15,6 +15,7 @@ export type TournamentDetails = {
   minParticipantsPerTournament: number;
   maxParticipantsPerTournament: number;
   organizerId?: number;
+  status: string;
   _status?: number;
   format: {
     winPoints?: number;

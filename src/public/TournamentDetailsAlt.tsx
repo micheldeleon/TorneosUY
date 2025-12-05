@@ -43,11 +43,20 @@ export function TournamentDetailsAlt() {
 
     const t = data;
     
+    
+
     useEffect(() => {
         if (id) {
             fetch(Number(id));
         }
     }, [id, fetch]);
+
+    // Redirect to tournament page if the tournament is not in "ABIERTO" state
+    useEffect(() => {
+        if (t && t.status && t.status !== "ABIERTO") {
+            navigate(`/torneo-iniciado/${t.id}`);
+        }
+    }, [t, navigate]);
 
     useEffect(() => {
         if (!id) return;    
@@ -87,7 +96,7 @@ export function TournamentDetailsAlt() {
     
 
     const organizerName = organizerData ? `${organizerData.name} ${organizerData.lastName}` : "Ignacio Barcelo";
-    const organizerRating = 0; // Placeholder: no rating in UserDetails model
+    const organizerRating = 0;
 
     console.log(organizerData);
     // Get organizer initials

@@ -1,6 +1,6 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Navbar, type NavItem } from "./components/Navbar";
-import { HomeLanding, LoginForm, TournamentDetails, RegisterForm, About, Contact, Faq } from "./public";
+import { HomeLanding, LoginForm, TournamentDetailsAlt, RegisterForm, About, Contact, Faq } from "./public";
 import { useEffect, useState } from "react";
 import { Footer } from "./components/Footer";
 import Dashboard from "./private/dashboard/Dashboard";
@@ -9,7 +9,8 @@ import { useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
 import { SplashScreen } from "./public/SplashScreen";
 import CreateTournament from "./private/tournament/CreateTournament";
-import { TournamentDetailsAlt } from "./public/TournamentDetailsAlt";
+import { TournamentLive } from "./public/TournamentLive";
+
 
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
           <Route path="/contacto" element={<Contact />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/torneo/:id" element={<TournamentDetailsAlt />} />
+          <Route path="torneo-iniciado/:id" element={<TournamentLive/>} />
           <Route
             path="/perfil"
             element={
