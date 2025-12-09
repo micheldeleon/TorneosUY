@@ -120,7 +120,7 @@ export function TournamentDetailsAlt() {
                 {/* Back Button */}
                 <Button
                     variant="ghost"
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate(`/`)}
                     className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10 mb-6"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -343,6 +343,7 @@ export function TournamentDetailsAlt() {
 
                                     <Button
                                         disabled={!acceptedTerms || spotsLeft === 0}
+                                        onClick={() => navigate(`/inscripcion-torneo/${t.id}`)}
                                         className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
                                     >
                                         <Users className="w-4 h-4 mr-2" />

@@ -10,6 +10,7 @@ import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
 import { SplashScreen } from "./public/SplashScreen";
 import CreateTournament from "./private/tournament/CreateTournament";
 import { TournamentLive } from "./public/TournamentLive";
+import { TournamentRegistration } from "./public/TournamentRegistration";
 
 
 
@@ -68,6 +69,7 @@ function App() {
           <Route path="/faq" element={<Faq />} />
           <Route path="/torneo/:id" element={<TournamentDetailsAlt />} />
           <Route path="torneo-iniciado/:id" element={<TournamentLive/>} />
+          <Route path="inscripcion-torneo/:id" element={<TournamentRegistration/>} />
           <Route
             path="/perfil"
             element={

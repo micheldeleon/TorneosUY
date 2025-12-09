@@ -173,7 +173,7 @@ export function TournamentLive() {
                 {/* Back Button */}
                 <Button
                     variant="ghost"
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate('/')}
                     className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10 mb-6"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
