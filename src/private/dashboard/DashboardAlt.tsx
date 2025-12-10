@@ -6,7 +6,8 @@ import {
     Trophy, Calendar, Users, Award, Edit, Plus,
     Target, Clock, MapPin, Star, ChevronRight,
     Activity, Medal, Crown, Flame, Settings, X, Save, User, Mail, Phone, AlertTriangle,
-    Gem
+    Gem,
+    ShieldPlusIcon
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -17,16 +18,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Ta
 import { Input } from "../../components/ui/Input";
 import { Label } from "../../components/ui/Label";
 import { Separator } from "../../components/ui/Separator";
-import { getUsersByIdAndEmail, updateUserDetails } from "../../services/api.service";
+import { getUsersByIdAndEmail, requestOrganizerPermission, updateUserDetails } from "../../services/api.service";
 import type { UserDetails } from "../../models/userDetails.model";
 import { useApi } from "../../hooks/useApi";
 import type { UserFind } from "../../models/userFind.model";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { schema as detailsSchema, type FormValueDetails } from "../../components/ui/DetailsUserForm/details.form.model";
+import type { ApiResponse } from "../../models";
 
 export default function DashboardAlt() {
     const navigate = useNavigate();
     const { fetch, data, error, loading } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
+    const {fetch: fetchRequestOrganizerPermission} = useApi<ApiResponse, number>(requestOrganizerPermission);
     const [showEditModal, setShowEditModal] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -123,8 +126,24 @@ export default function DashboardAlt() {
             console.error("JSON inválido en localStorage.user", e);
             navigate("/login");
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const requestOrganizerPermissionHandler = async () => {
+        if (!data?.id) {
+            alert("El ID del usuario no está disponible");
+            return;
+        }
+        try {
+            fetchRequestOrganizerPermission(data.id);
+            if (data._status == 200) {
+                alert("Solicitud de permiso de organizador enviada con éxito."); // Falta validar si el usuario ya tiene el permiso
+            }
+        } catch (error: any) {
+            console.error("Error al solicitar permiso de organizador:", error);
+            alert("Error al solicitar permiso de organizador: " + (error?.response?.data || "Error inesperado"));
+        }
+    };
+
 
     const onSubmit: SubmitHandler<FormValueDetails> = async (values) => {
         setServerError(null);
@@ -309,6 +328,14 @@ export default function DashboardAlt() {
                         >
                             <Plus className="w-4 h-4 mr-2" />
                             Nuevo Torneo
+                        </Button>
+                        <p className="m-2"></p>
+                        <Button
+                            onClick={requestOrganizerPermissionHandler}
+                            className="w-full bg-white hover:bg-white/90 text-purple-900 text-sm"
+                        >
+                            <ShieldPlusIcon className="w-4 h-4 mr-2" />
+                            Solicitar permiso de organizador
                         </Button>
                     </Card>
                 </div>
