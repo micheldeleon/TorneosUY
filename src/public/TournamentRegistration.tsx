@@ -13,9 +13,9 @@ import { Label } from "../components/ui/Label";
 import { Separator } from "../components/ui/Separator";
 import { Badge } from "../components/ui/Badge";
 import { toast } from "sonner";
-import { getTournamentById, getUserDetailsById } from "../services/api.service";
+import { getTournamentById, getUserDetailsById, registerTeam } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
-import type { TournamentDetails, UserDetails } from "../models";
+import type { ApiResponse, TournamentDetails, UserDetails } from "../models";
 
 // Validación de CI uruguaya (8 dígitos con posible guión)
 const ciSchema = z.string()
@@ -72,6 +72,9 @@ export function TournamentRegistration() {
 
     const user = organizerData
 
+    const { fetch: fetchRegisterTeam } = useApi<ApiResponse, any>(registerTeam);
+
+
     const minAdicionales = torneo
         ? Math.max(0, torneo.minParticipantsPerTeam - 1)
         : 0;
@@ -99,25 +102,63 @@ export function TournamentRegistration() {
         name: "participantes",
     });
 
-    const onSubmit = async (data: InscripcionFormData) => {
-        setIsSubmitting(true);
+    const onSubmit = async (formData: InscripcionFormData) => {
+        try {
+            setIsSubmitting(true);
 
-        // Validar cantidad mínima (sin contar al usuario logueado)
-        const totalParticipantes = data.participantes.length + 1; // +1 por el usuario logueado
-        if (totalParticipantes < torneo?.minParticipantsPerTeam!) {
-            toast.error(`El equipo debe tener al menos ${torneo?.minParticipantsPerTeam} participantes`);
+            if (!user || !user.id) {
+                toast.error("Error: no se encontró información del usuario.");
+                return;
+            }
+
+            if (!id || !torneo) {
+                toast.error("Error: no se encontró información del torneo.");
+                return;
+            }
+
+            // Validar cantidad mínima TOTAL (capitán + formulario)
+            const totalParticipantes = formData.participantes.length + 1; // +1 por el usuario logueado
+            if (totalParticipantes < torneo.minParticipantsPerTeam) {
+                toast.error(`El equipo debe tener al menos ${torneo.minParticipantsPerTeam} participantes.`);
+                return;
+            }
+
+            // 🔥 Armar payload EXACTO para el backend
+            const payload = {
+                userId: user.id,
+                teamName: formData.nombreEquipo,
+                participants: [
+                    // Capitán primero
+                    {
+                        fullName: user.name,
+                        nationalId: user.nationalId,
+                    },
+                    // Luego los ingresados en el form
+                    ...formData.participantes.map((p) => ({
+                        fullName: p.nombre,
+                        nationalId: p.ci
+                    }))
+                ]
+            };
+
+            // 🔥 Llamada real al backend
+            const response = await registerTeam({
+                tournamentId: Number(id),
+                data: payload
+            });
+
+            console.log("Respuesta de inscripción:", response);
+
+            toast.success("¡Inscripción exitosa! Tu equipo ha sido registrado.");
+
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error?.message || "Error al inscribir el equipo.");
+        } finally {
             setIsSubmitting(false);
-            return;
         }
-
-        toast.success("¡Inscripción exitosa! Tu equipo ha sido registrado.");
-
-        setTimeout(() => {
-            navigate("/perfil");
-        }, 1500);
-
-        setIsSubmitting(false);
     };
+
 
     const puedeAgregarMas = fields.length < maxAdicionales;
     const totalActual = fields.length + 1; // +1 por el usuario logueado
@@ -339,8 +380,8 @@ export function TournamentRegistration() {
                             <div className="flex justify-between text-sm mb-2">
                                 <span className="text-gray-400">Progreso</span>
                                 <span className={`${totalActual >= torneo?.minParticipantsPerTeam!
-                                        ? "text-green-400"
-                                        : "text-yellow-400"
+                                    ? "text-green-400"
+                                    : "text-yellow-400"
                                     }`}>
                                     {totalActual} / {torneo?.minParticipantsPerTeam} mínimo
                                 </span>
@@ -348,8 +389,8 @@ export function TournamentRegistration() {
                             <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
                                 <div
                                     className={`h-full transition-all ${totalActual >= torneo?.minParticipantsPerTeam!
-                                            ? "bg-gradient-to-r from-green-600 to-green-800"
-                                            : "bg-gradient-to-r from-yellow-600 to-yellow-800"
+                                        ? "bg-gradient-to-r from-green-600 to-green-800"
+                                        : "bg-gradient-to-r from-yellow-600 to-yellow-800"
                                         }`}
                                     style={{
                                         width: `${Math.min((totalActual / torneo?.minParticipantsPerTeam!) * 100, 100)}%`,

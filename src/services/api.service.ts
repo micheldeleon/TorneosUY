@@ -132,3 +132,51 @@ export const requestOrganizerPermission = (userId?: number): UseApiCall<ApiRespo
         controller,
     }
 }
+
+export const registerTeam = (
+    params?: {
+        tournamentId: number;
+        data: {
+            userId: number;
+            teamName: string;
+            participants: {
+                fullName: string;
+                nationalId: string;
+            }[];
+        }
+    }
+): UseApiCall<ApiResponse> => {
+
+    const controller = loadAbort();
+
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/register/team`,
+            params?.data,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+
+// export const registerIndividual = (
+//     params?: {
+//         tournamentId: number;
+//         data: {
+//             userId: number;
+//             fullName: string;
+//             nationalId: string;
+//         }
+//     }
+// ): UseApiCall<ApiResponse> => {
+//     const controller = loadAbort();
+//     return {
+//         call: axiosInstance.post<ApiResponse>(
+//             `/api/tournaments/${params?.tournamentId}/register`,
+//             params?.data,
+//             { signal: controller.signal }
+//         ),
+//         controller,
+//     };
+// };  
