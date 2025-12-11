@@ -15,7 +15,7 @@ import { Badge } from "../components/ui/Badge";
 import { toast } from "sonner";
 import { getTournamentById, getUserDetailsById, registerTeam } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
-import type { ApiResponse, TournamentDetails, UserDetails } from "../models";
+import type { ApiResponse, TournamentDetails, UserDetails, UserFind } from "../models";
 
 // Validación de CI uruguaya (8 dígitos con posible guión)
 const ciSchema = z.string()
@@ -62,15 +62,24 @@ export function TournamentRegistration() {
     }, [id, fetch]);
 
     // Fetch organizer details when organizerId is available
-    const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(getUserDetailsById);
+    const { data: userData, fetch: fetchUser } = useApi<UserDetails, number>(getUserDetailsById);
 
     useEffect(() => {
-        if (torneo?.organizerId) {
-            fetchOrganizer(torneo.organizerId);
+        const storedUser = localStorage.getItem("user");
+        if (!storedUser) {
+            navigate("/login");
+            return;
         }
-    }, [torneo?.organizerId, fetchOrganizer]);
+        try {
+            const user: UserFind = JSON.parse(storedUser);
+            fetchUser(user.id!);
+        } catch (error) {
+            console.error("Error parsing user from localStorage:", error);
+            navigate("/login");
+        }
+    }, [fetchUser]);
 
-    const user = organizerData
+    const user = userData
 
     const { fetch: fetchRegisterTeam } = useApi<ApiResponse, any>(registerTeam);
 
@@ -150,12 +159,13 @@ export function TournamentRegistration() {
 
             console.log("Respuesta de inscripción:", response?.data);
 
-            if (response?.data?.success) {
+            if (response?.data?.message === "Equipo inscrito correctamente") {
                 toast.success(response?.data?.message || "¡Inscripción exitosa! Tu equipo ha sido registrado.");
-                // Redirigir al perfil después de mostrar el mensaje de éxito
+                
                 setTimeout(() => {
                     navigate("/perfil");
                 }, 600);
+
             } else {
                 const msg = response?.data?.message || "No se pudo completar la inscripción.";
                 toast.error(msg);
@@ -282,7 +292,7 @@ export function TournamentRegistration() {
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-gray-500 text-sm mb-1">Nombre Completo</p>
-                                    <p className="text-white">{user?.name}</p>
+                                    <p className="text-white">{user?.name} {user?.lastName}</p>
                                 </div>
                                 <div>
                                     <p className="text-gray-500 text-sm mb-1">Cédula de Identidad</p>
