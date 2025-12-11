@@ -15,7 +15,7 @@ import { ListaParticipantes } from "../components/Tournament/ListaParticipantes"
 import { useEffect } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
-import { getTournamentById, getUserDetailsById } from "../services/api.service";
+import { getTournamentById, getUserDetailsById, getTournamentFixtures } from "../services/api.service";
 import { RankingCarrera } from "../components/Tournament/RankingCarrera.tsx";
 
 type FormatoTorneo = "Liga" | "Eliminatorio" | "Carrera" | "Battle Royale";
@@ -66,36 +66,133 @@ const MOCK_FIXTURE_LIGA = [
     },
 ];
 
-const MOCK_BRACKET_ELIMINATORIA = [
-    {
-        nombre: "Cuartos de Final",
-        duelos: [
-            { id: 1, equipo1: "Equipaso FC", equipo2: "Los Campeones", resultado1: 4, resultado2: 1, ganador: "Equipaso FC", estado: "jugado" as const },
-            { id: 2, equipo1: "Los Tigres", equipo2: "Juventud FC", resultado1: 3, resultado2: 2, ganador: "Los Tigres", estado: "jugado" as const },
-            { id: 3, equipo1: "Real Cracks", equipo2: "United Stars", estado: "pendiente" as const },
-            { id: 4, equipo1: "Pelota de Trapo", equipo2: "Deportivo MVD", estado: "pendiente" as const },
-        ]
-    },
-    {
-        nombre: "Semifinales",
-        duelos: [
-            { id: 5, equipo1: "Equipaso FC", equipo2: "Los Tigres", estado: "pendiente" as const },
-            { id: 6, equipo1: "", equipo2: "", estado: "pendiente" as const },
-        ]
-    },
-    {
-        nombre: "Final",
-        duelos: [
-            { id: 7, equipo1: "", equipo2: "", estado: "pendiente" as const },
-        ]
-    },
-    {
-        nombre: "Campeón",
-        duelos: [
-            { id: 8, equipo1: "", esCampeon: true as const, estado: "pendiente" as const },
-        ]
-    },
-];
+// Helper function to calculate elimination tournament statistics
+function calculateEliminationStats(fixtures: any[]) {
+    if (!fixtures || fixtures.length === 0) {
+        return {
+            totalMatches: 0,
+            finishedMatches: 0,
+            pendingMatches: 0,
+            totalGoals: 0,
+            averageGoals: 0,
+            currentRound: "N/A",
+            teamsRemaining: 0,
+        };
+    }
+
+    const finishedMatches = fixtures.filter(f => f.status === "FINISHED").length;
+    const pendingMatches = fixtures.filter(f => f.status !== "FINISHED").length;
+    const totalMatches = fixtures.length;
+    
+    const totalGoals = fixtures.reduce((sum, match) => {
+        const homeGoals = match.scoreHome ?? 0;
+        const awayGoals = match.scoreAway ?? 0;
+        return sum + homeGoals + awayGoals;
+    }, 0);
+    
+    const averageGoals = finishedMatches > 0 ? (totalGoals / finishedMatches).toFixed(2) : "0";
+    
+    // Find current round (highest round with pending matches, or highest round overall)
+    const pendingRounds = fixtures
+        .filter(f => f.status !== "FINISHED")
+        .map(f => f.round);
+    const currentRound = pendingRounds.length > 0 ? Math.min(...pendingRounds) : Math.max(...fixtures.map(f => f.round));
+    
+    // Calculate teams remaining (winners from latest round)
+    const latestFinishedRound = Math.max(
+        ...fixtures
+            .filter(f => f.status === "FINISHED")
+            .map(f => f.round),
+        0
+    );
+    
+    
+    const getRoundName = (round: number): string => {
+        const matchesInRound = fixtures.filter(f => f.round === round).length;
+        if (matchesInRound >= 256) return "Ciento veintiochoavos";
+        if (matchesInRound >= 128) return "Sesentaicuatroavos";
+        if (matchesInRound >= 64) return "Treintaidosavos";
+        if (matchesInRound >= 32) return "Dieciseisavos";
+        if (matchesInRound >= 16) return "Octavos";
+        if (matchesInRound === 4) return "Cuartos";
+        if (matchesInRound === 2) return "Semifinales";
+        if (matchesInRound === 1) return "Final";
+        return `Ronda ${round}`;
+    };
+
+    return {
+        totalMatches,
+        finishedMatches,
+        pendingMatches,
+        totalGoals,
+        averageGoals: parseFloat(averageGoals as string),
+        currentRound: getRoundName(currentRound)
+    };
+}
+
+function transformFixturesToBracket(fixtures: any[]) {
+    if (!fixtures || fixtures.length === 0) return [];
+
+    // Group fixtures by round
+    const fixturesByRound = fixtures.reduce((acc, fixture) => {
+        const round = fixture.round;
+        if (!acc[round]) acc[round] = [];
+        acc[round].push(fixture);
+        return acc;
+    }, {} as Record<number, any[]>);
+
+    // Calculate round names based on number of matches per round
+    const sortedRounds = Object.entries(fixturesByRound)
+        .sort(([roundA], [roundB]) => Number(roundA) - Number(roundB));
+    
+    const getRoundName = (matchCount: number): string => {
+        if (matchCount >= 256) return "Ciento veintiochoavos de Final";
+        if (matchCount >= 128) return "Sesentaicuatroavos de Final";
+        if (matchCount >= 64) return "Treintaidosavos de Final";
+        if (matchCount >= 32) return "Dieciseisavos de Final";
+        if (matchCount >= 16) return "Octavos de Final";
+        if (matchCount === 4) return "Cuartos de Final";
+        if (matchCount === 2) return "Semifinales";
+        if (matchCount === 1) return "Final";
+        return `Ronda ${matchCount} equipos`;
+    };
+    
+    const etapas = sortedRounds.map(([, matchesInRound]) => ({
+        nombre: getRoundName((matchesInRound as any[]).length),
+        duelos: (matchesInRound as any[]).map(match => ({
+            id: match.id,
+            equipo1: match.homeTeam?.name || "",
+            equipo2: match.awayTeam?.name || "",
+            resultado1: match.scoreHome ?? undefined,
+            resultado2: match.scoreAway ?? undefined,
+            ganador: match.winnerTeam?.name || "",
+            estado: (match.status === "FINISHED" ? "jugado" : "pendiente") as "jugado" | "pendiente" | "en_vivo",
+        }))
+    }));
+
+    // Find the last finished match to get the champion
+    const lastFinishedMatch = fixtures
+        .sort((a, b) => b.round - a.round)
+        .find(m => m.status === "FINISHED" && m.winnerTeam);
+
+    // Add champion stage if there's a winner
+    if (lastFinishedMatch?.winnerTeam) {
+        etapas.push({
+            nombre: "Campeón",
+            duelos: [{
+                id: 9999,
+                equipo1: lastFinishedMatch.winnerTeam.name,
+                equipo2: undefined,
+                resultado1: undefined,
+                resultado2: undefined,
+                ganador: lastFinishedMatch.winnerTeam.name,
+                estado: "jugado" as const,
+            }]
+        });
+    }
+
+    return etapas;
+}
 
 function formatCurrency(value: number) {
     return value === 0
@@ -115,6 +212,7 @@ export function TournamentLive() {
 
     const { data: t, loading, error, fetch } = useApi<TournamentDetails, number>(getTournamentById);
     const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(getUserDetailsById);
+    const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
 
     useEffect(() => {
         if (id) {
@@ -129,12 +227,26 @@ export function TournamentLive() {
         }
     }, [t?.organizerId, fetchOrganizer]);
 
+    // Fetch fixtures if tournament format is "Eliminatorio"
+    useEffect(() => {
+        if (t?.id && t.format.name === "Eliminatorio") {
+            fetchFixtures(t.id);
+        }
+    }, [t?.id, t?.format.name, fetchFixtures]);
+
     // Redirect to tournament page if the tournament is not in "INICIADO" state
     useEffect(() => {
         if (t && t.status && t.status !== "INICIADO") {
             navigate(`/torneo/${t.id}`);
         }
     }, [t, navigate]);
+
+    // Log fixtures when they load
+    useEffect(() => {
+        if (fixturesData) {
+            console.log("Fixtures Eliminatoria:", fixturesData);
+        }
+    }, [fixturesData]);
 
     // Loading state
     if (loading || !t) {
@@ -329,7 +441,7 @@ export function TournamentLive() {
                                 {formatoEnUso === "Eliminatorio" && (
                                     <div className="overflow-x-auto">
                                         <div>
-                                            <BracketEliminatoria etapas={MOCK_BRACKET_ELIMINATORIA} />
+                                            <BracketEliminatoria etapas={transformFixturesToBracket(fixturesData)} />
                                         </div>
                                     </div>
                                 )}
@@ -464,14 +576,29 @@ export function TournamentLive() {
                                     )}
                                     {formatoEnUso === "Eliminatorio" && (
                                         <>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-400">Ronda Actual</span>
-                                                <span className="text-white">Cuartos de Final</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-400">Equipos Restantes</span>
-                                                <span className="text-white">8</span>
-                                            </div>
+                                            {(() => {
+                                                const stats = calculateEliminationStats(fixturesData);
+                                                return (
+                                                    <>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Partidos Jugados</span>
+                                                            <span className="text-white">{stats.finishedMatches}/{stats.totalMatches}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Ronda Actual</span>
+                                                            <span className="text-white">{stats.currentRound}</span>
+                                                        </div>                                                   
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Goles Totales</span>
+                                                            <span className="text-white">{stats.totalGoals}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Promedio Goles/Partido</span>
+                                                            <span className="text-white">{stats.averageGoals}</span>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
                                         </>
                                     )}
                                 </div>

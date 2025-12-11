@@ -37,8 +37,8 @@ export function BracketEliminatoria({ etapas }: BracketEliminatoriaProps) {
   };
 
   const renderDuelo = (duelo: Duelo) => {
-    // Si es un campeón (solo 1 equipo)
-    if (duelo.esCampeon) {
+    // Si es un campeón (equipo2 undefined indica que es solo el campeón)
+    if (duelo.equipo2 === undefined && duelo.ganador) {
       return (
         <div
           key={duelo.id}
@@ -47,11 +47,7 @@ export function BracketEliminatoria({ etapas }: BracketEliminatoriaProps) {
           <div className="flex items-center justify-center p-6">
             <div className="flex flex-col items-center gap-3">
               <Trophy className="w-8 h-8 text-yellow-400" />
-              <div className="w-12 h-12 bg-gradient-to-br from-yellow-600 to-yellow-800 rounded-lg flex items-center justify-center">
-                <span className="text-white text-sm font-bold">
-                  {duelo.equipo1 ? duelo.equipo1.substring(0, 2).toUpperCase() : "?"}
-                </span>
-              </div>
+              
               <span className="text-white font-bold text-lg text-center">
                 {duelo.equipo1 || "Por definir"}
               </span>
@@ -103,7 +99,6 @@ export function BracketEliminatoria({ etapas }: BracketEliminatoriaProps) {
             <span className={`text-sm ${isGanador2 ? 'text-purple-400' : 'text-gray-400'} truncate`}>
               {duelo.equipo2 || "Por definir"}
             </span>
-            {isGanador2 && <Trophy className="w-4 h-4 text-yellow-400 flex-shrink-0" />}
           </div>
           {duelo.estado === "jugado" && duelo.resultado2 !== undefined && (
             <span className={`text-lg ml-2 ${isGanador2 ? 'text-white' : 'text-gray-500'}`}>

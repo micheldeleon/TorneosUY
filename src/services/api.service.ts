@@ -180,3 +180,11 @@ export const registerTeam = (
 //         controller,
 //     };
 // };  
+
+export const getTournamentFixtures = (tournamentId?: number): UseApiCall<any> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<any>(`http://localhost:8080/api/tournaments/${tournamentId}/fixture`, { signal: controller.signal }),
+        controller,
+    };
+}
