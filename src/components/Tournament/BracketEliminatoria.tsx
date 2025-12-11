@@ -76,12 +76,12 @@ export function BracketEliminatoria({ etapas }: BracketEliminatoriaProps) {
         {/* Equipo 1 */}
         <div className={`flex items-center justify-between p-3 ${isGanador1 ? 'bg-purple-900/20' : ''}  border-b border-gray-800`}>
           <div className="flex items-center gap-2 flex-1">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center flex-shrink-0">
+            {/* <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-white text-xs">
                 {duelo.equipo1 ? duelo.equipo1.substring(0, 2).toUpperCase() : "?"}
               </span>
-            </div>
-            <span className={`text-sm ${isGanador1 ? 'text-white' : 'text-gray-500'} truncate`}>
+            </div> */}
+            <span className={`text-sm ${isGanador1 ? 'text-purple-400' : 'text-gray-400'} truncate`}>
               {duelo.equipo1 || "Por definir"}
             </span>
           </div>
@@ -95,12 +95,12 @@ export function BracketEliminatoria({ etapas }: BracketEliminatoriaProps) {
         {/* Equipo 2 */}
         <div className={`flex items-center justify-between p-3 ${isGanador2 ? 'bg-purple-900/20' : ''} `}>
           <div className="flex items-center gap-2 flex-1">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center flex-shrink-0">
+            {/* <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-white text-xs">
                 {duelo.equipo2 ? duelo.equipo2.substring(0, 2).toUpperCase() : "?"}
               </span>
-            </div>
-            <span className={`text-sm ${isGanador2 ? 'text-white' : 'text-gray-500'} truncate`}>
+            </div> */}
+            <span className={`text-sm ${isGanador2 ? 'text-purple-400' : 'text-gray-400'} truncate`}>
               {duelo.equipo2 || "Por definir"}
             </span>
             {isGanador2 && <Trophy className="w-4 h-4 text-yellow-400 flex-shrink-0" />}

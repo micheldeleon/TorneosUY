@@ -94,6 +94,7 @@ export const HomeLanding: React.FC = () => {
                   participantes: participantsText,
                   costo: costText,
                   badge: esPrivado,
+                  estado: t.status
                 }}
               />
             );

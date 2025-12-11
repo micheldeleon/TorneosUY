@@ -163,8 +163,7 @@ export function TournamentLive() {
     const formatoEnUso: FormatoTorneo = t.format.name as FormatoTorneo;
 
     const getEstadoBadge = () => {
-        // Placeholder: no estado en TournamentDetails
-        return <Badge className="bg-green-600/20 text-green-300 border-green-600/50">{t.status}</Badge>;
+        return <Badge className="bg-red-600/20 text-red-300 border-red-600/50 animate-pulse">● Iniciado</Badge>;
     };
 
     return (
@@ -329,7 +328,7 @@ export function TournamentLive() {
                                 {/* Eliminatoria */}
                                 {formatoEnUso === "Eliminatorio" && (
                                     <div className="overflow-x-auto">
-                                        <div className="min-w-max">
+                                        <div>
                                             <BracketEliminatoria etapas={MOCK_BRACKET_ELIMINATORIA} />
                                         </div>
                                     </div>
@@ -338,7 +337,7 @@ export function TournamentLive() {
                                 {/* Carrera / Battle Royale */}
                                 {(formatoEnUso === "Carrera" || formatoEnUso === "Battle Royale") && (
                                     <div className="overflow-x-auto">
-                                        <div className="min-w-max">
+                                        <div>
                                             <RankingCarrera competidores={MOCK_PARTICIPANTES.map(p => ({ posicion: p.posicion || 0, nombre: p.nombre }))} />
                                         </div>
                                     </div>
@@ -348,7 +347,7 @@ export function TournamentLive() {
                             {/* Participantes Tab */}
                             <TabsContent value="participantes" className="mt-6">
                                 <div className="overflow-x-auto">
-                                    <div className="min-w-max">
+                                    <div>
                                         <ListaParticipantes participantes={MOCK_PARTICIPANTES} mostrarPosicion={formatoEnUso !== "Eliminatorio"} />
                                     </div>
                                 </div>

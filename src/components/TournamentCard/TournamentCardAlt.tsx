@@ -13,6 +13,7 @@ export interface Tournament {
   participantes: string;
   badge: string;
   imagen?: string;
+  estado?: string;
 }
 
 interface TournamentCardAltProps {
@@ -33,24 +34,37 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
     return <Target className="w-5 h-5" />;
   };
 
+  const getStatusColor = (status: string) => {
+    const lower = status.toLowerCase();
+    if (lower === "abierto") {
+      return "bg-blue-600/20 text-blue-300 border-blue-600/50";
+    }
+    if (lower === "iniciado") {
+      return "bg-red-600/20 text-red-300 border-red-600/50 animate-pulse";
+    }
+    return "bg-yellow-600/20 text-yellow-300 border-yellow-600/50";
+  };
+
   const getBadgeColor = (badge: string) => {
     const lower = badge.toLowerCase();
-    if (lower.includes("público") ) {
+    if (lower.includes("público")) {
       return "bg-green-600/20 text-green-300 border-green-600/50";
     }
-    if (lower.includes("privado") ) {
+    if (lower.includes("privado")) {
       return "bg-rose-600/20 text-rose-300 border-rose-600/50";
     }
     return "bg-blue-600/20 text-blue-300 border-blue-600/50";
   };
+
+  const estadoTorneo = tournament.estado ? tournament.estado.charAt(0).toUpperCase() + tournament.estado.slice(1).toLowerCase() : "";
 
   return (
     <div className="group relative bg-[#2a2a2a] border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-600/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
       {/* Image Section */}
       <div className="relative h-48 bg-gradient-to-br from-purple-900/20 to-purple-600/10 overflow-hidden">
         {tournament.imagen ? (
-          <img 
-            src={tournament.imagen} 
+          <img
+            src={tournament.imagen}
             alt={tournament.nombre}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -61,11 +75,14 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
             </div>
           </div>
         )}
-        
+
         {/* Badge Overlay */}
         <div className="absolute top-3 right-3">
-          <Badge className={`${getBadgeColor(tournament.badge)} backdrop-blur-sm`}>
+          <Badge className={`${getBadgeColor(tournament.badge)} backdrop-blur-sm mr-1`}>
             {tournament.badge}
+          </Badge>
+          <Badge className={`${getStatusColor(tournament.estado || "")} backdrop-blur-sm`}>
+            {estadoTorneo === "Iniciado" ? `● ${estadoTorneo}` : estadoTorneo}
           </Badge>
         </div>
 
@@ -130,10 +147,10 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Action Button */}
         <Link to={`/torneo/${tournament.id}`} className="block">
-          <Button 
+          <Button
             className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/50 transition-all"
           >
             Ver Detalles

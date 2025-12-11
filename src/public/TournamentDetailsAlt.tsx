@@ -11,7 +11,7 @@ import { Progress } from "../components/ui/Progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
 import { Avatar, AvatarFallback } from "../components/ui/Avatar";
 import { Separator } from "../components/ui/Separator";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
 import { getTournamentById, getUserDetailsById } from "../services/api.service";
@@ -31,25 +31,29 @@ function formatDate(iso: string) {
 export function TournamentDetailsAlt() {
     const navigate = useNavigate();
     const [acceptedTerms, setAcceptedTerms] = useState(false);
-    
+
     const { id } = useParams();
+
+    const memorizedGetTournamentById = useCallback(getTournamentById, []);
+    const memorizedGetUserDetailsById = useCallback(getUserDetailsById, []);
 
     const {
         data,
         loading,
         error,
         fetch
-    } = useApi<TournamentDetails, number>(getTournamentById);
+    } = useApi<TournamentDetails, number>(memorizedGetTournamentById);
 
     const t = data;
-    
-    
 
+
+
+    // Fetch tournament once per mount/param change (cleanup aborts in-flight request on unmount)
     useEffect(() => {
-        if (id) {
-            fetch(Number(id));
-        }
-    }, [id, fetch]);
+        if (!id) return;
+        const cleanup = fetch(Number(id));
+        return cleanup;
+    }, [id]);
 
     // Redirect to tournament page if the tournament is not in "ABIERTO" state
     useEffect(() => {
@@ -58,14 +62,8 @@ export function TournamentDetailsAlt() {
         }
     }, [t, navigate]);
 
-    useEffect(() => {
-        if (!id) return;    
-        const cleanup = fetch(Number(id));
-        return cleanup;
-    }, [id, fetch]);
-
     // Fetch organizer details when organizerId is available
-    const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(getUserDetailsById);
+    const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(memorizedGetUserDetailsById);
 
     useEffect(() => {
         if (t?.organizerId) {
@@ -93,7 +91,7 @@ export function TournamentDetailsAlt() {
 
     const progress = t.maxParticipantsPerTournament > 0 ? (t.teamsInscribed / t.maxParticipantsPerTournament) * 100 : 0;
 
-    
+
 
     const organizerName = organizerData ? `${organizerData.name} ${organizerData.lastName}` : "Ignacio Barcelo";
     const organizerRating = 0;
