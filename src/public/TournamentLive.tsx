@@ -15,7 +15,7 @@ import { ListaParticipantes } from "../components/Tournament/ListaParticipantes"
 import { useEffect } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
-import { getTournamentById, getUserDetailsById, getTournamentFixtures } from "../services/api.service";
+import { getTournamentById, getUserDetailsById, getTournamentFixtures, getTournamentStandings } from "../services/api.service";
 import { RankingCarrera } from "../components/Tournament/RankingCarrera.tsx";
 
 type FormatoTorneo = "Liga" | "Eliminatorio" | "Carrera" | "Battle Royale";
@@ -66,7 +66,6 @@ const MOCK_FIXTURE_LIGA = [
     },
 ];
 
-// Helper function to calculate elimination tournament statistics
 function calculateEliminationStats(fixtures: any[]) {
     if (!fixtures || fixtures.length === 0) {
         return {
@@ -92,20 +91,10 @@ function calculateEliminationStats(fixtures: any[]) {
     
     const averageGoals = finishedMatches > 0 ? (totalGoals / finishedMatches).toFixed(2) : "0";
     
-    // Find current round (highest round with pending matches, or highest round overall)
     const pendingRounds = fixtures
         .filter(f => f.status !== "FINISHED")
         .map(f => f.round);
     const currentRound = pendingRounds.length > 0 ? Math.min(...pendingRounds) : Math.max(...fixtures.map(f => f.round));
-    
-    // Calculate teams remaining (winners from latest round)
-    const latestFinishedRound = Math.max(
-        ...fixtures
-            .filter(f => f.status === "FINISHED")
-            .map(f => f.round),
-        0
-    );
-    
     
     const getRoundName = (round: number): string => {
         const matchesInRound = fixtures.filter(f => f.round === round).length;
@@ -194,6 +183,107 @@ function transformFixturesToBracket(fixtures: any[]) {
     return etapas;
 }
 
+// Helper function to calculate league tournament statistics
+function calculateLeagueStats(fixtures: any[], standings: any[]) {
+    if (!fixtures || fixtures.length === 0) {
+        return {
+            totalMatches: 0,
+            finishedMatches: 0,
+            pendingMatches: 0,
+            totalGoals: 0,
+            averageGoals: 0,
+            totalRounds: 0,
+            currentRound: 0,
+            leader: "N/A",
+        };
+    }
+
+    const finishedMatches = fixtures.filter(f => f.status === "FINISHED").length;
+    const pendingMatches = fixtures.filter(f => f.status !== "FINISHED").length;
+    const totalMatches = fixtures.length;
+    
+    const totalGoals = fixtures.reduce((sum, match) => {
+        if (match.status === "FINISHED") {
+            const homeGoals = match.scoreHome ?? 0;
+            const awayGoals = match.scoreAway ?? 0;
+            return sum + homeGoals + awayGoals;
+        }
+        return sum;
+    }, 0);
+    
+    const averageGoals = finishedMatches > 0 ? (totalGoals / finishedMatches).toFixed(2) : "0";
+    
+    
+    const rounds = [...new Set(fixtures.map(f => f.round))].sort((a, b) => a - b);
+    const totalRounds = rounds.length;
+    
+    
+    const currentRound = rounds.find(round => 
+        fixtures.some(f => f.round === round && f.status !== "FINISHED")
+    ) || rounds[rounds.length - 1] || 0;
+    
+    
+    const leader = standings && standings.length > 0 ? standings[0].teamName : "N/A";
+
+    return {
+        totalMatches,
+        finishedMatches,
+        pendingMatches,
+        totalGoals,
+        averageGoals: parseFloat(averageGoals as string),
+        totalRounds,
+        currentRound,
+        leader,
+    };
+}
+
+// Helper function to transform standings into table format
+function transformStandingsToTable(standings: any[]) {
+    if (!standings || standings.length === 0) return [];
+
+    return standings.map((team, index) => ({
+        posicion: index + 1,
+        equipo: team.teamName,
+        pj: team.played,
+        pg: team.won,
+        pe: team.draw,
+        pp: team.lost,
+        gf: team.goalsFor,
+        gc: team.goalsAgainst,
+        pts: team.points,
+    }));
+}
+
+// Helper function to transform fixtures into league format
+function transformFixturesToLeague(fixtures: any[]) {
+    if (!fixtures || fixtures.length === 0) return [];
+
+    // Group fixtures by round (jornada)
+    const fixturesByRound = fixtures.reduce((acc, fixture) => {
+        const round = fixture.round;
+        if (!acc[round]) acc[round] = [];
+        acc[round].push(fixture);
+        return acc;
+    }, {} as Record<number, any[]>);
+
+    // Transform to league jornadas structure
+    return Object.entries(fixturesByRound)
+        .sort(([roundA], [roundB]) => Number(roundA) - Number(roundB))
+        .map(([round, matchesInRound]) => ({
+            numero: Number(round),
+            partidos: (matchesInRound as any[]).map(match => ({
+                id: match.id,
+                equipoLocal: match.homeTeam?.name || "",
+                equipoVisitante: match.awayTeam?.name || "",
+                resultadoLocal: match.scoreHome ?? undefined,
+                resultadoVisitante: match.scoreAway ?? undefined,
+                fecha: match.scheduledAt ? new Date(match.scheduledAt).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' }) : undefined,
+                hora: match.scheduledAt ? new Date(match.scheduledAt).toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit' }) : undefined,
+                estado: (match.status === "FINISHED" ? "jugado" : "pendiente") as "jugado" | "pendiente" | "en_vivo",
+            }))
+        }));
+}
+
 function formatCurrency(value: number) {
     return value === 0
         ? "Gratis"
@@ -213,6 +303,7 @@ export function TournamentLive() {
     const { data: t, loading, error, fetch } = useApi<TournamentDetails, number>(getTournamentById);
     const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(getUserDetailsById);
     const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
+    const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
 
     useEffect(() => {
         if (id) {
@@ -227,12 +318,19 @@ export function TournamentLive() {
         }
     }, [t?.organizerId, fetchOrganizer]);
 
-    // Fetch fixtures if tournament format is "Eliminatorio"
+    // Fetch fixtures if tournament format is "Eliminatorio" or "Liga"
     useEffect(() => {
-        if (t?.id && t.format.name === "Eliminatorio") {
+        if (t?.id && (t.format.name === "Eliminatorio" || t.format.name === "Liga")) {
             fetchFixtures(t.id);
         }
     }, [t?.id, t?.format.name, fetchFixtures]);
+
+    // Fetch standings if tournament format is "Liga"
+    useEffect(() => {
+        if (t?.id && t.format.name === "Liga") {
+            fetchStandings(t.id);
+        }
+    }, [t?.id, t?.format.name, fetchStandings]);
 
     // Redirect to tournament page if the tournament is not in "INICIADO" state
     useEffect(() => {
@@ -423,17 +521,8 @@ export function TournamentLive() {
                                 {/* Liga - Mostrar si el torneo genera fixture */}
                                 {formatoEnUso === "Liga" && (
                                     <>
-                                        <div className="overflow-x-auto">
-                                            <div className="min-w-max">
-                                                <TablaPosiciones posiciones={MOCK_TABLA_LIGA} />
-                                            </div>
-                                        </div>
-
-                                        <div className="overflow-x-auto">
-                                            <div className="min-w-max">
-                                                <FixtureLiga jornadas={MOCK_FIXTURE_LIGA} />
-                                            </div>
-                                        </div>
+                                        <TablaPosiciones posiciones={transformStandingsToTable(standingsData)} />
+                                        <FixtureLiga jornadas={transformFixturesToLeague(fixturesData)} />
                                     </>
                                 )}
 
@@ -560,18 +649,33 @@ export function TournamentLive() {
                                 <div className="space-y-3 text-sm">
                                     {formatoEnUso === "Liga" && (
                                         <>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-400">Partidos Jugados</span>
-                                                <span className="text-white">24</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-400">Goles Totales</span>
-                                                <span className="text-white">81</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-400">Promedio Goles</span>
-                                                <span className="text-white">3.4</span>
-                                            </div>
+                                            {(() => {
+                                                const stats = calculateLeagueStats(fixturesData, standingsData);
+                                                return (
+                                                    <>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Partidos Jugados</span>
+                                                            <span className="text-white">{stats.finishedMatches}/{stats.totalMatches}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Jornada Actual</span>
+                                                            <span className="text-white">{stats.currentRound} de {stats.totalRounds}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Líder</span>
+                                                            <span className="text-white">{stats.leader}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Goles Totales</span>
+                                                            <span className="text-white">{stats.totalGoals}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-400">Promedio Goles/Partido</span>
+                                                            <span className="text-white">{stats.averageGoals}</span>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
                                         </>
                                     )}
                                     {formatoEnUso === "Eliminatorio" && (

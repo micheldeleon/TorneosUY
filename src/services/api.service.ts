@@ -184,7 +184,15 @@ export const registerTeam = (
 export const getTournamentFixtures = (tournamentId?: number): UseApiCall<any> => {
     const controller = loadAbort();
     return {
-        call: axiosInstance.get<any>(`http://localhost:8080/api/tournaments/${tournamentId}/fixture`, { signal: controller.signal }),
+        call: axiosInstance.get<any>(`/api/tournaments/${tournamentId}/fixture`, { signal: controller.signal }),
+        controller,
+    };
+}
+
+export const getTournamentStandings = (tournamentId?: number): UseApiCall<any> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<any>(`/api/tournaments/${tournamentId}/standings`, { signal: controller.signal }),
         controller,
     };
 }

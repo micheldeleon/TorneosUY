@@ -21,8 +21,6 @@ interface TablaPosicionesProps {
 export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
   const getPosicionBadge = (pos: number) => {
     if (pos === 1) return { color: "bg-yellow-600/20 text-yellow-300 border-yellow-600/50", icon: Trophy };
-    if (pos <= 3) return { color: "bg-green-600/20 text-green-300 border-green-600/50", icon: TrendingUp };
-    if (pos >= posiciones.length - 2) return { color: "bg-rose-600/20 text-rose-300 border-rose-600/50", icon: TrendingDown };
     return { color: "bg-gray-600/20 text-gray-300 border-gray-600/50", icon: Minus };
   };
 
@@ -70,12 +68,7 @@ export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center">
-                          <span className="text-white text-xs">
-                            {equipo.equipo.substring(0, 2).toUpperCase()}
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-3">                       
                         <span className="text-white">{equipo.equipo}</span>
                       </div>
                     </td>

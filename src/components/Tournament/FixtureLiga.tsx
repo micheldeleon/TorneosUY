@@ -1,6 +1,8 @@
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
+import { Button } from "../ui/Button";
+import { useState } from "react";
 
 interface Partido {
   id: number;
@@ -23,6 +25,7 @@ interface FixtureLigaProps {
 }
 
 export function FixtureLiga({ jornadas }: FixtureLigaProps) {
+  const [jornadaActual, setJornadaActual] = useState(1);
   const getEstadoBadge = (estado: Partido["estado"]) => {
     switch (estado) {
       case "jugado":
@@ -36,6 +39,21 @@ export function FixtureLiga({ jornadas }: FixtureLigaProps) {
     }
   };
 
+  const jornadaSeleccionada = jornadas.find(j => j.numero === jornadaActual) || jornadas[0];
+  const totalJornadas = jornadas.length;
+
+  const handlePrevJornada = () => {
+    if (jornadaActual > 1) {
+      setJornadaActual(jornadaActual - 1);
+    }
+  };
+
+  const handleNextJornada = () => {
+    if (jornadaActual < totalJornadas) {
+      setJornadaActual(jornadaActual + 1);
+    }
+  };
+
   return (
     <Card className="bg-[#2a2a2a] border-gray-800">
       <div className="p-6">
@@ -44,29 +62,43 @@ export function FixtureLiga({ jornadas }: FixtureLigaProps) {
           Fixture del Torneo
         </h3>
 
-        <div className="space-y-6">
-          {jornadas.map((jornada) => (
-            <div key={jornada.numero}>
-              <div className="mb-4">
-                <h4 className="text-white px-4 py-2 bg-gradient-to-r from-purple-900/30 to-purple-800/20 border-l-4 border-purple-600 rounded">
-                  Jornada {jornada.numero}
-                </h4>
-              </div>
+        {/* Selector de Jornada */}
+        <div className="mb-6 flex items-center justify-between bg-gradient-to-r from-purple-900/30 to-purple-800/20 border border-purple-700/30 rounded-xl p-4">
+          <Button
+            variant="ghost"
+            onClick={handlePrevJornada}
+            disabled={jornadaActual === 1}
+            className="text-purple-300 hover:text-purple-200 hover:bg-purple-600/10 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
 
-              <div className="space-y-3">
-                {jornada.partidos.map((partido) => (
+          <div className="text-center">
+            <h4 className="text-white text-xl font-semibold">Jornada {jornadaActual}</h4>
+            <p className="text-gray-400 text-sm">{jornadaActual} de {totalJornadas}</p>
+          </div>
+
+          <Button
+            variant="ghost"
+            onClick={handleNextJornada}
+            disabled={jornadaActual === totalJornadas}
+            className="text-purple-300 hover:text-purple-200 hover:bg-purple-600/10 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Partidos de la jornada seleccionada */}
+        <div className="space-y-3">
+          {jornadaSeleccionada?.partidos.map((partido) => (
                   <div
                     key={partido.id}
                     className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors"
                   >
-                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                    {/* Desktop Layout */}
+                    <div className="hidden md:flex items-center justify-between gap-4">
                       {/* Equipo Local */}
                       <div className="flex items-center gap-3 flex-1 min-w-[120px]">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center">
-                          <span className="text-white text-xs">
-                            {partido.equipoLocal.substring(0, 2).toUpperCase()}
-                          </span>
-                        </div>
                         <span className="text-white">{partido.equipoLocal}</span>
                       </div>
 
@@ -88,17 +120,40 @@ export function FixtureLiga({ jornadas }: FixtureLigaProps) {
                       {/* Equipo Visitante */}
                       <div className="flex items-center gap-3 flex-1 min-w-[120px] justify-end">
                         <span className="text-white text-right">{partido.equipoVisitante}</span>
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center">
-                          <span className="text-white text-xs">
-                            {partido.equipoVisitante.substring(0, 2).toUpperCase()}
-                          </span>
+                      </div>
+                    </div>
+
+                    {/* Mobile Layout */}
+                    <div className="md:hidden space-y-3">
+                      {/* Equipos */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-white text-sm">{partido.equipoLocal}</span>
+                          {partido.estado === "jugado" && (
+                            <span className="text-white text-lg font-semibold bg-purple-900/20 px-3 py-1 rounded-lg">
+                              {partido.resultadoLocal}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center justify-center">
+                          <span className="text-gray-500 text-xs">VS</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-white text-sm">{partido.equipoVisitante}</span>
+                          {partido.estado === "jugado" && (
+                            <span className="text-white text-lg font-semibold bg-purple-900/20 px-3 py-1 rounded-lg">
+                              {partido.resultadoVisitante}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     {/* Info adicional */}
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-800">
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-800 flex-wrap gap-2">
+                      <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-400">
                         {partido.fecha && (
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
@@ -113,9 +168,6 @@ export function FixtureLiga({ jornadas }: FixtureLigaProps) {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </Card>
