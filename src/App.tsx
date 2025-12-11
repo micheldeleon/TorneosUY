@@ -11,6 +11,7 @@ import { SplashScreen } from "./public/SplashScreen";
 import CreateTournament from "./private/tournament/CreateTournament";
 import { TournamentLive } from "./public/TournamentLive";
 import { TournamentRegistration } from "./public/TournamentRegistration";
+import { Toaster } from "sonner";
 
 
 
@@ -113,7 +114,8 @@ function App() {
 
       {!hideChrome && <Footer />}
 
-
+      {/* Global toast renderer */}
+      <Toaster richColors position="top-center" />
 
     </>
   );

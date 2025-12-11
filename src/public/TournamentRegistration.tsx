@@ -142,18 +142,34 @@ export function TournamentRegistration() {
             };
 
             // 🔥 Llamada real al backend
-            const response = await registerTeam({
+            const { call } = registerTeam({
                 tournamentId: Number(id),
                 data: payload
             });
+            const response = await call;
 
-            console.log("Respuesta de inscripción:", response);
+            console.log("Respuesta de inscripción:", response?.data);
 
-            toast.success("¡Inscripción exitosa! Tu equipo ha sido registrado.");
+            if (response?.data?.success) {
+                toast.success(response?.data?.message || "¡Inscripción exitosa! Tu equipo ha sido registrado.");
+                // Redirigir al perfil después de mostrar el mensaje de éxito
+                setTimeout(() => {
+                    navigate("/perfil");
+                }, 600);
+            } else {
+                const msg = response?.data?.message || "No se pudo completar la inscripción.";
+                toast.error(msg);
+                return;
+            }
 
         } catch (error: any) {
             console.error(error);
-            toast.error(error?.message || "Error al inscribir el equipo.");
+            const backendMessage =
+                error?.response?.data?.message ||
+                error?.response?.data ||
+                error?.message ||
+                "Error al inscribir el equipo.";
+            toast.error(backendMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -164,7 +180,7 @@ export function TournamentRegistration() {
     const totalActual = fields.length + 1; // +1 por el usuario logueado
 
     return (
-        <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-20 px-4">
+        <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-20 px-4 relative" aria-busy={isSubmitting}>
             <div className="container mx-auto max-w-4xl">
                 {/* Header */}
                 <div className="mb-8">
@@ -438,6 +454,15 @@ export function TournamentRegistration() {
                     )}
                 </form>
             </div>
+
+            {isSubmitting && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm grid place-items-center">
+                    <div className="flex flex-col items-center gap-3 bg-[#1f1f1f] border border-gray-800 rounded-xl p-6 shadow-xl">
+                        <div className="w-10 h-10 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-white">Registrando equipo...</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

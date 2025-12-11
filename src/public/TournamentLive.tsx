@@ -109,7 +109,7 @@ function formatDate(iso: string) {
 
 export function TournamentLive() {
 
-    
+
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -240,8 +240,8 @@ export function TournamentLive() {
                         {/* Organizer Card */}
                         <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-6 shadow-lg shadow-purple-500/20">
                             <div className="flex items-center gap-4">
-                                <Avatar className="w-16 h-16 border-2 border-white/20">
-                                    <AvatarFallback className="bg-white/10 text-white text-xl">
+                                <Avatar className="w-12 h-12 md:w-16 md:h-16 border-2 border-white/20">
+                                    <AvatarFallback className="bg-white/10 text-white text-lg md:text-xl">
                                         {organizerData?.name?.charAt(0).toUpperCase() || "O"}
                                     </AvatarFallback>
                                 </Avatar>
@@ -256,8 +256,8 @@ export function TournamentLive() {
                                             <Star
                                                 key={i}
                                                 className={`w-4 h-4 ${i < 4
-                                                        ? "fill-yellow-400 text-yellow-400"
-                                                        : "text-white/30"
+                                                    ? "fill-yellow-400 text-yellow-400"
+                                                    : "text-white/30"
                                                     }`}
                                             />
                                         ))}
@@ -274,21 +274,35 @@ export function TournamentLive() {
 
                         {/* Main Tabs */}
                         <Tabs defaultValue="competicion" className="w-full">
-                            <TabsList className="bg-[#2a2a2a] border border-gray-800 w-full justify-start overflow-x-auto text-gray-400">
-                                <TabsTrigger value="competicion" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
-                                    <Play className="w-4 h-4 mr-2" />
-                                    Competición
+                            <TabsList className="bg-[#2a2a2a] text-gray-400 border border-gray-800 inline-flex w-full sm:w-auto">
+                                <TabsTrigger
+                                    value="competicion"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
+                                >
+                                    <Play className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Competicion</span>
+                                    <span className="sm:hidden">Comp.</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="participantes" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
-                                    <Users className="w-4 h-4 mr-2" />
-                                    Participantes
+                                <TabsTrigger
+                                    value="participantes"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
+                                >
+                                    <Users className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Participantes</span>
+                                    <span className="sm:hidden">Part.</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="detalles" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
-                                    <Award className="w-4 h-4 mr-2" />
+                                <TabsTrigger
+                                    value="detalles"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
+                                >
+                                    <Award className="w-4 h-4" />
                                     Detalles
                                 </TabsTrigger>
-                                <TabsTrigger value="reglas" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
-                                    <Shield className="w-4 h-4 mr-2" />
+                                <TabsTrigger
+                                    value="reglas"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
+                                >
+                                    <Shield className="w-4 h-4" />
                                     Reglas
                                 </TabsTrigger>
                             </TabsList>
@@ -298,25 +312,46 @@ export function TournamentLive() {
                                 {/* Liga - Mostrar si el torneo genera fixture */}
                                 {formatoEnUso === "Liga" && (
                                     <>
-                                        <TablaPosiciones posiciones={MOCK_TABLA_LIGA} />
-                                        <FixtureLiga jornadas={MOCK_FIXTURE_LIGA} />
+                                        <div className="overflow-x-auto">
+                                            <div className="min-w-max">
+                                                <TablaPosiciones posiciones={MOCK_TABLA_LIGA} />
+                                            </div>
+                                        </div>
+
+                                        <div className="overflow-x-auto">
+                                            <div className="min-w-max">
+                                                <FixtureLiga jornadas={MOCK_FIXTURE_LIGA} />
+                                            </div>
+                                        </div>
                                     </>
                                 )}
 
                                 {/* Eliminatoria */}
                                 {formatoEnUso === "Eliminatorio" && (
-                                    <BracketEliminatoria etapas={MOCK_BRACKET_ELIMINATORIA} />
+                                    <div className="overflow-x-auto">
+                                        <div className="min-w-max">
+                                            <BracketEliminatoria etapas={MOCK_BRACKET_ELIMINATORIA} />
+                                        </div>
+                                    </div>
                                 )}
 
                                 {/* Carrera / Battle Royale */}
                                 {(formatoEnUso === "Carrera" || formatoEnUso === "Battle Royale") && (
-                                    <RankingCarrera competidores={MOCK_PARTICIPANTES.map(p => ({ posicion: p.posicion || 0, nombre: p.nombre }))} />
+                                    <div className="overflow-x-auto">
+                                        <div className="min-w-max">
+                                            <RankingCarrera competidores={MOCK_PARTICIPANTES.map(p => ({ posicion: p.posicion || 0, nombre: p.nombre }))} />
+                                        </div>
+                                    </div>
                                 )}
                             </TabsContent>
 
                             {/* Participantes Tab */}
                             <TabsContent value="participantes" className="mt-6">
-                                <ListaParticipantes participantes={MOCK_PARTICIPANTES} mostrarPosicion={formatoEnUso !== "Eliminatorio"} />
+                                <div className="overflow-x-auto">
+                                    <div className="min-w-max">
+                                        <ListaParticipantes participantes={MOCK_PARTICIPANTES} mostrarPosicion={formatoEnUso !== "Eliminatorio"} />
+                                    </div>
+                                </div>
                             </TabsContent>
 
                             {/* Detalles Tab */}
@@ -371,7 +406,7 @@ export function TournamentLive() {
 
                     {/* Sidebar - Right Side */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-24 space-y-4">
+                        <div className="lg:sticky top-24 space-y-4">
                             {/* Tournament Info Card */}
                             <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
                                 <h3 className="text-white mb-4">Información del Torneo</h3>
