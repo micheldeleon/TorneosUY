@@ -6,7 +6,7 @@ import {
   UngroupIcon, CheckCircle2, XCircle, Loader2
 } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
-import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, setResultForMatchLiga, setResultForMatchEliminatorio } from "../../services/api.service";
+import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory } from "../../services/api.service";
 import { useGlobalContext } from "../../context/global.context";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -68,6 +68,8 @@ export function ManageTournament() {
   const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
   const { fetch: cancelTournamentFetch, loading: cancelLoading } = useApi<any, number>(cancelTournament);
   const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
+  const { fetch: generateFixtureLeague } = useApi(generateFixtureForLeague);
+  const { fetch: generateFixtureEliminatory } = useApi(generateFixtureForEliminatory);
   
   // Verificar si el usuario es el organizador
   useEffect(() => {
@@ -411,6 +413,34 @@ export function ManageTournament() {
     showNotification('success', 'Posiciones guardadas correctamente');
   };
 
+  const handleGenerarFixture = async () => {
+    if (!tournamentId || !tournamentData) return;
+
+    try {
+      setShowLoader(true);
+      
+      if (tournamentData.format.name === "Liga") {
+        await generateFixtureLeague({
+          tournamentId,
+          isDoubleRound: tournamentData.isDoubleRound || false,
+        });
+      } else if (tournamentData.format.name === "Eliminatorio") {
+        await generateFixtureEliminatory({ tournamentId });
+      }
+
+      // Refetch fixtures after generation
+      setTimeout(() => {
+        fetchFixtures(tournamentId);
+        setShowLoader(false);
+        showNotification('success', 'Fixture generado correctamente');
+      }, 1000);
+    } catch (error) {
+      console.error("Error al generar fixture:", error);
+      setShowLoader(false);
+      showNotification('error', 'Error al generar el fixture. Por favor intenta nuevamente.');
+    }
+  };
+
   // Estados de carga
   if (loading) {
     return (
@@ -520,19 +550,19 @@ export function ManageTournament() {
         )}
 
 
-        {tournamentData.status === "INICIADO" && (
+        {tournamentData.status === "INICIADO" && (!fixturesData || fixturesData.length === 0) && (tournamentData.format.name === "Liga" || tournamentData.format.name === "Eliminatorio") && (
           <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6 mb-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-3">
                 <Trophy className="w-5 h-5 text-green-400" />
                 <div>
                   <p className="text-white">El torneo ya ha comenzado</p>
-                  <p className="text-gray-400 text-sm">Puedes editar detalles y gestionar participantes</p>
+                  <p className="text-gray-400 text-sm">Genera el fixture para comenzar la competición</p>
                 </div>
               </div>
               <div className="flex gap-3">
                 <Button
-                  onClick={() => alert("Funcionalidad en desarrollo")} 
+                  onClick={handleGenerarFixture}
                   className="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white"
                 >
                   <UngroupIcon className="w-4 h-4 mr-2" />

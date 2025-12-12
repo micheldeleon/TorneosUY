@@ -39,7 +39,7 @@ export default function CreateTournament() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { control, handleSubmit, watch, formState: { errors, isValid } } = useForm<FormValueCreateTournament>({
+  const { control, handleSubmit, watch, setValue, trigger, formState: { errors, isValid } } = useForm<FormValueCreateTournament>({
     resolver: zodResolver(createTournamentSchema),
     mode: "onChange",
     defaultValues: {
@@ -57,26 +57,55 @@ export default function CreateTournament() {
       prize: "",
       isPrivate: false,
       password: "",
+      isDoubleRound: false,
       acceptTerms: false,
     }
   });
 
   const selectedDiscipline = watch("discipline");
+  const selectedFormat = watch("format");
+  const registrationDeadline = watch("registrationDeadline");
+  const startAt = watch("startAt");
+  const endAt = watch("endAt");
 
   const { data: disciplinesData } = useApi(getDisciplines, { autoFetch: true });
 
   const { data: formatsData, fetch: fetchFormats } =
     useApi(getFormatsByDiscipline);
 
+  // Verificar si el formato seleccionado es Liga
+  const isLigaFormat = (() => {
+    if (!selectedFormat || !formatsData) return false;
+    const format = formatsData.find((f: any) => f.id.toString() === selectedFormat);
+    return format?.name === "Liga";
+  })();
+
   useEffect(() => {
     if (selectedDiscipline) {
       fetchFormats(selectedDiscipline);
     }
-
-
   }, [selectedDiscipline]);
 
+  // Auto-setear valores para disciplinas no colectivas
+  useEffect(() => {
+    if (selectedDiscipline && disciplinesData) {
+      const selectedDisciplineData = disciplinesData.find(
+        (d: any) => d.id.toString() === selectedDiscipline
+      );
+      
+      if (selectedDisciplineData && !selectedDisciplineData.collective) {
+        setValue("minParticipantsPerTeam", 1);
+        setValue("maxParticipantsPerTeam", 1);
+      }
+    }
+  }, [selectedDiscipline, disciplinesData, setValue]);
 
+  // Revalidar fechas cuando cambian
+  useEffect(() => {
+    if (registrationDeadline || startAt || endAt) {
+      trigger(["registrationDeadline", "startAt", "endAt"]);
+    }
+  }, [registrationDeadline, startAt, endAt, trigger]);
 
   const disciplineOptions = Array.isArray(disciplinesData)
     ? disciplinesData.map(d => ({
@@ -97,12 +126,17 @@ export default function CreateTournament() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading] = useState(false);
 
-  const selectedFormat = watch("format");
   const isPrivate = watch("isPrivate");
   const acceptTerms = watch("acceptTerms");
 
   const isDisciplineSelected = selectedDiscipline !== "";
   const isFormatSelected = selectedFormat !== "";
+
+  const isCollectiveDiscipline = (() => {
+    if (!selectedDiscipline || !disciplinesData) return false;
+    const discipline = disciplinesData.find((d: any) => d.id.toString() === selectedDiscipline);
+    return discipline?.collective ?? false;
+  })();
 
   const onSubmit: SubmitHandler<FormValueCreateTournament> = async (formData) => {
 
@@ -124,6 +158,7 @@ export default function CreateTournament() {
       maxParticipantsPerTournament: Number(formData.maxParticipantsPerTournament),
       registrationCost: Number(formData.registrationCost),
       prize: formData.prize,
+      isDoubleRound: formData.isDoubleRound,
     };
 
     createTournamentFetch({ organizerId, tournament: payload });
@@ -235,8 +270,15 @@ export default function CreateTournament() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Nombre del Torneo */}
-                  <div className="space-y-4">
+                  {!isFormatSelected ? (
+                    <div className="text-center text-gray-500">
+                      <Info className="w-6 h-6 mx-auto mb-2" />
+                      <p>Selecciona una disciplina y formato para configurar los detalles del torneo.</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Nombre del Torneo */}
+                      <div className="space-y-4">
                     <div className="flex items-center gap-2 text-purple-300 mb-2">
                       <FileText className="w-5 h-5" />
                       <span>Información Básica</span>
@@ -286,32 +328,34 @@ export default function CreateTournament() {
                   </div>
 
                   {/* Participantes por Equipo */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-purple-300 mb-2">
-                      <Users className="w-5 h-5" />
-                      <span>Configuración de Equipos</span>
+                  {isCollectiveDiscipline && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-purple-300 mb-2">
+                        <Users className="w-5 h-5" />
+                        <span>Configuración de Equipos</span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <RHFInput
+                          name="minParticipantsPerTeam"
+                          control={control}
+                          label="Mínimo por Equipo"
+                          type="number"
+                          placeholder="1"
+                          error={errors.minParticipantsPerTeam?.message}
+                          disabled={!isFormatSelected}
+                        />
+                        <RHFInput
+                          name="maxParticipantsPerTeam"
+                          control={control}
+                          label="Máximo por Equipo"
+                          type="number"
+                          placeholder="5"
+                          error={errors.maxParticipantsPerTeam?.message}
+                          disabled={!isFormatSelected}
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <RHFInput
-                        name="minParticipantsPerTeam"
-                        control={control}
-                        label="Mínimo por Equipo"
-                        type="number"
-                        placeholder="1"
-                        error={errors.minParticipantsPerTeam?.message}
-                        disabled={!isFormatSelected}
-                      />
-                      <RHFInput
-                        name="maxParticipantsPerTeam"
-                        control={control}
-                        label="Máximo por Equipo"
-                        type="number"
-                        placeholder="5"
-                        error={errors.maxParticipantsPerTeam?.message}
-                        disabled={!isFormatSelected}
-                      />
-                    </div>
-                  </div>
+                  )}
 
                   {/* Participantes del Torneo */}
                   <div className="space-y-4">
@@ -372,6 +416,18 @@ export default function CreateTournament() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Liga: Ida y Vuelta */}
+                  {isLigaFormat && (
+                    <div className="space-y-4 p-4 bg-indigo-900/10 rounded-lg border border-indigo-500/20 animate-fade-in">
+                      <RHFCheckbox
+                        name="isDoubleRound"
+                        control={control}
+                        label="Torneo a dos ruedas (ida y vuelta)"
+                        disabled={!isFormatSelected}
+                      />
+                    </div>
+                  )}
 
                   {/* Torneo Privado */}
                   <div className="space-y-4 p-4 bg-purple-900/10 rounded-lg border border-purple-500/20">
@@ -480,6 +536,8 @@ export default function CreateTournament() {
                       </div>
                     )}
                   </div>
+                  </>
+                  )}
                 </div>
               </div>
 

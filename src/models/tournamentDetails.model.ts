@@ -16,6 +16,7 @@ export type TournamentDetails = {
   maxParticipantsPerTournament: number;
   organizerId?: number;
   status: string;
+  isDoubleRound?: boolean;
   _status?: number;
   format: {
     winPoints?: number;

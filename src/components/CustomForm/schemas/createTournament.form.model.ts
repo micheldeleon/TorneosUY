@@ -15,6 +15,7 @@ export const createTournamentSchema = z.object({
   prize: z.string().optional(),
   isPrivate: z.boolean(),
   password: z.string().optional(),
+  isDoubleRound: z.boolean().optional(),
   acceptTerms: z.boolean(),
 }).refine((data) => data.maxParticipantsPerTeam >= data.minParticipantsPerTeam, {
   message: "El máximo debe ser mayor o igual al mínimo",

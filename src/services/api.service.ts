@@ -247,3 +247,36 @@ export const setResultForMatchLiga = (
         controller,
     };
 }
+
+export const generateFixtureForLeague = (
+    params?: {
+        tournamentId: number;
+        isDoubleRound?: boolean;
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/fixture/league?doubleRound=${params?.isDoubleRound ? true : false}`,
+            {},
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}
+
+export const generateFixtureForEliminatory = (
+    params?: {
+        tournamentId: number;
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/fixture/elimination`,
+            {},
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}

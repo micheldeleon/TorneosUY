@@ -14,4 +14,5 @@ export interface CreateTournament {
   maxParticipantsPerTournament: number;
   prize?: string;
   registrationCost: number;
+  isDoubleRound?: boolean;
 }
