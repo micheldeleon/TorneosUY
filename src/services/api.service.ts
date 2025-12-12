@@ -204,3 +204,46 @@ export const cancelTournament = (tournamentId?: number): UseApiCall<ApiResponse>
         controller,
     };
 }
+
+export const setResultForMatchEliminatorio = (
+    params?: {
+        tournamentId: number;
+        matchId: number;
+        result: {
+            scoreHome: number;
+            scoreAway: number;
+            winnerTeamId: number;
+        }
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/matches/${params?.matchId}/result`,
+            params?.result,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}
+
+export const setResultForMatchLiga = (
+    params?: {
+        tournamentId: number;
+        matchId: number;
+        result: {
+            scoreHome: number;
+            scoreAway: number;
+        }
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/matches/${params?.matchId}/league-result`,
+            params?.result,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}

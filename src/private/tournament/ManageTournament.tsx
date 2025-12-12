@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import {
   Trophy, ArrowLeft, Edit, Trash2, UserX, Users,
   Play, AlertTriangle, Settings, Save, X,
-  UngroupIcon
+  UngroupIcon, CheckCircle2, XCircle, Loader2
 } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
-import { getTournamentById, getTournamentFixtures, cancelTournament } from "../../services/api.service";
+import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, setResultForMatchLiga, setResultForMatchEliminatorio } from "../../services/api.service";
 import { useGlobalContext } from "../../context/global.context";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -18,6 +18,7 @@ import { Textarea } from "../../components/ui/Textarea";
 import { Avatar, AvatarFallback } from "../../components/ui/Avatar";
 import { ModalResultado } from "../../components/Tournament/ModalResultado";
 import { AsignarPosiciones } from "../../components/Tournament/AsignarPosiciones";
+import { TablaPosiciones } from "../../components/Tournament/TablaPosiciones";
 import type { Participante } from "../../components/types/tournament";
 
 
@@ -40,6 +41,8 @@ interface Duelo {
   id: number;
   equipo1: string;
   equipo2: string;
+  equipo1Id?: number;
+  equipo2Id?: number;
   resultado1?: number;
   resultado2?: number;
   ganador?: string;
@@ -64,7 +67,7 @@ export function ManageTournament() {
 
   const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
   const { fetch: cancelTournamentFetch, loading: cancelLoading } = useApi<any, number>(cancelTournament);
-  // const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
+  const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
   
   // Verificar si el usuario es el organizador
   useEffect(() => {
@@ -87,23 +90,54 @@ export function ManageTournament() {
   }, [tournamentData?.id, tournamentData?.format.name, fetchFixtures]);
 
   // Fetch standings if tournament format is "Liga"
-  // TODO: Implementar cuando se necesite mostrar tabla de posiciones en gestión
-  // useEffect(() => {
-  //   if (tournamentData?.id && tournamentData.format.name === "Liga") {
-  //     fetchStandings(tournamentData.id);
-  //   }
-  // }, [tournamentData?.id, tournamentData?.format.name]);
+  useEffect(() => {
+    if (tournamentData?.id && tournamentData.format.name === "Liga") {
+      fetchStandings(tournamentData.id);
+    }
+  }, [tournamentData?.id, tournamentData?.format.name, fetchStandings]);
   
 
   
   const [participantes, setParticipantes] = useState<Participante[]>([]);
   const [jornadas, setJornadas] = useState<Jornada[]>([]);
   const [etapas, setEtapas] = useState<Etapa[]>([]);
+  const [tablaPosiciones, setTablaPosiciones] = useState<any[]>([]);
+  
+  // Estados para loader y notificaciones
+  const [showLoader, setShowLoader] = useState(false);
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    type: 'success' | 'error';
+    message: string;
+  }>({ show: false, type: 'success', message: '' });
+
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ show: true, type, message });
+    setTimeout(() => {
+      setNotification({ show: false, type, message: '' });
+    }, 3000);
+  };
   
   // Estados para edición
   const [modoEdicion, setModoEdicion] = useState(false);
 
   // Funciones de transformación de datos
+  const transformStandingsToTable = (standings: any[]) => {
+    if (!standings || standings.length === 0) return [];
+
+    return standings.map((team, index) => ({
+      posicion: index + 1,
+      equipo: team.teamName,
+      pj: team.played,
+      pg: team.won,
+      pe: team.draw,
+      pp: team.lost,
+      gf: team.goalsFor,
+      gc: team.goalsAgainst,
+      pts: team.points,
+    }));
+  };
+
   const transformFixturesToLeague = (fixtures: any[]) => {
     if (!fixtures || fixtures.length === 0) return [];
 
@@ -161,6 +195,8 @@ export function ManageTournament() {
         id: match.id,
         equipo1: match.homeTeam?.name || "",
         equipo2: match.awayTeam?.name || "",
+        equipo1Id: match.homeTeam?.id,
+        equipo2Id: match.awayTeam?.id,
         resultado1: match.scoreHome ?? undefined,
         resultado2: match.scoreAway ?? undefined,
         ganador: match.winnerTeam?.name || "",
@@ -182,12 +218,22 @@ export function ManageTournament() {
     }
   }, [fixturesData, tournamentData]);
 
+  // Transformar standings para tabla de posiciones
+  useEffect(() => {
+    if (standingsData) {
+      const tabla = transformStandingsToTable(standingsData);
+      setTablaPosiciones(tabla);
+    }
+  }, [standingsData]);
+
   // Modal de resultado
   const [modalResultado, setModalResultado] = useState<{
     isOpen: boolean;
     partidoId?: number;
     equipoLocal?: string;
     equipoVisitante?: string;
+    equipoLocalId?: number;
+    equipoVisitanteId?: number;
     resultadoActual?: { local: number; visitante: number };
   }>({ isOpen: false });
 
@@ -208,17 +254,21 @@ export function ManageTournament() {
 
     try {
       if (tournamentId) {
+        setShowLoader(true);
         cancelTournamentFetch(tournamentId);
         
-        // Esperar un momento para que se procese
         setTimeout(() => {
-          alert("Torneo cancelado correctamente. Los participantes serán notificados.");
-          navigate("/perfil");
+          setShowLoader(false);
+          showNotification('success', 'Torneo cancelado correctamente. Los participantes serán notificados.');
+          setTimeout(() => {
+            navigate("/perfil");
+          }, 1500);
         }, 1000);
       }
     } catch (error) {
       console.error("Error al cancelar torneo:", error);
-      alert("Error al cancelar el torneo. Por favor intenta nuevamente.");
+      setShowLoader(false);
+      showNotification('error', 'Error al cancelar el torneo. Por favor intenta nuevamente.');
     }
   };
 
@@ -229,7 +279,7 @@ export function ManageTournament() {
   };
 
   const handleGuardarDetalles = () => {
-    alert("Detalles guardados correctamente");
+    showNotification('success', 'Detalles guardados correctamente');
     setModoEdicion(false);
   };
 
@@ -246,26 +296,48 @@ export function ManageTournament() {
     });
   };
 
-  const handleGuardarResultado = (resultadoLocal: number, resultadoVisitante: number) => {
-    // TODO: Implementar endpoint en backend para actualizar resultado del partido
-    // Por ahora solo actualiza localmente
-    setJornadas(jornadas.map(jornada => ({
-      ...jornada,
-      partidos: jornada.partidos.map(partido =>
-        partido.id === modalResultado.partidoId
-          ? { ...partido, resultadoLocal, resultadoVisitante, estado: "jugado" as const }
-          : partido
-      ),
-    })));
-    
-    // Refrescar fixtures desde la API después de un breve delay
-    setTimeout(() => {
-      if (tournamentData?.id) {
-        fetchFixtures(tournamentData.id);
-      }
-    }, 500);
-    
-    alert("Resultado guardado correctamente");
+  const handleGuardarResultado = async (resultadoLocal: number, resultadoVisitante: number) => {
+    if (!tournamentData?.id || !modalResultado.partidoId) return;
+
+    try {
+      setShowLoader(true);
+      
+      const { call } = setResultForMatchLiga({
+        tournamentId: tournamentData.id,
+        matchId: modalResultado.partidoId,
+        result: {
+          scoreHome: resultadoLocal,
+          scoreAway: resultadoVisitante,
+        }
+      });
+
+      await call;
+      
+      setJornadas(jornadas.map(jornada => ({
+        ...jornada,
+        partidos: jornada.partidos.map(partido =>
+          partido.id === modalResultado.partidoId
+            ? { ...partido, resultadoLocal, resultadoVisitante, estado: "jugado" as const }
+            : partido
+        ),
+      })));
+      
+      setTimeout(() => {
+        if (tournamentData?.id) {
+          fetchFixtures(tournamentData.id);
+          if (tournamentData.format.name === "Liga") {
+            fetchStandings(tournamentData.id);
+          }
+        }
+        setShowLoader(false);
+        showNotification('success', 'Resultado guardado correctamente');
+      }, 500);
+      
+    } catch (error) {
+      console.error("Error al guardar resultado:", error);
+      setShowLoader(false);
+      showNotification('error', 'Error al guardar el resultado. Por favor intenta nuevamente.');
+    }
   };
 
   const handleAbrirModalDuelo = (duelo: Duelo) => {
@@ -274,6 +346,8 @@ export function ManageTournament() {
       partidoId: duelo.id,
       equipoLocal: duelo.equipo1,
       equipoVisitante: duelo.equipo2,
+      equipoLocalId: duelo.equipo1Id,
+      equipoVisitanteId: duelo.equipo2Id,
       resultadoActual: duelo.resultado1 !== undefined ? {
         local: duelo.resultado1,
         visitante: duelo.resultado2!,
@@ -281,33 +355,60 @@ export function ManageTournament() {
     });
   };
 
-  const handleGuardarResultadoDuelo = (resultado1: number, resultado2: number) => {
-    // TODO: Implementar endpoint en backend para actualizar resultado del duelo
-    // Por ahora solo actualiza localmente
-    const ganador = resultado1 > resultado2 ? modalResultado.equipoLocal : modalResultado.equipoVisitante;
-    
-    setEtapas(etapas.map(etapa => ({
-      ...etapa,
-      duelos: etapa.duelos.map(duelo =>
-        duelo.id === modalResultado.partidoId
-          ? { ...duelo, resultado1, resultado2, ganador, estado: "jugado" as const }
-          : duelo
-      ),
-    })));
-    
-    // Refrescar fixtures desde la API después de un breve delay
-    setTimeout(() => {
-      if (tournamentData?.id) {
-        fetchFixtures(tournamentData.id);
+  const handleGuardarResultadoDuelo = async (resultado1: number, resultado2: number) => {
+    if (!tournamentData?.id || !modalResultado.partidoId) return;
+
+    try {
+      const winnerTeamId = resultado1 > resultado2 ? modalResultado.equipoLocalId : modalResultado.equipoVisitanteId;
+      
+      if (!winnerTeamId) {
+        showNotification('error', 'Error: No se pudo determinar el equipo ganador.');
+        return;
       }
-    }, 500);
-    
-    alert("Resultado del duelo guardado correctamente");
+
+      setShowLoader(true);
+
+      const { call } = setResultForMatchEliminatorio({
+        tournamentId: tournamentData.id,
+        matchId: modalResultado.partidoId,
+        result: {
+          scoreHome: resultado1,
+          scoreAway: resultado2,
+          winnerTeamId: winnerTeamId,
+        }
+      });
+
+      await call;
+
+      const ganador = resultado1 > resultado2 ? modalResultado.equipoLocal : modalResultado.equipoVisitante;
+      
+      setEtapas(etapas.map(etapa => ({
+        ...etapa,
+        duelos: etapa.duelos.map(duelo =>
+          duelo.id === modalResultado.partidoId
+            ? { ...duelo, resultado1, resultado2, ganador, estado: "jugado" as const }
+            : duelo
+        ),
+      })));
+      
+      setTimeout(() => {
+        if (tournamentData?.id) {
+          fetchFixtures(tournamentData.id);
+        }
+        setShowLoader(false);
+        showNotification('success', 'Resultado del duelo guardado correctamente');
+      }, 500);
+      
+    } catch (error) {
+      console.error("Error al guardar resultado del duelo:", error);
+      setShowLoader(false);
+      showNotification('error', 'Error al guardar el resultado. Por favor intenta nuevamente.');
+    }
   };
 
   const handleGuardarPosiciones = (participantesOrdenados: Participante[]) => {
     setParticipantes(participantesOrdenados);
-    alert("Posiciones guardadas correctamente");
+    showNotification('success', 'Posiciones guardadas correctamente');
   };
 
   // Estados de carga
@@ -674,6 +775,15 @@ export function ManageTournament() {
             {/* Liga */}
             {tournamentData.format.name === "Liga" && (
               <div className="space-y-6">
+                {/* Tabla de Posiciones */}
+                {tablaPosiciones.length > 0 && (
+                  <Card className="bg-[#2a2a2a] border-gray-800 p-6">
+                    <h3 className="text-white text-xl mb-4">Tabla de Posiciones</h3>
+                    <TablaPosiciones posiciones={tablaPosiciones} />
+                  </Card>
+                )}
+
+                {/* Fixture por Jornadas */}
                 {jornadas.map((jornada) => (
                   <Card key={jornada.numero} className="bg-[#2a2a2a] border-gray-800 p-6">
                     <h3 className="text-white mb-4">Jornada {jornada.numero}</h3>
@@ -681,9 +791,17 @@ export function ManageTournament() {
                       {jornada.partidos.map((partido) => (
                         <div
                           key={partido.id}
-                          onClick={() => tournamentData.status !== "ABIERTO" && handleAbrirModalResultado(partido)}
+                          onClick={() => {
+                            if (tournamentData.status !== "ABIERTO" && partido.estado === "pendiente") {
+                              handleAbrirModalResultado(partido);
+                            } else if (partido.estado === "jugado") {
+                              showNotification('error', 'La edición de resultados estará disponible próximamente.');
+                            }
+                          }}
                           className={`bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 ${
-                            tournamentData.status !== "ABIERTO" ? "hover:border-purple-600/50 cursor-pointer" : ""
+                            tournamentData.status !== "ABIERTO" && partido.estado === "pendiente" ? "hover:border-purple-600/50 cursor-pointer" : ""
+                          } ${
+                            partido.estado === "jugado" ? "cursor-not-allowed opacity-75" : ""
                           } transition-colors`}
                         >
                           <div className="flex items-center justify-between gap-4">
@@ -715,7 +833,9 @@ export function ManageTournament() {
                               }>
                                 {partido.estado === "jugado" ? "Finalizado" : "Pendiente"}
                               </Badge>
-                              <span className="text-purple-400 text-sm">Clic para {partido.estado === "jugado" ? "editar" : "establecer"} resultado</span>
+                              <span className={partido.estado === "jugado" ? "text-gray-500 text-sm" : "text-purple-400 text-sm"}>
+                                {partido.estado === "jugado" ? "Edición próximamente" : "Clic para establecer resultado"}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -736,11 +856,19 @@ export function ManageTournament() {
                       {etapa.duelos.map((duelo) => (
                         <div
                           key={duelo.id}
-                          onClick={() => tournamentData.status !== "ABIERTO" && duelo.equipo1 && duelo.equipo2 && handleAbrirModalDuelo(duelo)}
+                          onClick={() => {
+                            if (tournamentData.status !== "ABIERTO" && duelo.equipo1 && duelo.equipo2 && duelo.estado === "pendiente") {
+                              handleAbrirModalDuelo(duelo);
+                            } else if (duelo.estado === "jugado") {
+                              showNotification('error', 'La edición de resultados estará disponible próximamente.');
+                            }
+                          }}
                           className={`bg-[#1a1a1a] border-2 rounded-xl overflow-hidden ${
-                            tournamentData.status !== "ABIERTO" && duelo.equipo1 && duelo.equipo2
+                            tournamentData.status !== "ABIERTO" && duelo.equipo1 && duelo.equipo2 && duelo.estado === "pendiente"
                               ? "border-gray-800 hover:border-purple-600/50 cursor-pointer"
                               : "border-gray-800"
+                          } ${
+                            duelo.estado === "jugado" ? "opacity-75 cursor-not-allowed" : ""
                           } transition-colors`}
                         >
                           <div className="p-3 border-b border-gray-800 flex justify-between items-center">
@@ -758,8 +886,8 @@ export function ManageTournament() {
 
                           {tournamentData.status !== "ABIERTO" && duelo.equipo1 && duelo.equipo2 && (
                             <div className="px-3 py-2 bg-purple-900/10 border-t border-gray-800">
-                              <span className="text-purple-400 text-sm">
-                                Clic para {duelo.estado === "jugado" ? "editar" : "establecer"} resultado
+                              <span className={duelo.estado === "jugado" ? "text-gray-500 text-sm" : "text-purple-400 text-sm"}>
+                                {duelo.estado === "jugado" ? "Edición próximamente" : "Clic para establecer resultado"}
                               </span>
                             </div>
                           )}
@@ -803,6 +931,43 @@ export function ManageTournament() {
         equipoVisitante={modalResultado.equipoVisitante || ""}
         resultadoActual={modalResultado.resultadoActual}
       />
+
+      {/* Loader Overlay */}
+      {showLoader && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-16 h-16 text-purple-500 animate-spin mx-auto mb-4" />
+            <p className="text-white text-xl">Procesando...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Overlay */}
+      {notification.show && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-300">
+          <div className={`max-w-md w-full mx-4 p-8 rounded-2xl ${
+            notification.type === 'success' 
+              ? '' 
+              : ''
+          }`}>
+            <div className="text-center">
+              {notification.type === 'success' ? (
+                <CheckCircle2 className="w-20 h-20 text-green-400 mx-auto mb-4" />
+              ) : (
+                <XCircle className="w-20 h-20 text-rose-400 mx-auto mb-4" />
+              )}
+              <h3 className={`text-2xl font-bold mb-2 ${
+                notification.type === 'success' ? 'text-green-400' : 'text-rose-100'
+              }`}>
+                {notification.type === 'success' ? '¡Éxito!' : 'Error'}
+              </h3>
+              <p className="text-white text-lg">
+                {notification.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
