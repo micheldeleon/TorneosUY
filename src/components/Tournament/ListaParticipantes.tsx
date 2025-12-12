@@ -2,15 +2,7 @@ import { Users, User, Shield, X } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Avatar, AvatarFallback } from "../ui/Avatar";
-
-interface Participante {
-  id: number;
-  nombre: string;
-  avatar?: string;
-  estado: "activo" | "eliminado" | "retirado";
-  posicion?: number;
-  equipo?: string;
-}
+import type { Participante } from "../types/tournament";
 
 interface ListaParticipantesProps {
   participantes: Participante[];
@@ -22,7 +14,7 @@ export function ListaParticipantes({ participantes, mostrarPosicion = false }: L
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  const getEstadoBadge = (estado: Participante["estado"]) => {
+  const getEstadoBadge = (estado: string) => {
     switch (estado) {
       case "activo":
         return <Badge className="bg-green-600/20 text-green-300 border-green-600/50">Activo</Badge>;

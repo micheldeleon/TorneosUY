@@ -12,6 +12,7 @@ import CreateTournament from "./private/tournament/CreateTournament";
 import { TournamentLive } from "./public/TournamentLive";
 import { TournamentRegistration } from "./public/TournamentRegistration";
 import { Toaster } from "sonner";
+import { ManageTournament } from "./private/tournament/ManageTournament";
 
 
 
@@ -107,6 +108,13 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/manejar-torneo/:id"
+            element={
+              <PrivateRoute isPrivate={true}>
+                <ManageTournament />
+              </PrivateRoute>
+            } />
         </Routes>
       </main>
 
