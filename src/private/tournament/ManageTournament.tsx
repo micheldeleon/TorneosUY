@@ -2,10 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   Trophy, ArrowLeft, Edit, Trash2, UserX, Users,
-  Play, AlertTriangle, Settings, Save, X
+  Play, AlertTriangle, Settings, Save, X,
+  UngroupIcon
 } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
-import { getTournamentById } from "../../services/api.service";
+import { getTournamentById, getTournamentFixtures, cancelTournament } from "../../services/api.service";
 import { useGlobalContext } from "../../context/global.context";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -60,6 +61,10 @@ export function ManageTournament() {
     getTournamentById,
     { autoFetch: true, params: tournamentId }
   );
+
+  const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
+  const { fetch: cancelTournamentFetch, loading: cancelLoading } = useApi<any, number>(cancelTournament);
+  // const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
   
   // Verificar si el usuario es el organizador
   useEffect(() => {
@@ -73,6 +78,21 @@ export function ManageTournament() {
       }
     }
   }, [tournamentData, user, navigate]);
+
+  // Fetch fixtures if tournament format is "Eliminatorio" or "Liga"
+  useEffect(() => {
+    if (tournamentData?.id && (tournamentData.format.name === "Eliminatorio" || tournamentData.format.name === "Liga")) {
+      fetchFixtures(tournamentData.id);
+    }
+  }, [tournamentData?.id, tournamentData?.format.name, fetchFixtures]);
+
+  // Fetch standings if tournament format is "Liga"
+  // TODO: Implementar cuando se necesite mostrar tabla de posiciones en gestión
+  // useEffect(() => {
+  //   if (tournamentData?.id && tournamentData.format.name === "Liga") {
+  //     fetchStandings(tournamentData.id);
+  //   }
+  // }, [tournamentData?.id, tournamentData?.format.name]);
   
 
   
@@ -82,6 +102,85 @@ export function ManageTournament() {
   
   // Estados para edición
   const [modoEdicion, setModoEdicion] = useState(false);
+
+  // Funciones de transformación de datos
+  const transformFixturesToLeague = (fixtures: any[]) => {
+    if (!fixtures || fixtures.length === 0) return [];
+
+    const fixturesByRound = fixtures.reduce((acc, fixture) => {
+      const round = fixture.round;
+      if (!acc[round]) acc[round] = [];
+      acc[round].push(fixture);
+      return acc;
+    }, {} as Record<number, any[]>);
+
+    return Object.entries(fixturesByRound)
+      .sort(([roundA], [roundB]) => Number(roundA) - Number(roundB))
+      .map(([round, matchesInRound]) => ({
+        numero: Number(round),
+        partidos: (matchesInRound as any[]).map(match => ({
+          id: match.id,
+          equipoLocal: match.homeTeam?.name || "",
+          equipoVisitante: match.awayTeam?.name || "",
+          resultadoLocal: match.scoreHome ?? undefined,
+          resultadoVisitante: match.scoreAway ?? undefined,
+          fecha: match.scheduledAt ? new Date(match.scheduledAt).toLocaleDateString('es-UY', { day: 'numeric', month: 'short' }) : undefined,
+          estado: (match.status === "FINISHED" ? "jugado" : "pendiente") as "jugado" | "pendiente" | "en_vivo",
+        }))
+      }));
+  };
+
+  const transformFixturesToBracket = (fixtures: any[]) => {
+    if (!fixtures || fixtures.length === 0) return [];
+
+    const fixturesByRound = fixtures.reduce((acc, fixture) => {
+      const round = fixture.round;
+      if (!acc[round]) acc[round] = [];
+      acc[round].push(fixture);
+      return acc;
+    }, {} as Record<number, any[]>);
+
+    const sortedRounds = Object.entries(fixturesByRound)
+      .sort(([roundA], [roundB]) => Number(roundA) - Number(roundB));
+    
+    const getRoundName = (matchCount: number): string => {
+      if (matchCount >= 256) return "Ciento veintiochoavos de Final";
+      if (matchCount >= 128) return "Sesentaicuatroavos de Final";
+      if (matchCount >= 64) return "Treintaidosavos de Final";
+      if (matchCount >= 32) return "Dieciseisavos de Final";
+      if (matchCount >= 16) return "Octavos de Final";
+      if (matchCount === 4) return "Cuartos de Final";
+      if (matchCount === 2) return "Semifinales";
+      if (matchCount === 1) return "Final";
+      return `Ronda ${matchCount} equipos`;
+    };
+    
+    return sortedRounds.map(([, matchesInRound]) => ({
+      nombre: getRoundName((matchesInRound as any[]).length),
+      duelos: (matchesInRound as any[]).map(match => ({
+        id: match.id,
+        equipo1: match.homeTeam?.name || "",
+        equipo2: match.awayTeam?.name || "",
+        resultado1: match.scoreHome ?? undefined,
+        resultado2: match.scoreAway ?? undefined,
+        ganador: match.winnerTeam?.name || "",
+        estado: (match.status === "FINISHED" ? "jugado" : "pendiente") as "jugado" | "pendiente" | "en_vivo",
+      }))
+    }));
+  };
+
+  // Transformar fixtures según el formato del torneo
+  useEffect(() => {
+    if (fixturesData && tournamentData) {
+      if (tournamentData.format.name === "Liga") {
+        const jornadas = transformFixturesToLeague(fixturesData);
+        setJornadas(jornadas);
+      } else if (tournamentData.format.name === "Eliminatorio") {
+        const etapas = transformFixturesToBracket(fixturesData);
+        setEtapas(etapas);
+      }
+    }
+  }, [fixturesData, tournamentData]);
 
   // Modal de resultado
   const [modalResultado, setModalResultado] = useState<{
@@ -102,10 +201,24 @@ export function ManageTournament() {
     }
   };
 
-  const handleCancelarTorneo = () => {
-    if (confirm("¿Estás seguro de cancelar el torneo? Esta acción no se puede deshacer.")) {
-      alert("Torneo cancelado. Los participantes serán notificados.");
-      navigate("/perfil");
+  const handleCancelarTorneo = async () => {
+    if (!confirm("¿Estás seguro de cancelar el torneo? Esta acción no se puede deshacer.")) {
+      return;
+    }
+
+    try {
+      if (tournamentId) {
+        cancelTournamentFetch(tournamentId);
+        
+        // Esperar un momento para que se procese
+        setTimeout(() => {
+          alert("Torneo cancelado correctamente. Los participantes serán notificados.");
+          navigate("/perfil");
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Error al cancelar torneo:", error);
+      alert("Error al cancelar el torneo. Por favor intenta nuevamente.");
     }
   };
 
@@ -134,6 +247,8 @@ export function ManageTournament() {
   };
 
   const handleGuardarResultado = (resultadoLocal: number, resultadoVisitante: number) => {
+    // TODO: Implementar endpoint en backend para actualizar resultado del partido
+    // Por ahora solo actualiza localmente
     setJornadas(jornadas.map(jornada => ({
       ...jornada,
       partidos: jornada.partidos.map(partido =>
@@ -142,6 +257,14 @@ export function ManageTournament() {
           : partido
       ),
     })));
+    
+    // Refrescar fixtures desde la API después de un breve delay
+    setTimeout(() => {
+      if (tournamentData?.id) {
+        fetchFixtures(tournamentData.id);
+      }
+    }, 500);
+    
     alert("Resultado guardado correctamente");
   };
 
@@ -159,6 +282,8 @@ export function ManageTournament() {
   };
 
   const handleGuardarResultadoDuelo = (resultado1: number, resultado2: number) => {
+    // TODO: Implementar endpoint en backend para actualizar resultado del duelo
+    // Por ahora solo actualiza localmente
     const ganador = resultado1 > resultado2 ? modalResultado.equipoLocal : modalResultado.equipoVisitante;
     
     setEtapas(etapas.map(etapa => ({
@@ -169,6 +294,14 @@ export function ManageTournament() {
           : duelo
       ),
     })));
+    
+    // Refrescar fixtures desde la API después de un breve delay
+    setTimeout(() => {
+      if (tournamentData?.id) {
+        fetchFixtures(tournamentData.id);
+      }
+    }, 500);
+    
     alert("Resultado del duelo guardado correctamente");
   };
 
@@ -266,11 +399,12 @@ export function ManageTournament() {
               <div className="flex gap-3">
                 <Button
                   onClick={handleCancelarTorneo}
+                  disabled={cancelLoading}
                   variant="outline"
                   className="border-rose-600 text-rose-300 hover:bg-rose-600/10"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Cancelar Torneo
+                  {cancelLoading ? "Cancelando..." : "Cancelar Torneo"}
                 </Button>
                 <Button
                   onClick={handleIniciarTorneo}
@@ -283,6 +417,31 @@ export function ManageTournament() {
             </div>
           </Card>
         )}
+
+
+        {tournamentData.status === "INICIADO" && (
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/30 p-6 mb-8">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <Trophy className="w-5 h-5 text-green-400" />
+                <div>
+                  <p className="text-white">El torneo ya ha comenzado</p>
+                  <p className="text-gray-400 text-sm">Puedes editar detalles y gestionar participantes</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => alert("Funcionalidad en desarrollo")} 
+                  className="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white"
+                >
+                  <UngroupIcon className="w-4 h-4 mr-2" />
+                  Generar fixture automático
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
 
         {/* Main Tabs */}
         <Tabs defaultValue="detalles" className="w-full">

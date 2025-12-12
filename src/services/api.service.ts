@@ -196,3 +196,11 @@ export const getTournamentStandings = (tournamentId?: number): UseApiCall<any> =
         controller,
     };
 }
+
+export const cancelTournament = (tournamentId?: number): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(`/api/tournaments/${tournamentId}/cancel`, { signal: controller.signal }),
+        controller,
+    };
+}
