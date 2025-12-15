@@ -2,33 +2,22 @@ import { Link } from "react-router-dom";
 import { Calendar, Users, DollarSign, Trophy, Target, Gamepad2, PlayIcon, PersonStanding } from "lucide-react";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-
-export interface Tournament {
-  id: number;
-  tipo: string;
-  nombre: string;
-  costo: string;
-  fecha: string;
-  formato: string;
-  participantes: string;
-  badge: string;
-  imagen?: string;
-  estado?: string;
-}
+import type { TournamentDetails } from "../../models";
 
 interface TournamentCardAltProps {
-  tournament: Tournament;
+  tournament: TournamentDetails;
 }
 
 export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
   const getIcon = () => {
-    if (tournament.tipo.toLowerCase().includes("fútbol") || tournament.tipo.toLowerCase().includes("futbol")) {
+    const disciplineName = tournament.discipline.name?.toLowerCase() || "";
+    if (disciplineName.includes("fútbol") || disciplineName.includes("futbol")) {
       return <Trophy className="w-5 h-5" />;
     }
-    if (tournament.tipo.toLowerCase().includes("ea fc") || tournament.tipo.toLowerCase().includes("fortnite")) {
+    if (disciplineName.includes("ea fc") || disciplineName.includes("fortnite")) {
       return <Gamepad2 className="w-5 h-5" />;
     }
-    if (tournament.tipo.toLowerCase().includes("running")) {
+    if (disciplineName.includes("running")) {
       return <PersonStanding className="w-5 h-5" />;
     }
     return <Target className="w-5 h-5" />;
@@ -36,52 +25,46 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
 
   const getStatusColor = (status: string) => {
     const lower = status.toLowerCase();
-    if (lower === "abierto") {
+    if (lower === "abierto" || lower === "open") {
       return "bg-blue-600/20 text-blue-300 border-blue-600/50";
     }
-    if (lower === "iniciado") {
+    if (lower === "iniciado" || lower === "started" || lower === "in_progress") {
       return "bg-red-600/20 text-red-300 border-red-600/50 animate-pulse";
     }
     return "bg-yellow-600/20 text-yellow-300 border-yellow-600/50";
   };
 
-  const getBadgeColor = (badge: string) => {
-    const lower = badge.toLowerCase();
-    if (lower.includes("público")) {
+  const getBadgeColor = (isPrivate: boolean) => {
+    if (!isPrivate) {
       return "bg-green-600/20 text-green-300 border-green-600/50";
     }
-    if (lower.includes("privado")) {
-      return "bg-rose-600/20 text-rose-300 border-rose-600/50";
-    }
-    return "bg-blue-600/20 text-blue-300 border-blue-600/50";
+    return "bg-rose-600/20 text-rose-300 border-rose-600/50";
   };
 
-  const estadoTorneo = tournament.estado ? tournament.estado.charAt(0).toUpperCase() + tournament.estado.slice(1).toLowerCase() : "";
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-UY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  const estadoTorneo = tournament.status ? tournament.status.charAt(0).toUpperCase() + tournament.status.slice(1).toLowerCase() : "";
+  const badgeText = tournament.privateTournament ? "Privado" : "Público";
 
   return (
     <div className="group relative bg-[#2a2a2a] border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-600/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
       {/* Image Section */}
       <div className="relative h-48 bg-gradient-to-br from-purple-900/20 to-purple-600/10 overflow-hidden">
-        {tournament.imagen ? (
-          <img
-            src={tournament.imagen}
-            alt={tournament.nombre}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center opacity-50 group-hover:opacity-70 transition-opacity text-white">
-              {getIcon()}
-            </div>
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center opacity-50 group-hover:opacity-70 transition-opacity text-white">
+            {getIcon()}
           </div>
-        )}
+        </div>
 
         {/* Badge Overlay */}
         <div className="absolute top-3 right-3">
-          <Badge className={`${getBadgeColor(tournament.badge)} backdrop-blur-sm mr-1`}>
-            {tournament.badge}
+          <Badge className={`${getBadgeColor(tournament.privateTournament)} backdrop-blur-sm mr-1`}>
+            {badgeText}
           </Badge>
-          <Badge className={`${getStatusColor(tournament.estado || "")} backdrop-blur-sm`}>
+          <Badge className={`${getStatusColor(tournament.status)} backdrop-blur-sm`}>
             {estadoTorneo === "Iniciado" ? `● ${estadoTorneo}` : estadoTorneo}
           </Badge>
         </div>
@@ -89,7 +72,7 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
         {/* Type Badge */}
         <div className="absolute bottom-3 left-3">
           <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full">
-            <span className="text-white text-sm">{tournament.tipo}</span>
+            <span className="text-white text-sm">{tournament.discipline.name || "Disciplina"}</span>
           </div>
         </div>
       </div>
@@ -98,7 +81,7 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
       <div className="p-5 space-y-4">
         {/* Title */}
         <h3 className="text-white line-clamp-2 group-hover:text-purple-300 transition-colors">
-          {tournament.nombre}
+          {tournament.name}
         </h3>
 
         {/* Info Grid */}
@@ -110,18 +93,18 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
             </div>
             <div className="min-w-0">
               <p className="text-gray-500 text-xs">Fecha</p>
-              <p className="text-white text-sm truncate">{tournament.fecha}</p>
+              <p className="text-white text-sm truncate">{formatDate(tournament.startAt)}</p>
             </div>
           </div>
 
-          {/* Location */}
+          {/* Format */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-purple-900/30 flex items-center justify-center flex-shrink-0">
               <PlayIcon className="w-4 h-4 text-purple-400" />
             </div>
             <div className="min-w-0">
               <p className="text-gray-500 text-xs">Formato</p>
-              <p className="text-white text-sm truncate">{tournament.formato}</p>
+              <p className="text-white text-sm truncate">{tournament.format.name}</p>
             </div>
           </div>
 
@@ -132,7 +115,7 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
             </div>
             <div className="min-w-0">
               <p className="text-gray-500 text-xs">Inscritos</p>
-              <p className="text-white text-sm truncate">{tournament.participantes}</p>
+              <p className="text-white text-sm truncate">{tournament.teamsInscribed}/{tournament.maxParticipantsPerTournament}</p>
             </div>
           </div>
 
@@ -143,7 +126,7 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
             </div>
             <div className="min-w-0">
               <p className="text-gray-500 text-xs">Precio</p>
-              <p className="text-white text-sm truncate">{tournament.costo}</p>
+              <p className="text-white text-sm truncate">${tournament.registrationCost}</p>
             </div>
           </div>
         </div>

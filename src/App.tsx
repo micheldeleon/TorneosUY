@@ -13,6 +13,7 @@ import { TournamentLive } from "./public/TournamentLive";
 import { TournamentRegistration } from "./public/TournamentRegistration";
 import { Toaster } from "sonner";
 import { ManageTournament } from "./private/tournament/ManageTournament";
+import { TournamentsExplore } from "./public/TournamentsExplore";
 
 
 
@@ -70,8 +71,8 @@ function App() {
           <Route path="/contacto" element={<Contact />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/torneo/:id" element={<TournamentDetailsAlt />} />
-          <Route path="torneo-iniciado/:id" element={<TournamentLive/>} />
-          <Route path="inscripcion-torneo/:id" element={<TournamentRegistration/>} />
+          <Route path="torneo-iniciado/:id" element={<TournamentLive />} />
+          <Route path="inscripcion-torneo/:id" element={<TournamentRegistration />} />
           <Route
             path="/perfil"
             element={
@@ -114,6 +115,11 @@ function App() {
               <PrivateRoute isPrivate={true}>
                 <ManageTournament />
               </PrivateRoute>
+            } />
+          <Route
+            path="/torneos"
+            element={
+              <TournamentsExplore />
             } />
         </Routes>
       </main>

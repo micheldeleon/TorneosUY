@@ -71,6 +71,7 @@ function SelectContent({
                     className,
                 )}
                 position={position}
+                onCloseAutoFocus={(e) => e.preventDefault()}
                 {...props}
             >
                 <SelectScrollUpButton />

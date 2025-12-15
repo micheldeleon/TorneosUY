@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -89,4 +90,21 @@ select:-moz-autofill {
   box-shadow: 0 0 0 30px var(--input-bg) inset !important;
   -moz-text-fill-color: var(--input-color) !important;
   border-radius: var(--input-radius) !important;
+}
+
+/* Prevenir layout shift cuando se abren selects */
+html {
+  overflow-y: scroll;
+  width: 100vw;
+}
+
+body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
+/* Sobrescribir los estilos inline que Radix UI agrega al body */
+body[style*="pointer-events"] {
+  padding-right: 0 !important;
 }
