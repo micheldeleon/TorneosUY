@@ -204,7 +204,7 @@ export function TournamentsExplore() {
                             setMinPriceInput(value[0].toString());
                             setMaxPriceInput(value[1].toString());
                         }}
-                        className="[&_[role=slider]]:bg-purple-600 [&_[role=slider]]:border-purple-600 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+                        className="[&_[role=slider]]:bg-purple-600 [&_[role=slider]]:border-purple-600 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&>span:first-child>span]:bg-purple-400"
                     />
 
                     <div className="flex items-center justify-between gap-3">

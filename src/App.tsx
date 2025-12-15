@@ -14,6 +14,7 @@ import { TournamentRegistration } from "./public/TournamentRegistration";
 import { Toaster } from "sonner";
 import { ManageTournament } from "./private/tournament/ManageTournament";
 import { TournamentsExplore } from "./public/TournamentsExplore";
+import { NavbarModern } from "./components/Navbar/NavbarModern";
 
 
 
@@ -22,12 +23,16 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const hideChrome = location.pathname.startsWith("/login") || location.pathname.startsWith("/signup");
 
   const navLinks: NavItem[] = [
     { label: "Inicio", sectionId: "inicio" },
+    { label: "Torneos", path: "/torneos" },
     { label: "¿Quiénes somos?", sectionId: "quienes-somos" },
     { label: "Preguntas Frecuentes", sectionId: "preguntas-frecuentes" },
     { label: "Contacto", sectionId: "contacto" },
@@ -54,7 +59,7 @@ function App() {
 
       {/* Navbar dinámico */}
       {!hideChrome && (
-        <Navbar
+        <NavbarModern
           title="TuTorneo"
           links={navLinks}
           isAuthenticated={Boolean(token)}
