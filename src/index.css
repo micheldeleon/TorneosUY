@@ -92,16 +92,14 @@ select:-moz-autofill {
   border-radius: var(--input-radius) !important;
 }
 
-/* Prevenir layout shift cuando se abren selects */
-html {
-  overflow-y: scroll;
-  width: 100vw;
+html, body {
+  background-color: var(--color-surface);
+  color: var(--color-brand-items);
+  font-family: var(--font-body);
 }
 
-body {
-  overflow-x: hidden;
-  width: 100%;
-  position: relative;
+header, footer[style*="pointer-events"] {
+  padding-right: 0 !important;
 }
 
 /* Sobrescribir los estilos inline que Radix UI agrega al body */
