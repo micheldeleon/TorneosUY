@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Calendar, Users, DollarSign, Trophy, Target, Gamepad2, PlayIcon, PersonStanding } from "lucide-react";
+import { Calendar, Users, DollarSign, Trophy, Target, Gamepad2, PlayIcon, PersonStanding, LockIcon, Play, DoorOpen, XCircle, CheckCircle, DoorClosed } from "lucide-react";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import type { TournamentDetails } from "../../models";
@@ -23,22 +23,55 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
     return <Target className="w-5 h-5" />;
   };
 
+const getImageColor = (disciplineName: string) => {
+    const lower = disciplineName.toLowerCase();
+    if (lower.includes("fútbol") || lower.includes("futbol")) {
+      return "from-purple-700/10 to-green-600/10";
+    }
+    if (lower.includes("ea fc") || lower.includes("fortnite")) {
+      return "from-purple-700/10 to-blue-600/10";
+    }
+    if (lower.includes("running")) {
+      return "from-purple-700/10 to-orange-600/10";
+    }
+    if (lower.includes("basketball")) {
+    return "from-purple-700/10 to-yellow-700/10";
+    }
+    return "from-purple-700/10 to-pink-800/10";
+  }
+
   const getStatusColor = (status: string) => {
     const lower = status.toLowerCase();
     if (lower === "abierto" || lower === "open") {
-      return "bg-blue-600/20 text-blue-300 border-blue-600/50";
+      return "bg-transparent px-4 text-blue-400";
     }
     if (lower === "iniciado" || lower === "started" || lower === "in_progress") {
-      return "bg-red-600/20 text-red-300 border-red-600/50 animate-pulse";
+      return "bg-transparent px-4 text-red-400 animate-pulse";
     }
-    return "bg-yellow-600/20 text-yellow-300 border-yellow-600/50";
+    if (lower === "cancelado" || lower === "cancelled" || lower === "canceled") {
+      return "bg-transparent px-4 text-yellow-400";
+    }
+    if (lower === "finalizado" || lower === "finished" || lower === "completed") {
+      return "bg-transparent px-4 text-green-300";
+    }
+    return "bg-transparent px-4 text-yellow-300";
   };
 
-  const getBadgeColor = (isPrivate: boolean) => {
-    if (!isPrivate) {
-      return "bg-green-600/20 text-green-300 border-green-600/50";
+  const getStatusIcon = (status: string) => {
+    const lower = status.toLowerCase();
+    if (lower === "abierto" || lower === "open") {
+      return <DoorClosed className="w-4 h-4" />;
     }
-    return "bg-rose-600/20 text-rose-300 border-rose-600/50";
+    if (lower === "iniciado" || lower === "started" || lower === "in_progress") {
+      return <Play className="w-4 h-4" />;
+    }
+    if (lower === "cancelado" || lower === "cancelled" || lower === "canceled") {
+      return <XCircle className="w-4 h-4" />;
+    }
+    if (lower === "finalizado" || lower === "finished" || lower === "completed") {
+      return <CheckCircle className="w-4 h-4" />;
+    }
+    return null;
   };
 
   const formatDate = (dateString: string) => {
@@ -47,25 +80,26 @@ export function TournamentCardAlt({ tournament }: TournamentCardAltProps) {
   };
 
   const estadoTorneo = tournament.status ? tournament.status.charAt(0).toUpperCase() + tournament.status.slice(1).toLowerCase() : "";
-  const badgeText = tournament.privateTournament ? "Privado" : "Público";
 
   return (
-    <div className="group relative bg-[#2a2a2a] border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-600/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
+    <div className="group relative bg-surface-dark/60 border border-0 rounded-2xl overflow-hidden hover: border-purple-600/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
       {/* Image Section */}
-      <div className="relative h-48 bg-gradient-to-br from-purple-900/20 to-purple-600/10 overflow-hidden">
+      <div className={`relative h-48 bg-gradient-to-br ${getImageColor(tournament.discipline.name || "")} overflow-hidden`}>
         <div className="w-full h-full flex items-center justify-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center opacity-50 group-hover:opacity-70 transition-opacity text-white">
+          <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${getImageColor(tournament.discipline.name || "")} flex items-center justify-center opacity-50 group-hover:opacity-70 transition-opacity text-white`}>
             {getIcon()}
           </div>
         </div>
 
         {/* Badge Overlay */}
         <div className="absolute top-3 right-3">
-          <Badge className={`${getBadgeColor(tournament.privateTournament)} backdrop-blur-sm mr-1`}>
-            {badgeText}
-          </Badge>
-          <Badge className={`${getStatusColor(tournament.status)} backdrop-blur-sm`}>
-            {estadoTorneo === "Iniciado" ? `● ${estadoTorneo}` : estadoTorneo}
+          {tournament.privateTournament && (
+            <Badge className={`bg-transparent text-rose-400 backdrop-blur-sm`}>
+              <LockIcon className="w-4 h-4" />Privado
+            </Badge>
+          )}
+          <Badge className={`${getStatusColor(tournament.status)} backdrop-blur-sm `}>
+            {getStatusIcon(tournament.status || "")} {estadoTorneo}
           </Badge>
         </div>
 

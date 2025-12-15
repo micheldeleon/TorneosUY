@@ -2,8 +2,17 @@ import { Award, Target, Users } from "lucide-react";
 
 export function About() {
   return (
-    <div className="min-h-screen bg-surface-dark pt-20 pb-20 px-4">
-      <div className="container mx-auto">
+    <div className="relative min-h-screen pt-20 pb-20">
+      {/* Background sólido en el centro */}
+      <div className="absolute inset-0 pointer-events-none z-0" />
+      
+      {/* Degradado superior - transparente arriba, sólido abajo */}
+      <div className="absolute top-0 left-0 right-0 h-21 bg-gradient-to-b from-transparent to-surface-dark pointer-events-none z-[1]" />
+      
+      {/* Degradado inferior - sólido arriba, transparente abajo */}
+      <div className="absolute bottom-0 left-0 right-0 h-21 bg-gradient-to-t from-transparent to-surface-dark pointer-events-none z-[1]" />
+      
+      <div className="container mx-auto bg-surface-dark min-w-full relative z-10 pt-20 pb-20 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-white text-4xl mb-8 text-center">¿Quiénes Somos?</h1>
           

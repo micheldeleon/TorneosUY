@@ -45,18 +45,19 @@ export const HomeLanding: React.FC = () => {
   const tournamentsToDisplay = tournaments.slice(0, TOURNAMENTS_TO_SHOW);
 
   return (
-    <div className="min-h-screen w-full bg-surface text-slate-900">
-      {/* Hero Section */}
-      <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-[#0a0a0a] via-[#1a0a2a] to-[#0f0f0f]">
-        {/* Animated Orbs Background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
-        </div>
+    <div className="min-h-screen w-full relative bg-gradient-to-b from-[#0a0a0a] via-[#1a0a2a] to-[#0f0f0f] text-slate-900">
+      {/* Animated Orbs Background - Fixed to entire page */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+      </div>
 
-        {/* Grid Pattern Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      {/* Grid Pattern Overlay - Fixed to entire page */}
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none z-0" />
+
+      {/* Hero Section */}
+      <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden z-10">
 
         <div className="relative z-10 container mx-auto px-4 text-center">
           {/* Main Heading */}
@@ -110,7 +111,7 @@ export const HomeLanding: React.FC = () => {
         </div>
       </section> */}
 
-      <section id="torneos" className="mx-auto max-w-6xl px-4 pt-20 pb-20">
+      <section id="torneos" className="relative mx-auto max-w-6xl px-4 pt-20 pb-20 z-10">
         <div className="flex items-center justify-between mb-12">
           <div>
             <h2 className="text-white text-3xl mb-2">Torneos Disponibles</h2>

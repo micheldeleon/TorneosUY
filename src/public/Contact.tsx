@@ -11,14 +11,18 @@ export function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-dark pt-20 pb-20 px-4">
-      <div className="container mx-auto">
+    <div className="relative min-h-screen pt-20 pb-20">
+      {/* Background sólido en el centro */}
+      <div className="absolute inset-0 pointer-events-none z-0" />
+
+      
+      <div className="container mx-auto min-w-full relative z-10 pt-20 pb-20 px-4">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-white text-4xl mb-4 text-center">Contacto</h1>
           <p className="text-gray-400 text-center mb-12">
             ¿Tienes alguna pregunta? Estamos aquí para ayudarte
           </p>
-          
+
           <div className="grid md:grid-cols-2 gap-12">
             <div className="space-y-8">
               <div>
@@ -61,11 +65,11 @@ export function Contact() {
               </div>
             </div>
 
-            <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-8">
+            <div className="bg-surface-dark/80 border border-white/20 rounded-2xl p-8">
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-2">
                   <label className="text-gray-400">Nombre</label>
-                  <Input 
+                  <Input
                     placeholder="Tu nombre"
                     required
                     className="bg-[#1a1a1a] border-gray-700 text-white placeholder:text-gray-600 focus:border-purple-600"
@@ -74,7 +78,7 @@ export function Contact() {
 
                 <div className="space-y-2">
                   <label className="text-gray-400">Email</label>
-                  <Input 
+                  <Input
                     type="email"
                     placeholder="tu@email.com"
                     required
@@ -84,7 +88,7 @@ export function Contact() {
 
                 <div className="space-y-2">
                   <label className="text-gray-400">Mensaje</label>
-                  <Textarea 
+                  <Textarea
                     placeholder="¿En qué podemos ayudarte?"
                     rows={5}
                     required
@@ -92,7 +96,7 @@ export function Contact() {
                   />
                 </div>
 
-                <Button 
+                <Button
                   type="submit"
                   className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
                 >
