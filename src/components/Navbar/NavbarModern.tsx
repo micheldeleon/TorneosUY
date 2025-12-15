@@ -17,12 +17,37 @@ interface NavbarModernProps {
   onLogout: () => void;
 }
 
+// Función para obtener las iniciales del nombre
+const getInitials = (fullName: string): string => {
+  if (!fullName) return "U";
+  const names = fullName.trim().split(" ");
+  if (names.length === 1) {
+    return names[0].charAt(0).toUpperCase();
+  }
+  return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+};
+
 export function NavbarModern({ title, links, isAuthenticated, onLogout }: NavbarModernProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userName, setUserName] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Obtener el nombre del usuario del localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setUserName(user.fullName || "Usuario");
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+        setUserName("Usuario");
+      }
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,8 +95,7 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                 
                 {/* Logo container */}
                 <div className="relative w-12 h-12 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                  <Trophy className="w-6 h-6 text-white" />
-                  <Sparkles className="w-3 h-3 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
+                  <Trophy className="w-6 h-6 text-white" />                 
                 </div>
               </div>
               
@@ -130,7 +154,7 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                       <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
                         <User className="w-4 h-4" />
                       </div>
-                      <span className="text-sm">Mi Cuenta</span>
+                      <span className="text-sm">{userName}</span>
                       <ChevronDown className={`w-4 h-4 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
                     </button>
 
