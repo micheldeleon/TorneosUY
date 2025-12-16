@@ -11,12 +11,14 @@ export function Contact() {
   };
 
   return (
-    <div className="relative min-h-screen pt-20 pb-20">
-      {/* Background sólido en el centro */}
-      <div className="absolute inset-0 pointer-events-none z-0" />
-
+    <div className="relative pt-20 pb-20">
+      {/* Degradado superior - transparente arriba, sólido abajo */}
+      <div className="absolute top-0 left-0 right-0 h-21 bg-gradient-to-b from-transparent to-surface-dark pointer-events-none z-[1]" />
       
-      <div className="container mx-auto min-w-full relative z-10 pt-20 pb-20 px-4">
+      {/* Degradado inferior - sólido arriba, transparente abajo */}
+      <div className="absolute bottom-0 left-0 right-0 h-21 bg-gradient-to-t from-transparent to-surface-dark pointer-events-none z-[1]" />
+      
+      <div className="container bg-surface-dark mx-auto min-w-full relative z-10 pt-20 pb-20 px-4">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-white text-4xl mb-4 text-center">Contacto</h1>
           <p className="text-gray-400 text-center mb-12">
