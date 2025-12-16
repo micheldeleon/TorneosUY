@@ -252,7 +252,7 @@ export default function DashboardAlt() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-20 px-4">
+        <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4">
             <div className="container mx-auto max-w-7xl">
                 {error && (
                     <div className="bg-rose-900/20 border border-rose-700/50 text-rose-300 rounded-xl p-4 mb-6">
