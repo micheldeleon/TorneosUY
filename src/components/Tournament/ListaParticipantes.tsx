@@ -1,4 +1,4 @@
-import { Users, User, Shield, X } from "lucide-react";
+import { Users } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { Avatar, AvatarFallback } from "../ui/Avatar";
@@ -38,9 +38,6 @@ export function ListaParticipantes({ participantes, mostrarPosicion = false }: L
             <Users className="w-5 h-5 text-purple-400" />
             Participantes
           </h3>
-          <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50">
-            {participantes.length} total
-          </Badge>
         </div>
 
         {/* Participantes Activos */}

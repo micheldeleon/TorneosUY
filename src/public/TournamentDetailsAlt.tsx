@@ -132,14 +132,16 @@ export function TournamentDetailsAlt() {
                     {/* Main Content - Left Side */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Hero Card */}
-                        <div className="bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-[#2a2a2a] border border-purple-700/30 rounded-2xl p-8">
+                        <div className="bg-gradient-to-br from-purple-900/40 via-purple-800/20 to-surface-dark/20 border border-purple-700/30 rounded-2xl p-8">
                             <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20">
                                         <Trophy className="w-8 h-8 text-white" />
                                     </div>
                                     <div>
-                                        <p className="text-purple-400 text-sm mb-1">{t.discipline.name}</p>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className="text-purple-400 text-sm">{t.discipline.name}</p>
+                                        </div>
                                         <h1 className="text-white text-3xl">{t.name}</h1>
                                     </div>
                                 </div>
@@ -150,9 +152,9 @@ export function TournamentDetailsAlt() {
                                 <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Calendar className="w-4 h-4 text-purple-400" />
-                                        <p className="text-gray-500 text-sm">Fecha</p>
+                                        <p className="text-gray-500 text-sm">Inicio</p>
                                     </div>
-                                    <p className="text-white">{formatDate(t.startAt)}</p>
+                                    <p className="text-white text-sm">{formatDate(t.startAt)}</p>
                                 </div>
 
                                 <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
@@ -160,15 +162,15 @@ export function TournamentDetailsAlt() {
                                         <Play className="w-4 h-4 text-purple-400" />
                                         <p className="text-gray-500 text-sm">Formato</p>
                                     </div>
-                                    <p className="text-white truncate">{t.format.name}</p>
+                                    <p className="text-white text-sm truncate">{t.format.name}</p>
                                 </div>
 
                                 <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <DollarSign className="w-4 h-4 text-purple-400" />
-                                        <p className="text-gray-500 text-sm">Inscripción</p>
+                                        <Users className="w-4 h-4 text-purple-400" />
+                                        <p className="text-gray-500 text-sm">Participantes</p>
                                     </div>
-                                    <p className="text-white">{formatCurrency(t.registrationCost)}</p>
+                                    <p className="text-white text-sm">{t.teamsInscribed} / {t.maxParticipantsPerTournament}</p>
                                 </div>
 
                                 <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
@@ -176,7 +178,7 @@ export function TournamentDetailsAlt() {
                                         <Award className="w-4 h-4 text-purple-400" />
                                         <p className="text-gray-500 text-sm">Premio</p>
                                     </div>
-                                    <p className="text-white">{t.prize}</p>
+                                    <p className="text-white text-sm">{t.prize}</p>
                                 </div>
                             </div>
                         </div>
@@ -184,8 +186,8 @@ export function TournamentDetailsAlt() {
                         {/* Organizer Card */}
                         <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-6 shadow-lg shadow-purple-500/20">
                             <div className="flex items-center gap-4">
-                                <Avatar className="w-16 h-16 border-2 border-white/20">
-                                    <AvatarFallback className="bg-white/10 text-white text-xl">
+                                <Avatar className="w-12 h-12 md:w-16 md:h-16 border-2 border-white/20">
+                                    <AvatarFallback className="bg-white/10 text-white text-lg md:text-xl">
                                         {getInitials(organizerName)}
                                     </AvatarFallback>
                                 </Avatar>
@@ -193,7 +195,7 @@ export function TournamentDetailsAlt() {
                                     <p className="text-white/80 text-sm">Organizado por</p>
                                     <h3 className="text-white">{organizerName}</h3>
                                     {organizerData?.email && (
-                                        <p className="text-white/80 text-sm">{organizerData.email}</p>
+                                        <p className="text-white/70 text-sm mt-1">{organizerData.email}</p>
                                     )}
                                     <div className="flex items-center gap-1 mt-1">
                                         {Array.from({ length: 5 }).map((_, i) => (
@@ -218,20 +220,23 @@ export function TournamentDetailsAlt() {
 
                         {/* Tabs Content */}
                         <Tabs defaultValue="details" className="w-full">
-                            <TabsList className="bg-[#2a2a2a] border border-gray-800 w-full justify-start">
-                                <TabsTrigger value="details" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 text-gray-400">
+                            <TabsList className="bg-surface text-gray-400 border border-purple-800/20 inline-flex w-full sm:w-auto rounded-full p-1">
+                                <TabsTrigger value="details" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
+                                    <Award className="w-4 h-4 mr-1" />
                                     Detalles
                                 </TabsTrigger>
-                                <TabsTrigger value="rules" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 text-gray-400">
+                                <TabsTrigger value="rules" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
+                                    <Shield className="w-4 h-4 mr-1" />
                                     Reglas
                                 </TabsTrigger>
-                                <TabsTrigger value="info" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 text-gray-400">
+                                <TabsTrigger value="info" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
+                                    <Target className="w-4 h-4 mr-1" />
                                     Información
                                 </TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="details" className="mt-6">
-                                <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
+                                <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
                                     <h3 className="text-white mb-4 flex items-center gap-2">
                                         <Award className="w-5 h-5 text-purple-400" />
                                         Descripción del Torneo
@@ -246,7 +251,7 @@ export function TournamentDetailsAlt() {
                             </TabsContent>
 
                             <TabsContent value="rules" className="mt-6">
-                                <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
+                                <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
                                     <h3 className="text-white mb-4 flex items-center gap-2">
                                         <Shield className="w-5 h-5 text-purple-400" />
                                         Reglas del Torneo
@@ -269,7 +274,7 @@ export function TournamentDetailsAlt() {
                             </TabsContent>
 
                             <TabsContent value="info" className="mt-6">
-                                <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
+                                <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
                                     <h3 className="text-white mb-4 flex items-center gap-2">
                                         <Target className="w-5 h-5 text-purple-400" />
                                         Información Adicional
@@ -294,7 +299,7 @@ export function TournamentDetailsAlt() {
                     <div className="lg:col-span-1">
                         <div className="sticky top-24 space-y-4">
                             {/* Inscription Card */}
-                            <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
+                            <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-white">Estado del Torneo</h3>
                                     {getIsPrivateBadge()}

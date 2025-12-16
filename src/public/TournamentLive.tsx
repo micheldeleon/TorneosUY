@@ -362,7 +362,7 @@ export function TournamentLive() {
                     {/* Main Content - Left Side */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Hero Card */}
-                        <div className="bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-[#2a2a2a] border border-purple-700/30 rounded-2xl p-8">
+                        <div className="bg-gradient-to-br from-purple-900/40 via-purple-800/20 to-surface-dark/20 border border-purple-700/30 rounded-2xl p-8">
                             <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20">
@@ -452,7 +452,7 @@ export function TournamentLive() {
 
                         {/* Main Tabs */}
                         <Tabs defaultValue="competicion" className="w-full">
-                            <TabsList className="bg-[#2a2a2a] text-gray-400 border border-gray-800 inline-flex w-full sm:w-auto">
+                            <TabsList className="bg-surface text-gray-400 border border-purple-800/20 inline-flex w-full sm:w-auto rounded-full p-1">
                                 <TabsTrigger
                                     value="competicion"
                                     className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
@@ -490,14 +490,19 @@ export function TournamentLive() {
                                 {/* Liga - Mostrar si el torneo genera fixture */}
                                 {formatoEnUso === "Liga" && (
                                     <>
-                                        <TablaPosiciones posiciones={transformStandingsToTable(standingsData)} />
-                                        <FixtureLiga jornadas={transformFixturesToLeague(fixturesData)} />
+                                    <div className="space-y-6 bg-surface rounded-2xl">
+                                        <TablaPosiciones posiciones={transformStandingsToTable(standingsData)} /> 
+                                    </div>
+
+                                    <div className="space-y-6 bg-surface rounded-2xl">
+                                    <FixtureLiga jornadas={transformFixturesToLeague(fixturesData)} />
+                                    </div>
                                     </>
                                 )}
 
                                 {/* Eliminatoria */}
                                 {formatoEnUso === "Eliminatorio" && (
-                                    <div className="overflow-x-auto">
+                                    <div className="overflow-x-auto bg-surface rounded-2xl">
                                         <div>
                                             <BracketEliminatoria etapas={transformFixturesToBracket(fixturesData)} />
                                         </div>
@@ -506,7 +511,7 @@ export function TournamentLive() {
 
                                 {/* Carrera / Battle Royale */}
                                 {(formatoEnUso === "Carrera" || formatoEnUso === "Battle Royale") && (
-                                    <div className="overflow-x-auto">
+                                    <div className="overflow-x-auto bg-surface rounded-2xl">
                                         <div>
                                             <RankingCarrera competidores={MOCK_PARTICIPANTES.map(p => ({ posicion: p.posicion || 0, nombre: p.nombre }))} />
                                         </div>
@@ -516,7 +521,7 @@ export function TournamentLive() {
 
                             {/* Participantes Tab */}
                             <TabsContent value="participantes" className="mt-6">
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto bg-surface rounded-2xl">
                                     <div>
                                         <ListaParticipantes participantes={MOCK_PARTICIPANTES} mostrarPosicion={formatoEnUso !== "Eliminatorio"} />
                                     </div>
@@ -524,8 +529,8 @@ export function TournamentLive() {
                             </TabsContent>
 
                             {/* Detalles Tab */}
-                            <TabsContent value="detalles" className="mt-6">
-                                <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
+                            <TabsContent value="detalles" className="mt-6 ">
+                                <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
                                     <h3 className="text-white mb-4 flex items-center gap-2">
                                         <Award className="w-5 h-5 text-purple-400" />
                                         Descripción del Torneo
@@ -562,7 +567,7 @@ export function TournamentLive() {
 
                             {/* Reglas Tab */}
                             <TabsContent value="reglas" className="mt-6">
-                                <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
+                                <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
                                     <h3 className="text-white mb-4 flex items-center gap-2">
                                         <Shield className="w-5 h-5 text-purple-400" />
                                         Reglas del Torneo
@@ -577,7 +582,7 @@ export function TournamentLive() {
                     <div className="lg:col-span-1">
                         <div className="lg:sticky top-24 space-y-4">
                             {/* Tournament Info Card */}
-                            <div className="bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
+                            <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
                                 <h3 className="text-white mb-4">Información del Torneo</h3>
 
                                 <div className="space-y-4">
