@@ -444,7 +444,7 @@ export function ManageTournament() {
   // Estados de carga
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-20 px-4 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-400">Cargando torneo...</p>
@@ -455,7 +455,7 @@ export function ManageTournament() {
 
   if (error || !tournamentData) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-20 px-4 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="w-16 h-16 bg-rose-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8 text-rose-400" />
@@ -476,7 +476,7 @@ export function ManageTournament() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-20 px-4">
+    <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
@@ -492,11 +492,19 @@ export function ManageTournament() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center">
+                <button
+                  onClick={() => navigate(`/torneo/${tournamentData.id}`)}
+                  className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center hover:from-purple-700 hover:to-purple-900 transition-all hover:scale-105 cursor-pointer"
+                >
                   <Trophy className="w-6 h-6 text-white" />
-                </div>
+                </button>
                 <div>
-                  <h1 className="text-white text-3xl">{tournamentData.name}</h1>
+                  <h1 
+                    onClick={() => navigate(`/torneo/${tournamentData.id}`)}
+                    className="text-white text-3xl hover:text-purple-300 transition-colors cursor-pointer"
+                  >
+                    {tournamentData.name}
+                  </h1>
                   <p className="text-gray-400">Panel de Gestión del Organizador</p>
                 </div>
               </div>

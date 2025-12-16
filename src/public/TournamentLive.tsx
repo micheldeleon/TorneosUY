@@ -17,53 +17,19 @@ import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
 import { getTournamentById, getUserDetailsById, getTournamentFixtures, getTournamentStandings } from "../services/api.service";
 import { RankingCarrera } from "../components/Tournament/RankingCarrera.tsx";
+import { SplashScreen } from "./SplashScreen.tsx";
 
 type FormatoTorneo = "Liga" | "Eliminatorio" | "Carrera" | "Battle Royale";
 
 const MOCK_PARTICIPANTES = [
-    { id: 1, nombre: "Equipaso FC", estado: "activo" as const, posicion: 1, equipo: "Grupo A" },
-    { id: 2, nombre: "Los Tigres", estado: "activo" as const, posicion: 2, equipo: "Grupo A" },
-    { id: 3, nombre: "Real Cracks", estado: "activo" as const, posicion: 3, equipo: "Grupo A" },
-    { id: 4, nombre: "United Stars", estado: "activo" as const, posicion: 4, equipo: "Grupo A" },
-    { id: 5, nombre: "Juventud FC", estado: "activo" as const, posicion: 5, equipo: "Grupo B" },
-    { id: 6, nombre: "Pelota de Trapo", estado: "activo" as const, posicion: 6, equipo: "Grupo B" },
-    { id: 7, nombre: "Los Campeones", estado: "activo" as const, posicion: 7, equipo: "Grupo B" },
-    { id: 8, nombre: "Deportivo MVD", estado: "activo" as const, posicion: 8, equipo: "Grupo B" },
-];
-
-const MOCK_TABLA_LIGA = [
-    { posicion: 1, equipo: "Equipaso FC", pj: 5, pg: 4, pe: 1, pp: 0, gf: 18, gc: 6, pts: 13 },
-    { posicion: 2, equipo: "Los Tigres", pj: 5, pg: 3, pe: 2, pp: 0, gf: 14, gc: 7, pts: 11 },
-    { posicion: 3, equipo: "Real Cracks", pj: 5, pg: 3, pe: 1, pp: 1, gf: 12, gc: 8, pts: 10 },
-    { posicion: 4, equipo: "United Stars", pj: 5, pg: 2, pe: 2, pp: 1, gf: 10, gc: 9, pts: 8 },
-    { posicion: 5, equipo: "Juventud FC", pj: 5, pg: 2, pe: 0, pp: 3, gf: 9, gc: 11, pts: 6 },
-    { posicion: 6, equipo: "Los Campeones", pj: 5, pg: 1, pe: 2, pp: 2, gf: 8, gc: 12, pts: 5 },
-    { posicion: 7, equipo: "Pelota de Trapo", pj: 5, pg: 1, pe: 0, pp: 4, gf: 6, gc: 15, pts: 3 },
-    { posicion: 8, equipo: "Deportivo MVD", pj: 5, pg: 0, pe: 0, pp: 5, gf: 4, gc: 13, pts: 0 },
-];
-
-const MOCK_FIXTURE_LIGA = [
-    {
-        numero: 1,
-        partidos: [
-            { id: 1, equipoLocal: "Equipaso FC", equipoVisitante: "Los Tigres", resultadoLocal: 3, resultadoVisitante: 2, fecha: "10 Ene", hora: "14:00", estado: "jugado" as const },
-            { id: 2, equipoLocal: "Real Cracks", equipoVisitante: "United Stars", resultadoLocal: 2, resultadoVisitante: 1, fecha: "10 Ene", hora: "15:00", estado: "jugado" as const },
-        ]
-    },
-    {
-        numero: 2,
-        partidos: [
-            { id: 3, equipoLocal: "Juventud FC", equipoVisitante: "Equipaso FC", resultadoLocal: 1, resultadoVisitante: 1, fecha: "17 Ene", hora: "14:00", estado: "jugado" as const },
-            { id: 4, equipoLocal: "Los Campeones", equipoVisitante: "Los Tigres", resultadoLocal: 0, resultadoVisitante: 2, fecha: "17 Ene", hora: "15:00", estado: "pendiente" as const },
-        ]
-    },
-    {
-        numero: 3,
-        partidos: [
-            { id: 5, equipoLocal: "Equipaso FC", equipoVisitante: "Real Cracks", fecha: "24 Ene", hora: "14:00", estado: "pendiente" as const },
-            { id: 6, equipoLocal: "United Stars", equipoVisitante: "Juventud FC", fecha: "24 Ene", hora: "15:00", estado: "pendiente" as const },
-        ]
-    },
+    { id: 1, nombre: "Equipaso FC", email: "equipaso@example.com", estado: "activo" as const, posicion: 1, equipo: "Grupo A" },
+    { id: 2, nombre: "Los Tigres", email: "tigres@example.com", estado: "activo" as const, posicion: 2, equipo: "Grupo A" },
+    { id: 3, nombre: "Real Cracks", email: "realcracks@example.com", estado: "activo" as const, posicion: 3, equipo: "Grupo A" },
+    { id: 4, nombre: "United Stars", email: "united@example.com", estado: "activo" as const, posicion: 4, equipo: "Grupo A" },
+    { id: 5, nombre: "Juventud FC", email: "juventud@example.com", estado: "activo" as const, posicion: 5, equipo: "Grupo B" },
+    { id: 6, nombre: "Pelota de Trapo", email: "pelota@example.com", estado: "activo" as const, posicion: 6, equipo: "Grupo B" },
+    { id: 7, nombre: "Los Campeones", email: "campeones@example.com", estado: "activo" as const, posicion: 7, equipo: "Grupo B" },
+    { id: 8, nombre: "Deportivo MVD", email: "deportivo@example.com", estado: "activo" as const, posicion: 8, equipo: "Grupo B" },
 ];
 
 function calculateEliminationStats(fixtures: any[]) {
@@ -82,20 +48,20 @@ function calculateEliminationStats(fixtures: any[]) {
     const finishedMatches = fixtures.filter(f => f.status === "FINISHED").length;
     const pendingMatches = fixtures.filter(f => f.status !== "FINISHED").length;
     const totalMatches = fixtures.length;
-    
+
     const totalGoals = fixtures.reduce((sum, match) => {
         const homeGoals = match.scoreHome ?? 0;
         const awayGoals = match.scoreAway ?? 0;
         return sum + homeGoals + awayGoals;
     }, 0);
-    
+
     const averageGoals = finishedMatches > 0 ? (totalGoals / finishedMatches).toFixed(2) : "0";
-    
+
     const pendingRounds = fixtures
         .filter(f => f.status !== "FINISHED")
         .map(f => f.round);
     const currentRound = pendingRounds.length > 0 ? Math.min(...pendingRounds) : Math.max(...fixtures.map(f => f.round));
-    
+
     const getRoundName = (round: number): string => {
         const matchesInRound = fixtures.filter(f => f.round === round).length;
         if (matchesInRound >= 256) return "Ciento veintiochoavos";
@@ -133,7 +99,7 @@ function transformFixturesToBracket(fixtures: any[]) {
     // Calculate round names based on number of matches per round
     const sortedRounds = Object.entries(fixturesByRound)
         .sort(([roundA], [roundB]) => Number(roundA) - Number(roundB));
-    
+
     const getRoundName = (matchCount: number): string => {
         if (matchCount >= 256) return "Ciento veintiochoavos de Final";
         if (matchCount >= 128) return "Sesentaicuatroavos de Final";
@@ -145,7 +111,7 @@ function transformFixturesToBracket(fixtures: any[]) {
         if (matchCount === 1) return "Final";
         return `Ronda ${matchCount} equipos`;
     };
-    
+
     const etapas = sortedRounds.map(([, matchesInRound]) => ({
         nombre: getRoundName((matchesInRound as any[]).length),
         duelos: (matchesInRound as any[]).map(match => ({
@@ -201,7 +167,7 @@ function calculateLeagueStats(fixtures: any[], standings: any[]) {
     const finishedMatches = fixtures.filter(f => f.status === "FINISHED").length;
     const pendingMatches = fixtures.filter(f => f.status !== "FINISHED").length;
     const totalMatches = fixtures.length;
-    
+
     const totalGoals = fixtures.reduce((sum, match) => {
         if (match.status === "FINISHED") {
             const homeGoals = match.scoreHome ?? 0;
@@ -210,19 +176,19 @@ function calculateLeagueStats(fixtures: any[], standings: any[]) {
         }
         return sum;
     }, 0);
-    
+
     const averageGoals = finishedMatches > 0 ? (totalGoals / finishedMatches).toFixed(2) : "0";
-    
-    
+
+
     const rounds = [...new Set(fixtures.map(f => f.round))].sort((a, b) => a - b);
     const totalRounds = rounds.length;
-    
-    
-    const currentRound = rounds.find(round => 
+
+
+    const currentRound = rounds.find(round =>
         fixtures.some(f => f.round === round && f.status !== "FINISHED")
     ) || rounds[rounds.length - 1] || 0;
-    
-    
+
+
     const leader = standings && standings.length > 0 ? standings[0].teamName : "N/A";
 
     return {
@@ -332,10 +298,13 @@ export function TournamentLive() {
         }
     }, [t?.id, t?.format.name, fetchStandings]);
 
-    // Redirect to tournament page if the tournament is not in "INICIADO" state
     useEffect(() => {
-        if (t && t.status && t.status !== "INICIADO") {
+        if (t && t.status == "ABIERTO") {
             navigate(`/torneo/${t.id}`);
+        } else if (t && t.status == "CANCELADO") {
+            navigate(`/torneo-cancelado/${t.id}`);
+        } else if (t && t.status == "FINALIZADO") {
+            navigate(`/torneo-finalizado/${t.id}`);
         }
     }, [t, navigate]);
 
@@ -349,7 +318,7 @@ export function TournamentLive() {
     // Loading state
     if (loading || !t) {
         return (
-            <div className="min-h-screen grid place-items-center text-purple-300 bg-[#1a1a1a]">
+            <div className="min-h-screen grid place-items-center text-purple-300 bg-surface-dark">
                 <div className="w-12 h-12 border-4 border-purple-300 border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
@@ -358,7 +327,7 @@ export function TournamentLive() {
     // Error state
     if (error) {
         return (
-            <div className="min-h-screen grid place-items-center text-rose-300 bg-[#1a1a1a]">
+            <div className="min-h-screen grid place-items-center text-rose-300 bg-surface-dark">
                 <div className="text-center">
                     <p className="mb-4">Error al cargar el torneo</p>
                     <Button onClick={() => navigate(-1)} variant="outline" className="text-purple-300 border-purple-600">
@@ -377,7 +346,7 @@ export function TournamentLive() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-20 px-4">
+        <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4">
             <div className="container mx-auto max-w-7xl">
                 {/* Back Button */}
                 <Button
@@ -691,7 +660,7 @@ export function TournamentLive() {
                                                         <div className="flex justify-between">
                                                             <span className="text-gray-400">Ronda Actual</span>
                                                             <span className="text-white">{stats.currentRound}</span>
-                                                        </div>                                                   
+                                                        </div>
                                                         <div className="flex justify-between">
                                                             <span className="text-gray-400">Goles Totales</span>
                                                             <span className="text-white">{stats.totalGoals}</span>

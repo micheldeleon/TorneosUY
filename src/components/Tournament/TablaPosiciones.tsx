@@ -1,4 +1,4 @@
-import { Trophy, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Trophy, Minus } from "lucide-react";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 
@@ -36,7 +36,7 @@ export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-800">
+              <tr className="border-b border-gray-500">
                 <th className="text-left py-3 px-4 text-gray-400 text-sm">Pos</th>
                 <th className="text-left py-3 px-4 text-gray-400 text-sm">Equipo</th>
                 <th className="text-center py-3 px-2 text-gray-400 text-sm">PJ</th>
@@ -52,13 +52,12 @@ export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
             <tbody>
               {posiciones.map((equipo) => {
                 const badge = getPosicionBadge(equipo.posicion);
-                const IconComponent = badge.icon;
                 const diferencia = equipo.gf - equipo.gc;
 
                 return (
-                  <tr 
+                  <tr
                     key={equipo.posicion}
-                    className="border-b border-gray-800/50 hover:bg-purple-600/5 transition-colors"
+                    className="border-b border-gray-500/50 hover:bg-purple-600/5 transition-colors"
                   >
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
@@ -68,7 +67,7 @@ export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">                       
+                      <div className="flex items-center gap-3">
                         <span className="text-white">{equipo.equipo}</span>
                       </div>
                     </td>
@@ -102,9 +101,9 @@ export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
             const diferencia = equipo.gf - equipo.gc;
 
             return (
-              <div 
+              <div
                 key={equipo.posicion}
-                className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors"
+                className=" border border-gray-500/50 rounded-xl p-4 hover:border-purple-600/50 transition-colors"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -112,18 +111,13 @@ export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
                       {equipo.posicion}
                     </Badge>
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center">
-                        <span className="text-white text-xs">
-                          {equipo.equipo.substring(0, 2).toUpperCase()}
-                        </span>
-                      </div>
                       <span className="text-white">{equipo.equipo}</span>
                     </div>
                   </div>
                   <span className="text-white text-xl px-3 py-1 bg-purple-600/20 rounded-lg">{equipo.pts}</span>
                 </div>
-                
-                <div className="grid grid-cols-4 gap-2 text-sm">
+
+                <div className="grid grid-cols-7 gap-2 text-sm">
                   <div className="text-center">
                     <p className="text-gray-500 text-xs mb-1">PJ</p>
                     <p className="text-white">{equipo.pj}</p>
@@ -140,9 +134,6 @@ export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
                     <p className="text-gray-500 text-xs mb-1">PP</p>
                     <p className="text-rose-400">{equipo.pp}</p>
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-2 text-sm mt-2 pt-2 border-t border-gray-800">
                   <div className="text-center">
                     <p className="text-gray-500 text-xs mb-1">GF</p>
                     <p className="text-white">{equipo.gf}</p>
@@ -159,10 +150,11 @@ export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
                   </div>
                 </div>
               </div>
-            );
+              
+        );
           })}
-        </div>
       </div>
-    </Card>
+    </div>
+    </Card >
   );
 }

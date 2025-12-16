@@ -217,7 +217,7 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
 
               {/* Mobile Menu Button */}
               <button
-                className="lg:hidden w-10 h-10 flex items-center justify-center bg-purple-900/30 hover:bg-purple-800/40 border border-purple-600/30 rounded-xl text-white transition-all backdrop-blur-sm"
+                className="lg:hidden w-10 h-10 flex items-center justify-center bg-purple-900/5 hover:bg-purple-800/40 border border-purple-600/5 rounded-xl text-white transition-all backdrop-blur-sm"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 <AnimatePresence mode="wait">

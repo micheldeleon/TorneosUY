@@ -55,10 +55,13 @@ export function TournamentDetailsAlt() {
         return cleanup;
     }, [id]);
 
-    // Redirect to tournament page if the tournament is not in "ABIERTO" state
     useEffect(() => {
-        if (t && t.status && t.status !== "ABIERTO") {
+        if (t && t.status == "INICIADO") {
             navigate(`/torneo-iniciado/${t.id}`);
+        } else if (t && t.status == "CANCELADO") {
+            navigate(`/torneo-cancelado/${t.id}`);
+        } else if (t && t.status == "FINALIZADO") {
+            navigate(`/torneo-finalizado/${t.id}`);
         }
     }, [t, navigate]);
 
@@ -74,7 +77,7 @@ export function TournamentDetailsAlt() {
     // Mostrar error SOLO si hay error
     if (error) {
         return (
-            <div className="min-h-screen grid place-items-center text-purple-300 bg-surface">
+            <div className="min-h-screen grid place-items-center text-purple-300 bg-surface-dark">
                 <div className="w-12 h-12 border-4 border-purple-300 border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
@@ -83,7 +86,7 @@ export function TournamentDetailsAlt() {
     // Mostrar loader mientras carga o mientras t es falsy
     if (loading || !t) {
         return (
-            <div className="min-h-screen grid place-items-center text-purple-300 bg-surface">
+            <div className="min-h-screen grid place-items-center text-purple-300 bg-surface-dark">
                 <div className="w-12 h-12 border-4 border-purple-300 border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
@@ -113,7 +116,7 @@ export function TournamentDetailsAlt() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-20 px-4">
+        <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4">
             <div className="container mx-auto max-w-7xl">
                 {/* Back Button */}
                 <Button

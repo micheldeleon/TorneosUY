@@ -93,7 +93,7 @@ export function FixtureLiga({ jornadas }: FixtureLigaProps) {
           {jornadaSeleccionada?.partidos.map((partido) => (
                   <div
                     key={partido.id}
-                    className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors"
+                    className=" border border-gray-500/50 rounded-xl p-4 hover:border-purple-600/50 transition-colors"
                   >
                     {/* Desktop Layout */}
                     <div className="hidden md:flex items-center justify-between gap-4">
@@ -149,22 +149,6 @@ export function FixtureLiga({ jornadas }: FixtureLigaProps) {
                           )}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Info adicional */}
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-800 flex-wrap gap-2">
-                      <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-400">
-                        {partido.fecha && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {partido.fecha}
-                          </span>
-                        )}
-                        {partido.hora && (
-                          <span>{partido.hora}</span>
-                        )}
-                      </div>
-                      {getEstadoBadge(partido.estado)}
                     </div>
                   </div>
                 ))}

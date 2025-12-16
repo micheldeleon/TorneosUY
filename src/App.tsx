@@ -15,6 +15,9 @@ import { Toaster } from "sonner";
 import { ManageTournament } from "./private/tournament/ManageTournament";
 import { TournamentsExplore } from "./public/TournamentsExplore";
 import { NavbarModern } from "./components/Navbar/NavbarModern";
+import TournamentCanceled from "./public/TournamentCanceled";
+import TournamentFinished from "./public/TournamentFinished";
+import Error404 from "./public/Error404";
 
 
 
@@ -28,7 +31,31 @@ function App() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const hideChrome = location.pathname.startsWith("/login") || location.pathname.startsWith("/signup");
+  // Lista de rutas válidas
+  const validRoutes = [
+    '/',
+    '/quienes',
+    '/contacto',
+    '/faq',
+    '/torneos',
+    '/perfil',
+    '/perfil2',
+    '/login',
+    '/signup',
+    '/crearTorneo',
+  ];
+
+  const isValidRoute = validRoutes.includes(location.pathname) ||
+    location.pathname.startsWith('/torneo/') ||
+    location.pathname.startsWith('/torneo-iniciado/') ||
+    location.pathname.startsWith('/torneo-cancelado/') ||
+    location.pathname.startsWith('/torneo-finalizado/') ||
+    location.pathname.startsWith('/inscripcion-torneo/') ||
+    location.pathname.startsWith('/manejar-torneo/');
+
+  const hideChrome = location.pathname.startsWith("/login") || 
+                     location.pathname.startsWith("/signup") ||
+                     !isValidRoute;
 
   const navLinks: NavItem[] = [
     { label: "Inicio", sectionId: "inicio" },
@@ -77,6 +104,8 @@ function App() {
           <Route path="/faq" element={<Faq />} />
           <Route path="/torneo/:id" element={<TournamentDetailsAlt />} />
           <Route path="torneo-iniciado/:id" element={<TournamentLive />} />
+          <Route path="torneo-cancelado/:id" element={<TournamentCanceled />} />
+          <Route path="torneo-finalizado/:id" element={<TournamentFinished />} />
           <Route path="inscripcion-torneo/:id" element={<TournamentRegistration />} />
           <Route
             path="/perfil"
@@ -126,6 +155,9 @@ function App() {
             element={
               <TournamentsExplore />
             } />
+          
+          {/* Ruta 404 - Debe estar al final */}
+          <Route path="*" element={<Error404 />} />
         </Routes>
       </main>
 
