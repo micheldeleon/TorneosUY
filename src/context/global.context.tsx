@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User } from "../models/user.model";
+import { isTokenExpired } from "../services/utilities/jwt.utility";
 
 interface GlobalContextType {
   user: User | null;
@@ -54,19 +55,39 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // 6) (Opcional) Verificar expiración del JWT al montar
-  // useEffect(() => {
-  //   if (!token) return;
-  //   try {
-  //     const [, payloadB64] = token.split(".");
-  //     const payload = JSON.parse(atob(payloadB64));
-  //     const now = Math.floor(Date.now() / 1000);
-  //     if (payload.exp && now >= payload.exp) logout();
-  //   } catch {
-  //     // token inválido → fuera
-  //     logout();
-  //   }
-  // }, [token]);
+  // 6) Verificar expiración del JWT al montar y cuando cambia el token
+  useEffect(() => {
+    if (!token) return;
+    
+    try {
+      if (isTokenExpired(token)) {
+        console.warn('Token expirado, cerrando sesión...');
+        logout();
+      }
+    } catch (error) {
+      console.error('Error verificando token:', error);
+      logout();
+    }
+  }, [token]);
+
+  // 7) Verificación periódica del token (cada minuto)
+  useEffect(() => {
+    if (!token) return;
+
+    const intervalId = setInterval(() => {
+      try {
+        if (isTokenExpired(token)) {
+          console.warn('Token expirado detectado en verificación periódica, cerrando sesión...');
+          logout();
+        }
+      } catch (error) {
+        console.error('Error en verificación periódica del token:', error);
+        logout();
+      }
+    }, 60000); // Verificar cada 60 segundos
+
+    return () => clearInterval(intervalId);
+  }, [token]);
 
   return (
     <GlobalContext.Provider value={{ user, token, setUser, setToken, logout }}>

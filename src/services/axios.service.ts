@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
+import { isTokenExpired } from "./utilities/jwt.utility";
 
 let axiosInstance: AxiosInstance | null = null;
 const createAxios = (baseURL: string) => {
@@ -14,6 +15,15 @@ const setupInterceptors = () => {
         (config: InternalAxiosRequestConfig) => {
             const token = localStorage.getItem("token");
             if (token) {
+                // Verificar si el token ha expirado antes de hacer la petición
+                if (isTokenExpired(token)) {
+                    console.warn('Token expirado detectado en interceptor, limpiando sesión...');
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    // Redirigir al login
+                    window.location.href = '/login';
+                    return Promise.reject(new Error('Token expirado'));
+                }
                 config.headers.set("Authorization", `Bearer ${token}`);
             }
             return config;
@@ -23,7 +33,16 @@ const setupInterceptors = () => {
 
     axiosInstance.interceptors.response.use(
         (response: AxiosResponse) => response,
-        (error) => Promise.reject(error)
+        (error) => {
+            // Si el servidor responde con 401 (Unauthorized), también cerrar sesión
+            if (error.response && error.response.status === 401) {
+                console.warn('Respuesta 401 recibida, limpiando sesión...');
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                window.location.href = '/login';
+            }
+            return Promise.reject(error);
+        }
     );
 };
 
