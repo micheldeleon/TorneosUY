@@ -4,8 +4,7 @@ import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Trophy, Calendar, Users, Award, Edit, Plus,
-    Target, Clock, MapPin, Star, ChevronRight,
-    Activity, Medal, Crown, Flame, Settings, X, Save, User, Mail, Phone, AlertTriangle,
+    Target, ChevronRight, Settings, X, Save, User, Mail, Phone, AlertTriangle,
     Gem,
     ShieldPlusIcon
 } from "lucide-react";
@@ -18,18 +17,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Ta
 import { Input } from "../../components/ui/Input";
 import { Label } from "../../components/ui/Label";
 import { Separator } from "../../components/ui/Separator";
-import { getUsersByIdAndEmail, requestOrganizerPermission, updateUserDetails } from "../../services/api.service";
-import type { UserDetails } from "../../models/userDetails.model";
+import { getUsersByIdAndEmail, requestOrganizerPermission, updateUserDetails, getUserOrganizedTournaments, getUserParticipatingTournaments } from "../../services/api.service";
+import type { UserDetails, TournamentDetails, ApiResponse } from "../../models";
 import { useApi } from "../../hooks/useApi";
+import { useIsOrganizer } from "../../hooks/useIsOrganizer";
 import type { UserFind } from "../../models/userFind.model";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { schema as detailsSchema, type FormValueDetails } from "../../components/ui/DetailsUserForm/details.form.model";
-import type { ApiResponse } from "../../models";
 
 export default function DashboardAlt() {
     const navigate = useNavigate();
+    const isOrganizer = useIsOrganizer();
     const { fetch, data, error, loading } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
     const {fetch: fetchRequestOrganizerPermission} = useApi<ApiResponse, number>(requestOrganizerPermission);
+    const { fetch: fetchOrganizedTournaments, data: organizedTournaments, loading: loadingOrganized } = useApi<TournamentDetails[], { id: number; email: string }>(getUserOrganizedTournaments);
+    const { fetch: fetchParticipatingTournaments, data: participatingTournaments, loading: loadingParticipating } = useApi<TournamentDetails[], { id: number; email: string }>(getUserParticipatingTournaments);
     const [showEditModal, setShowEditModal] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -122,6 +124,9 @@ export default function DashboardAlt() {
         try {
             const user: UserFind = JSON.parse(storedUser);
             fetch(user);
+            // Cargar torneos organizados y participando
+            fetchOrganizedTournaments({ id: user.id, email: user.email });
+            fetchParticipatingTournaments({ id: user.id, email: user.email });
         } catch (e) {
             console.error("JSON inválido en localStorage.user", e);
             navigate("/login");
@@ -182,73 +187,30 @@ export default function DashboardAlt() {
         }
     };
 
-    const userStats = {
-        torneosParticipados: 12,
-        torneosGanados: 3,
-        proximosTorneos: 2,
-        tasaAsistencia: 85,
-        racha: 5,
+    // Formatear fecha para mostrar
+    const formatDate = (isoString: string) => {
+        const date = new Date(isoString);
+        return date.toLocaleDateString('es-UY', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
-    const proximosTorneos = [
-        {
-            id: 1,
-            nombre: "Campeonato Fútbol 5",
-            fecha: "20 nov. 2025",
-            hora: "18:00",
-            lugar: "Campomar",
-            estado: "Confirmado",
-            tipo: "Fútbol",
-            participantes: "12/16",
-        },
-        {
-            id: 2,
-            nombre: "Torneo CS2 Pro League",
-            fecha: "28 nov. 2025",
-            hora: "20:00",
-            lugar: "Online",
-            estado: "Pendiente",
-            tipo: "eSports",
-            participantes: "5/8",
-        },
-    ];
-
-    const historialTorneos = [
-        {
-            id: 3,
-            nombre: "Copa de Verano 2024",
-            fecha: "15 oct. 2024",
-            posicion: 1,
-            premio: "$3.000",
-            tipo: "Fútbol",
-        },
-        {
-            id: 4,
-            nombre: "Valorant Champions",
-            fecha: "02 oct. 2024",
-            posicion: 3,
-            premio: "$800",
-            tipo: "eSports",
-        },
-        {
-            id: 5,
-            nombre: "Running Challenge",
-            fecha: "20 sep. 2024",
-            posicion: 7,
-            premio: "-",
-            tipo: "Running",
-        },
-    ];
+    // Obtener estado badge
+    const getEstadoBadge = (status: string) => {
+        switch (status) {
+            case "ABIERTO":
+                return { text: "Abierto", className: "bg-green-600/20 text-green-300 border-green-600/50" };
+            case "INICIADO":
+                return { text: "En Vivo", className: "bg-red-600/20 text-red-300 border-red-600/50 animate-pulse" };
+            case "FINALIZADO":
+                return { text: "Finalizado", className: "bg-gray-600/20 text-gray-300 border-gray-600/50" };
+            case "CANCELADO":
+                return { text: "Cancelado", className: "bg-orange-600/20 text-orange-300 border-orange-600/50" };
+            default:
+                return { text: status, className: "bg-purple-600/20 text-purple-300 border-purple-600/50" };
+        }
+    };
 
     const getInitials = (name: string) => {
         return name.split(" ").map(n => n[0]).join("").toUpperCase();
-    };
-
-    const getPosicionBadge = (pos: number) => {
-        if (pos === 1) return { icon: Crown, color: "text-yellow-400", bg: "bg-yellow-600/20", border: "border-yellow-600/50" };
-        if (pos === 2) return { icon: Medal, color: "text-gray-300", bg: "bg-gray-600/20", border: "border-gray-600/50" };
-        if (pos === 3) return { icon: Medal, color: "text-orange-400", bg: "bg-orange-600/20", border: "border-orange-600/50" };
-        return { icon: Target, color: "text-purple-400", bg: "bg-purple-600/20", border: "border-purple-600/50" };
     };
 
     return (
@@ -315,58 +277,61 @@ export default function DashboardAlt() {
                         </div>
                     </Card>
 
-                    {/* Quick Action Card */}
-                    <Card className="bg-gradient-to-br from-purple-600 to-purple-900 border-purple-700 p-6 sm:p-8 flex flex-col justify-center shadow-lg shadow-purple-500/20">
-                        <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-white mb-3 sm:mb-4 " />
-                        <h3 className="text-white mb-2 text-base sm:text-lg">Crear Torneo</h3>
-                        <p className="text-white/80 text-xs sm:text-sm mb-4 sm:mb-6">
-                            Organiza tu propio torneo y atrae competidores
-                        </p>
-                        <Button
-                            onClick={() => navigate("/crearTorneo")}
-                            className="w-full bg-white hover:bg-white/90 text-purple-900 text-sm"
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Nuevo Torneo
-                        </Button>
-                        <p className="m-2"></p>
-                        <Button
-                            onClick={requestOrganizerPermissionHandler}
-                            className="w-full bg-white hover:bg-white/90 text-purple-900 text-sm"
-                        >
-                            <ShieldPlusIcon className="w-4 h-4 mr-2" />
-                            Solicitar permiso de organizador
-                        </Button>
-                    </Card>
+                    {/* Quick Action Card - Solo para organizadores */}
+                    {isOrganizer ? (
+                        <Card className="bg-gradient-to-br from-purple-600 to-purple-900 border-purple-700 p-6 sm:p-8 flex flex-col justify-center shadow-lg shadow-purple-500/20">
+                            <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-white mb-3 sm:mb-4 " />
+                            <h3 className="text-white mb-2 text-base sm:text-lg">Crear Torneo</h3>
+                            <p className="text-white/80 text-xs sm:text-sm mb-4 sm:mb-6">
+                                Organiza tu propio torneo y atrae competidores
+                            </p>
+                            <Button
+                                onClick={() => navigate("/crearTorneo")}
+                                className="w-full bg-white hover:bg-white/90 text-purple-900 text-sm"
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Nuevo Torneo
+                            </Button>
+                        </Card>
+                    ) : (
+                        <Card className="bg-gradient-to-br from-purple-600 to-purple-900 border-purple-700 p-6 sm:p-8 flex flex-col justify-center shadow-lg shadow-purple-500/20">
+                            <ShieldPlusIcon className="w-10 h-10 sm:w-12 sm:h-12 text-white mb-3 sm:mb-4 " />
+                            <h3 className="text-white mb-2 text-base sm:text-lg">¿Quieres organizar?</h3>
+                            <p className="text-white/80 text-xs sm:text-sm mb-4 sm:mb-6">
+                                Solicita permisos de organizador para crear tus propios torneos
+                            </p>
+                            <Button
+                                onClick={requestOrganizerPermissionHandler}
+                                className="w-full bg-white hover:bg-white/90 text-purple-900 text-sm"
+                            >
+                                <ShieldPlusIcon className="w-4 h-4 mr-2" />
+                                Solicitar Permisos
+                            </Button>
+                        </Card>
+                    )}
                 </div>
 
                 {/* Main Content with Tabs */}
-                <Tabs defaultValue="proximos" className="w-full">
+                <Tabs defaultValue={isOrganizer ? "organizados" : "participando"} className="w-full">
                     <div className="overflow-x-auto -mx-4 px-4 mb-6">
                         <TabsList className="bg-[#2a2a2a] text-gray-400 border border-gray-800 inline-flex w-full sm:w-auto">
+                            {isOrganizer && (
+                                <TabsTrigger
+                                    value="organizados"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
+                                >
+                                    <Trophy className="w-4 h-4 mr-1 sm:mr-2" />
+                                    <span className="hidden sm:inline">Torneos Organizados</span>
+                                    <span className="sm:hidden">Organizados</span>
+                                </TabsTrigger>
+                            )}
                             <TabsTrigger
-                                value="proximos"
+                                value="participando"
                                 className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
                             >
                                 <Calendar className="w-4 h-4 mr-1 sm:mr-2" />
-                                <span className="hidden sm:inline">Próximos torneos</span>
-                                <span className="sm:hidden">Próx. Torenos</span>
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="historial"
-                                className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
-                            >
-                                <Activity className="w-4 h-4 mr-1 sm:mr-2" />
-                                <span className="hidden sm:inline">Historial</span>
-                                <span className="sm:hidden">Historial</span>
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="estadisticas"
-                                className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
-                            >
-                                <Target className="w-4 h-4 mr-1 sm:mr-2" />
-                                <span className="hidden sm:inline">Estadísticas</span>
-                                <span className="sm:hidden">Estad.</span>
+                                <span className="hidden sm:inline">Torneos Participando</span>
+                                <span className="sm:hidden">Participando</span>
                             </TabsTrigger>
                             <TabsTrigger
                                 value="perfil"
@@ -379,205 +344,181 @@ export default function DashboardAlt() {
                         </TabsList>
                     </div>
 
-                    {/* Próximos Torneos */}
-                    <TabsContent value="proximos">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                            {proximosTorneos.map((torneo) => (
-                                <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group">
-                                    <div className="p-4 sm:p-6">
-                                        <div className="flex items-start justify-between gap-3 mb-4">
-                                            <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                    <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
-                                                        {torneo.nombre}
-                                                    </h3>
-                                                    <p className="text-gray-500 text-xs sm:text-sm truncate">{torneo.tipo}</p>
-                                                </div>
-                                            </div>
-                                            <Badge
-                                                className={`text-xs sm:text-sm whitespace-nowrap ${torneo.estado === "Confirmado"
-                                                        ? "bg-green-600/20 text-green-300 border-green-600/50"
-                                                        : "bg-yellow-600/20 text-yellow-300 border-yellow-600/50"
-                                                    }`}
-                                            >
-                                                {torneo.estado}
-                                            </Badge>
-                                        </div>
-
-                                        <div className="space-y-2 sm:space-y-3 mb-4 text-xs sm:text-sm">
-                                            <div className="flex items-center gap-2 text-gray-400">
-                                                <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                                                <span className="truncate">{torneo.fecha}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-gray-400">
-                                                <Clock className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                                                <span>{torneo.hora}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-gray-400">
-                                                <MapPin className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                                                <span className="truncate">{torneo.lugar}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
-                                                <span className="text-gray-400">Participantes</span>
-                                                <span className="text-white">{torneo.participantes}</span>
-                                            </div>
-                                            <Progress value={75} className="h-2" />
-                                        </div>
-
-                                        <Link to={`/torneo/${torneo.id}`}>
-                                            <Button
-                                                className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 text-sm"
-                                            >
-                                                Ver Detalles
-                                                <ChevronRight className="w-4 h-4 ml-2" />
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </Card>
-                            ))}
-
-                            {proximosTorneos.length === 0 && (
-                                <Card className="md:col-span-2 bg-[#2a2a2a] border-gray-800 p-8 sm:p-12">
-                                    <div className="text-center">
-                                        <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-4" />
-                                        <h3 className="text-white mb-2 text-sm sm:text-base">No tienes torneos próximos</h3>
-                                        <p className="text-gray-400 mb-6 text-xs sm:text-sm">Explora torneos disponibles y únete a la competencia</p>
-                                        <Button
-                                            onClick={() => navigate("/explorar-torneos")}
-                                            className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white text-sm"
-                                        >
-                                            Explorar Torneos
-                                        </Button>
-                                    </div>
-                                </Card>
-                            )}
-                        </div>
-                    </TabsContent>
-
-                    {/* Historial */}
-                    <TabsContent value="historial">
-                        <Card className="bg-[#2a2a2a] border-gray-800">
-                            <div className="p-4 sm:p-6">
-                                <div className="flex items-center justify-between mb-4 sm:mb-6 flex-wrap gap-2">
-                                    <h3 className="text-white text-base sm:text-lg">Torneos Completados</h3>
-                                    <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50 text-xs sm:text-sm">
-                                        {historialTorneos.length} torneos
-                                    </Badge>
-                                </div>
-
-                                <div className="space-y-2 sm:space-y-3">
-                                    {historialTorneos.map((torneo) => {
-                                        const posData = getPosicionBadge(torneo.posicion);
-                                        const IconComponent = posData.icon;
-
-                                        return (
-                                            <div
-                                                key={torneo.id}
-                                                className="bg-[#1a1a1a] border border-gray-800 hover:border-purple-600/50 rounded-xl p-3 sm:p-4 transition-all group"
-                                            >
-                                                <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-0">
-                                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 ${posData.bg} rounded-xl flex items-center justify-center border ${posData.border} flex-shrink-0`}>
-                                                        <IconComponent className={`w-5 h-5 sm:w-6 sm:h-6 ${posData.color}`} />
-                                                    </div>
-
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
-                                                            {torneo.nombre}
-                                                        </h4>
-                                                        <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-400 flex-wrap">
-                                                            <span className="truncate">{torneo.tipo}</span>
-                                                            <span className="hidden sm:inline">•</span>
-                                                            <span className="truncate">{torneo.fecha}</span>
+                    {/* Torneos Organizados - Solo si es organizador */}
+                    {isOrganizer && (
+                        <TabsContent value="organizados">
+                        {loadingOrganized ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                {[1, 2].map((i) => (
+                                    <Card key={i} className="bg-[#2a2a2a] border-gray-800 p-4 sm:p-6">
+                                        <Skeleton className="h-24 w-full" />
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : organizedTournaments && organizedTournaments.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                {organizedTournaments.map((torneo) => {
+                                    const estadoBadge = getEstadoBadge(torneo.status);
+                                    return (
+                                        <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group">
+                                            <div className="p-4 sm:p-6">
+                                                <div className="flex items-start justify-between gap-3 mb-4">
+                                                    <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                            <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
+                                                                {torneo.name}
+                                                            </h3>
+                                                            <p className="text-gray-500 text-xs sm:text-sm truncate">{torneo.discipline?.name || "Torneo"}</p>
                                                         </div>
                                                     </div>
-
-                                                    <div className="text-right flex-shrink-0">
-                                                        <div className="text-white text-sm sm:text-base mb-1">#{torneo.posicion}</div>
-                                                        {torneo.premio !== "-" && (
-                                                            <div className="text-green-400 text-xs sm:text-sm">{torneo.premio}</div>
-                                                        )}
-                                                    </div>
-
-                                                    <Link to={`/torneo/${torneo.id}`}>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10 text-xs sm:text-sm flex-shrink-0"
-                                                        >
-                                                            Ver
-                                                        </Button>
-                                                    </Link>
+                                                    <Badge className={`text-xs sm:text-sm whitespace-nowrap ${estadoBadge.className}`}>
+                                                        {estadoBadge.text}
+                                                    </Badge>
                                                 </div>
+
+                                                <div className="space-y-2 sm:space-y-3 mb-4 text-xs sm:text-sm">
+                                                    <div className="flex items-center gap-2 text-gray-400">
+                                                        <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                        <span className="truncate">{formatDate(torneo.startAt)}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-gray-400">
+                                                        <Users className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                        <span>{torneo.teamsInscribed}/{torneo.maxParticipantsPerTournament} inscritos</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-gray-400">
+                                                        <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                        <span className="truncate">{torneo.prize}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
+                                                        <span className="text-gray-400">Inscritos</span>
+                                                        <span className="text-white">{torneo.teamsInscribed}/{torneo.maxParticipantsPerTournament}</span>
+                                                    </div>
+                                                    <Progress value={(torneo.teamsInscribed / torneo.maxParticipantsPerTournament) * 100} className="h-2" />
+                                                </div>
+
+                                                <Link to={`/manejar-torneo/${torneo.id}`}>
+                                                    <Button
+                                                        className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 text-sm"
+                                                    >
+                                                        Gestionar
+                                                        <ChevronRight className="w-4 h-4 ml-2" />
+                                                    </Button>
+                                                </Link>
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                        </Card>
+                                    );
+                                })}
                             </div>
-                        </Card>
+                        ) : (
+                            <Card className="bg-[#2a2a2a] border-gray-800 p-8 sm:p-12">
+                                <div className="text-center">
+                                    <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-4" />
+                                    <h3 className="text-white mb-2 text-sm sm:text-base">No has organizado torneos</h3>
+                                    <p className="text-gray-400 mb-6 text-xs sm:text-sm">Crea tu primer torneo y empieza a competir</p>
+                                    <Button
+                                        onClick={() => navigate("/crearTorneo")}
+                                        className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white text-sm"
+                                    >
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Crear Torneo
+                                    </Button>
+                                </div>
+                            </Card>
+                        )}
                     </TabsContent>
+                    )}
 
-                    {/* Estadísticas */}
-                    <TabsContent value="estadisticas">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                            <Card className="bg-[#2a2a2a] border-gray-800 p-4 sm:p-6">
-                                <h3 className="text-white mb-4 sm:mb-6 text-sm sm:text-base">Rendimiento General</h3>
-                                <div className="space-y-3 sm:space-y-4">
-                                    <div>
-                                        <div className="flex justify-between text-xs sm:text-sm mb-2">
-                                            <span className="text-gray-400">Tasa de Victoria</span>
-                                            <span className="text-white">25%</span>
-                                        </div>
-                                        <Progress value={25} className="h-2" />
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between text-xs sm:text-sm mb-2">
-                                            <span className="text-gray-400">Tasa de Asistencia</span>
-                                            <span className="text-white">{userStats.tasaAsistencia}%</span>
-                                        </div>
-                                        <Progress value={userStats.tasaAsistencia} className="h-2" />
-                                    </div>
-                                    <div>
-                                        <div className="flex justify-between text-xs sm:text-sm mb-2">
-                                            <span className="text-gray-400">Participación Activa</span>
-                                            <span className="text-white">92%</span>
-                                        </div>
-                                        <Progress value={92} className="h-2" />
-                                    </div>
+                    {/* Torneos Participando */}
+                    <TabsContent value="participando">
+                        {loadingParticipating ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                {[1, 2].map((i) => (
+                                    <Card key={i} className="bg-[#2a2a2a] border-gray-800 p-4 sm:p-6">
+                                        <Skeleton className="h-24 w-full" />
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : participatingTournaments && participatingTournaments.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                {participatingTournaments.map((torneo) => {
+                                    const estadoBadge = getEstadoBadge(torneo.status);
+                                    return (
+                                        <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group">
+                                            <div className="p-4 sm:p-6">
+                                                <div className="flex items-start justify-between gap-3 mb-4">
+                                                    <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                            <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
+                                                                {torneo.name}
+                                                            </h3>
+                                                            <p className="text-gray-500 text-xs sm:text-sm truncate">{torneo.discipline?.name || "Torneo"}</p>
+                                                        </div>
+                                                    </div>
+                                                    <Badge className={`text-xs sm:text-sm whitespace-nowrap ${estadoBadge.className}`}>
+                                                        {estadoBadge.text}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="space-y-2 sm:space-y-3 mb-4 text-xs sm:text-sm">
+                                                    <div className="flex items-center gap-2 text-gray-400">
+                                                        <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                        <span className="truncate">{formatDate(torneo.startAt)}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-gray-400">
+                                                        <Target className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                        <span>{torneo.format?.name || "Formato"}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-gray-400">
+                                                        <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                        <span className="truncate">{torneo.prize}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
+                                                        <span className="text-gray-400">Participantes</span>
+                                                        <span className="text-white">{torneo.teamsInscribed}/{torneo.maxParticipantsPerTournament}</span>
+                                                    </div>
+                                                    <Progress value={(torneo.teamsInscribed / torneo.maxParticipantsPerTournament) * 100} className="h-2" />
+                                                </div>
+
+                                                <Link to={`/torneo/${torneo.id}`}>
+                                                    <Button
+                                                        className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 text-sm"
+                                                    >
+                                                        Ver Detalles
+                                                        <ChevronRight className="w-4 h-4 ml-2" />
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        </Card>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <Card className="bg-[#2a2a2a] border-gray-800 p-8 sm:p-12">
+                                <div className="text-center">
+                                    <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-4" />
+                                    <h3 className="text-white mb-2 text-sm sm:text-base">No estás participando en torneos</h3>
+                                    <p className="text-gray-400 mb-6 text-xs sm:text-sm">Explora torneos disponibles y únete a la competencia</p>
+                                    <Button
+                                        onClick={() => navigate("/explorar-torneos")}
+                                        className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white text-sm"
+                                    >
+                                        Explorar Torneos
+                                    </Button>
                                 </div>
                             </Card>
-
-                            <Card className="bg-[#2a2a2a] border-gray-800 p-4 sm:p-6">
-                                <h3 className="text-white mb-4 sm:mb-6 text-sm sm:text-base">Logros Desbloqueados</h3>
-                                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                    <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-600/10 border border-yellow-700/30 rounded-xl p-3 sm:p-4 text-center">
-                                        <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 mx-auto mb-1 sm:mb-2" />
-                                        <p className="text-white text-xs sm:text-sm">Primer Lugar</p>
-                                        <p className="text-gray-400 text-xs">3 veces</p>
-                                    </div>
-                                    <div className="bg-gradient-to-br from-purple-900/20 to-purple-600/10 border border-purple-700/30 rounded-xl p-3 sm:p-4 text-center">
-                                        <Star className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 mx-auto mb-1 sm:mb-2" />
-                                        <p className="text-white text-xs sm:text-sm">Veterano</p>
-                                        <p className="text-gray-400 text-xs">10+ torneos</p>
-                                    </div>
-                                    <div className="bg-gradient-to-br from-orange-900/20 to-orange-600/10 border border-orange-700/30 rounded-xl p-3 sm:p-4 text-center">
-                                        <Flame className="w-6 h-6 sm:w-8 sm:h-8 text-orange-400 mx-auto mb-1 sm:mb-2" />
-                                        <p className="text-white text-xs sm:text-sm">En Racha</p>
-                                        <p className="text-gray-400 text-xs">5 seguidos</p>
-                                    </div>
-                                    <div className="bg-gradient-to-br from-blue-900/20 to-blue-600/10 border border-blue-700/30 rounded-xl p-3 sm:p-4 text-center">
-                                        <Users className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400 mx-auto mb-1 sm:mb-2" />
-                                        <p className="text-white text-xs sm:text-sm">Social</p>
-                                        <p className="text-gray-400 text-xs">Multi-disciplina</p>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>
+                        )}
                     </TabsContent>
 
                     {/* Mi Perfil - Datos Personales */}

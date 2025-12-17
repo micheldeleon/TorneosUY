@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User } from "../models/user.model";
-import { isTokenExpired } from "../services/utilities/jwt.utility";
+import { isTokenExpired, decodeJWT } from "../services/utilities/jwt.utility";
 
 interface GlobalContextType {
   user: User | null;
@@ -40,6 +40,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_USER);
+    localStorage.removeItem("isOrganizer"); // Limpiar también el estado de organizador
   };
 
   // 5) Sincronización multi-pestaña
@@ -63,6 +64,11 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
       if (isTokenExpired(token)) {
         console.warn('Token expirado, cerrando sesión...');
         logout();
+      } else {
+        // Si el token es válido, extraer y guardar el rol de organizador
+        const decoded = decodeJWT<{ authorities?: string[] }>(token);
+        const isOrganizer = decoded?.authorities?.includes("ROLE_ORGANIZER") ?? false;
+        localStorage.setItem("isOrganizer", JSON.stringify(isOrganizer));
       }
     } catch (error) {
       console.error('Error verificando token:', error);

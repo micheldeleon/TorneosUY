@@ -280,3 +280,41 @@ export const generateFixtureForEliminatory = (
         controller,
     };
 }
+
+export const getUserOrganizedTournaments = (params?: { id: number; email: string }): UseApiCall<TournamentDetails[]> => {
+    const controller = loadAbort();
+    
+    if (!params) {
+        throw new Error("User params missing in getUserOrganizedTournaments");
+    }
+
+    return {
+        call: axiosInstance.get<TournamentDetails[]>(
+            `/api/users/tournaments/organized`,
+            {
+                params: { id: params.id, email: params.email },
+                signal: controller.signal,
+            }
+        ),
+        controller,
+    };
+}
+
+export const getUserParticipatingTournaments = (params?: { id: number; email: string }): UseApiCall<TournamentDetails[]> => {
+    const controller = loadAbort();
+    
+    if (!params) {
+        throw new Error("User params missing in getUserParticipatingTournaments");
+    }
+
+    return {
+        call: axiosInstance.get<TournamentDetails[]>(
+            `/api/users/tournaments`,
+            {
+                params: { id: params.id, email: params.email },
+                signal: controller.signal,
+            }
+        ),
+        controller,
+    };
+}

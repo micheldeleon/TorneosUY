@@ -9,6 +9,7 @@ import { GoogleButton, RHFInput, Submit } from "../components/CustomForm";
 import { useGlobalContext } from "../context/global.context";
 import { useEffect } from "react";
 import { Trophy, Loader2, AlertCircle } from "lucide-react";
+import { decodeJWT } from "../services/utilities/jwt.utility";
 import { Alert, AlertDescription } from "../components/ui/Alert";
 
 export const LoginForm = () => {
@@ -41,8 +42,17 @@ export const LoginForm = () => {
     if (!response) return;
     console.log('response', response);
     if (response.token.length !== 0 && response.user) {
+      // Decodificar el token para obtener los roles
+      const decoded = decodeJWT<{ authorities?: string[] }>(response.token);
+      const isOrganizer = decoded?.authorities?.includes("ROLE_ORGANIZER") ?? false;
+      
+      // Guardar el token y usuario
       setToken(response.token);
       setUser(response.user);
+      
+      // Guardar si es organizador en localStorage
+      localStorage.setItem("isOrganizer", JSON.stringify(isOrganizer));
+      
       navigate("/perfil");
     }
 
