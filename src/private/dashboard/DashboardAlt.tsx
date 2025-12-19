@@ -7,7 +7,8 @@ import {
     Target, ChevronRight, Settings, X, Save, User, Mail, Phone, AlertTriangle,
     Gem,
     ShieldPlusIcon,
-    Settings2Icon
+    Settings2Icon,
+    SettingsIcon
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -408,7 +409,7 @@ export default function DashboardAlt() {
                                                         className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 text-sm"
                                                     >
                                                         Gestionar
-                                                        <Settings className="w-4 h-4 ml-2" />
+                                                        <SettingsIcon className="w-4 h-4 ml-2" />
                                                     </Button>
                                                 </Link>
                                             </div>
