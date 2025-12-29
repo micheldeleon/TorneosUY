@@ -16,7 +16,9 @@ import type { TournamentDetails } from "../models";
 export function TournamentsExplore() {
     const [tournaments, setTournaments] = useState<TournamentDetails[]>([]);
     const [selectedDisciplinas, setSelectedDisciplinas] = useState<string[]>([]);
-    const [selectedUbicacion, setSelectedUbicacion] = useState<string>("all");
+    const [selectedUbicaciones, setSelectedUbicaciones] = useState<string[]>([]);
+    const [selectedEstados, setSelectedEstados] = useState<string[]>([]);
+    const [showOnlyPrivate, setShowOnlyPrivate] = useState<boolean>(false);
     
     // Estados para el filtro real (lo que se usa para filtrar)
     const [filterMinPrice, setFilterMinPrice] = useState<number>(0);
@@ -50,9 +52,29 @@ export function TournamentsExplore() {
         );
     };
 
+    const toggleUbicacion = (ubicacion: string) => {
+        if (!ubicacion || ubicacion === "placeholder") return;
+        setSelectedUbicaciones(prev =>
+            prev.includes(ubicacion)
+                ? prev.filter(u => u !== ubicacion)
+                : [...prev, ubicacion]
+        );
+    };
+
+    const toggleEstado = (estado: string) => {
+        if (!estado || estado === "placeholder") return;
+        setSelectedEstados(prev =>
+            prev.includes(estado)
+                ? prev.filter(e => e !== estado)
+                : [...prev, estado]
+        );
+    };
+
     const clearFilters = () => {
         setSelectedDisciplinas([]);
-        setSelectedUbicacion("all");
+        setSelectedUbicaciones([]);
+        setSelectedEstados([]);
+        setShowOnlyPrivate(false);
         const max = Math.max(...tournaments.map(t => t.registrationCost), 0);
         setFilterMinPrice(0);
         setFilterMaxPrice(max);
@@ -89,12 +111,23 @@ export function TournamentsExplore() {
 
     // Ubicaciones hardcodeadas (puedes ajustar según tus necesidades)
     const ubicaciones = [
-        { value: "all", label: "Todas las ubicaciones" },
         { value: "montevideo", label: "Montevideo" },
         { value: "canelones", label: "Canelones" },
         { value: "maldonado", label: "Maldonado" },
         { value: "rocha", label: "Rocha" },
     ];
+
+    // Estados de torneos
+    const estados = [
+        { value: "ABIERTO", label: "Abierto" },
+        { value: "INICIADO", label: "Iniciado" },
+        { value: "FINALIZADO", label: "Finalizado" },
+        { value: "CANCELADO", label: "Cancelado" },
+    ];
+
+    // Filtrar ubicaciones y estados disponibles (excluir los ya seleccionados)
+    const availableUbicaciones = ubicaciones.filter(u => !selectedUbicaciones.includes(u.value));
+    const availableEstados = estados.filter(e => !selectedEstados.includes(e.value));
 
     const getFilteredTournaments = () => {
         let filtered = [...tournaments];
@@ -108,6 +141,19 @@ export function TournamentsExplore() {
 
         // Filter by ubicacion - por ahora no filtra ya que no hay campo en la API
         // Puedes agregar esta funcionalidad cuando el backend lo soporte
+        // if (selectedUbicaciones.length > 0) {
+        //     filtered = filtered.filter(t => selectedUbicaciones.includes(t.ubicacion));
+        // }
+
+        // Filter by estado
+        if (selectedEstados.length > 0) {
+            filtered = filtered.filter(t => selectedEstados.includes(t.status));
+        }
+
+        // Filter by private
+        if (showOnlyPrivate) {
+            filtered = filtered.filter(t => t.privateTournament === true);
+        }
 
         // Filter by price
         filtered = filtered.filter(t => {
@@ -135,7 +181,7 @@ export function TournamentsExplore() {
     };
 
     const filteredTournaments = getFilteredTournaments();
-    const activeFiltersCount = selectedDisciplinas.length + (selectedUbicacion !== "all" ? 1 : 0);
+    const activeFiltersCount = selectedDisciplinas.length + selectedUbicaciones.length + selectedEstados.length + (showOnlyPrivate ? 1 : 0);
 
     const FiltersSidebar = useMemo(() => (
         <div className="space-y-6">
@@ -171,23 +217,129 @@ export function TournamentsExplore() {
 
             {/* Ubicación */}
             <div className="space-y-4">
-                <h3 className="text-white">Ubicación</h3>
-                <Select value={selectedUbicacion} onValueChange={setSelectedUbicacion}>
+                <div className="flex items-center justify-between">
+                    <h3 className="text-white">Ubicación</h3>
+                    {selectedUbicaciones.length > 0 && (
+                        <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                            {selectedUbicaciones.length}
+                        </Badge>
+                    )}
+                </div>
+                {selectedUbicaciones.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                        {selectedUbicaciones.map((ubi) => (
+                            <Badge
+                                key={ubi}
+                                variant="secondary"
+                                className="bg-purple-600/20 text-purple-300 border-purple-600/50 pr-1 cursor-pointer hover:bg-purple-600/30"
+                            >
+                                {ubicaciones.find(u => u.value === ubi)?.label}
+                                <button
+                                    onClick={() => toggleUbicacion(ubi)}
+                                    className="ml-1 hover:text-white"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </Badge>
+                        ))}
+                    </div>
+                )}
+                <Select value="" onValueChange={toggleUbicacion}>
                     <SelectTrigger className="bg-surface border-gray-700 text-white hover:border-purple-600/50 transition-colors">
-                        <SelectValue />
+                        <SelectValue placeholder="Seleccionar ubicación" />
                     </SelectTrigger>
                     <SelectContent className="bg-surface border-gray-700">
-                        {ubicaciones.map((ubi) => (
-                            <SelectItem
-                                key={ubi.value}
-                                value={ubi.value}
-                                className="text-white focus:bg-purple-600/20 focus:text-white"
-                            >
-                                {ubi.label}
+                        {availableUbicaciones.length === 0 ? (
+                            <SelectItem value="placeholder" disabled className="text-gray-500">
+                                No hay más ubicaciones
                             </SelectItem>
-                        ))}
+                        ) : (
+                            availableUbicaciones.map((ubi) => (
+                                <SelectItem
+                                    key={ubi.value}
+                                    value={ubi.value}
+                                    className="text-white focus:bg-purple-600/20 focus:text-white"
+                                >
+                                    {ubi.label}
+                                </SelectItem>
+                            ))
+                        )}
                     </SelectContent>
                 </Select>
+            </div>
+
+            {/* Estado del Torneo */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-white">Estado</h3>
+                    {selectedEstados.length > 0 && (
+                        <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                            {selectedEstados.length}
+                        </Badge>
+                    )}
+                </div>
+                {selectedEstados.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                        {selectedEstados.map((est) => (
+                            <Badge
+                                key={est}
+                                variant="secondary"
+                                className="bg-purple-600/20 text-purple-300 border-purple-600/50 pr-1 cursor-pointer hover:bg-purple-600/30"
+                            >
+                                {estados.find(e => e.value === est)?.label}
+                                <button
+                                    onClick={() => toggleEstado(est)}
+                                    className="ml-1 hover:text-white"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </Badge>
+                        ))}
+                    </div>
+                )}
+                <Select value="" onValueChange={toggleEstado}>
+                    <SelectTrigger className="bg-surface border-gray-700 text-white hover:border-purple-600/50 transition-colors">
+                        <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-surface border-gray-700">
+                        {availableEstados.length === 0 ? (
+                            <SelectItem value="placeholder" disabled className="text-gray-500">
+                                No hay más estados
+                            </SelectItem>
+                        ) : (
+                            availableEstados.map((estado) => (
+                                <SelectItem
+                                    key={estado.value}
+                                    value={estado.value}
+                                    className="text-white focus:bg-purple-600/20 focus:text-white"
+                                >
+                                    {estado.label}
+                                </SelectItem>
+                            ))
+                        )}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Torneos Privados */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-white">Visibilidad</h3>
+                </div>
+                <div className="flex items-center space-x-3 group">
+                    <Checkbox
+                        id="private-filter"
+                        checked={showOnlyPrivate}
+                        onCheckedChange={(checked) => setShowOnlyPrivate(checked === true)}
+                        className="border-gray-600 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                    />
+                    <Label
+                        htmlFor="private-filter"
+                        className="text-gray-300 cursor-pointer hover:text-white transition-colors flex-1"
+                    >
+                        Solo torneos privados
+                    </Label>
+                </div>
             </div>
 
             {/* Precio */}
@@ -269,7 +421,7 @@ export function TournamentsExplore() {
                 </Button>
             </div>
         </div>
-    ), [disciplinas, selectedDisciplinas, selectedUbicacion, ubicaciones, tournaments, filterMinPrice, filterMaxPrice, minPriceInput, maxPriceInput, applyMinPrice, applyMaxPrice, clearFilters]);
+    ), [disciplinas, selectedDisciplinas, selectedUbicaciones, ubicaciones, tournaments, filterMinPrice, filterMaxPrice, minPriceInput, maxPriceInput, applyMinPrice, applyMaxPrice, clearFilters]);
 
     return (
         <div className="min-h-screen bg-surface pt-24 pb-12">
