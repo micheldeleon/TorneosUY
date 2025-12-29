@@ -670,25 +670,25 @@ export function ManageTournament() {
 
                     <div className="space-y-2">
                       <Label htmlFor="premio" className="text-gray-300">Premio</Label>
-                      <Input
-                        id="premio"
-                        type="number"
-                        value={tournamentData.prize}
-                        className="bg-[#1a1a1a] border-gray-700 text-white focus:border-purple-600"
-                      />
+                      <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 text-white min-h-[42px] [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline">
+                        {tournamentData.prize ? (
+                          <div dangerouslySetInnerHTML={{ __html: tournamentData.prize }} />
+                        ) : (
+                          <span className="text-gray-500 italic">Sin premio</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="descripcion" className="text-gray-300">Descripción</Label>
-                    <Textarea
-                      id="descripcion"
-                      //value={tournamentData.description}
-                      value={"Proximamente..."}
-                      rows={4}
-                      className="bg-[#1a1a1a] border-gray-700 text-white focus:border-purple-600 resize-none"
-                      disabled
-                    />
+                    <Label htmlFor="detalles" className="text-gray-300">Detalles</Label>
+                    <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 text-white min-h-[100px] [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline">
+                      {tournamentData.detalles ? (
+                        <div dangerouslySetInnerHTML={{ __html: tournamentData.detalles }} />
+                      ) : (
+                        <span className="text-gray-500 italic">Sin detalles</span>
+                      )}
+                    </div>
                   </div>
 
                   <Button
@@ -730,14 +730,18 @@ export function ManageTournament() {
 
                     <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
                       <p className="text-gray-500 text-sm mb-1">Premio</p>
-                      <p className="text-white">{tournamentData.prize}</p>
+                      {tournamentData.prize ? (
+                        <div className="text-white [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: tournamentData.prize }} />
+                      ) : (
+                        <p className="text-gray-600 text-sm italic">Sin premio</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
                     <p className="text-gray-500 text-sm mb-1">Detalles</p>
                     {tournamentData.detalles ? (
-                      <p className="text-white whitespace-pre-wrap">{tournamentData.detalles}</p>
+                      <div className="text-white [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: tournamentData.detalles }} />
                     ) : (
                       <p className="text-gray-600 text-sm italic">No hay detalles</p>
                     )}

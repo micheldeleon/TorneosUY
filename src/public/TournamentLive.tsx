@@ -1,8 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import {
     Trophy, Calendar, Users, ArrowLeft, Phone, Star,
-    Award, Shield, Target, Play, FileText
-} from "lucide-react";
+    Award, Shield, Target, Play} from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Avatar, AvatarFallback } from "../components/ui/Avatar";
@@ -17,7 +16,6 @@ import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
 import { getTournamentById, getUserDetailsById, getTournamentFixtures, getTournamentStandings } from "../services/api.service";
 import { RankingCarrera } from "../components/Tournament/RankingCarrera.tsx";
-import { SplashScreen } from "./SplashScreen.tsx";
 
 type FormatoTorneo = "Liga" | "Eliminatorio" | "Carrera" | "Battle Royale";
 
@@ -410,7 +408,11 @@ export function TournamentLive() {
                                         <Award className="w-4 h-4 text-purple-400" />
                                         <p className="text-gray-500 text-sm">Premio</p>
                                     </div>
-                                    <p className="text-white text-sm">{t.prize}</p>
+                                    {t.prize ? (
+                                        <div className="text-white text-sm [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: t.prize }} />
+                                    ) : (
+                                        <p className="text-gray-600 text-sm italic">Sin premio</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -537,7 +539,7 @@ export function TournamentLive() {
                                         Descripción del Torneo
                                     </h3>
                                     {t.detalles ? (
-                                        <p className="text-gray-300 leading-relaxed mb-6">{t.detalles}</p>
+                                        <div className="text-gray-300 leading-relaxed mb-6 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: t.detalles }} />
                                     ) : (
                                         <p className="text-gray-600 leading-relaxed mb-6 italic">No hay detalles</p>
                                     )}
@@ -605,7 +607,11 @@ export function TournamentLive() {
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <span className="text-gray-400">Premio Total</span>
-                                            <span className="text-green-400">{t.prize}</span>
+                                            {t.prize ? (
+                                                <div className="text-green-400 text-sm [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: t.prize }} />
+                                            ) : (
+                                                <span className="text-gray-600 italic">Sin premio</span>
+                                            )}
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <span className="text-gray-400">Participantes</span>

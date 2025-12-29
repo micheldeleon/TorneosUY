@@ -247,9 +247,12 @@ export function TournamentRegistration() {
                                     <Badge className="bg-blue-600/20 text-blue-300 border-blue-600/50">
                                         {torneo?.registrationCost === 0 ? "Gratis" : `Costo inscripcion: $${torneo?.registrationCost}`}
                                     </Badge>
-                                    <Badge className="bg-green-600/20 text-green-300 border-green-600/50">
-                                        Premio: ${torneo?.prize}
-                                    </Badge>
+                                    {torneo?.prize && (
+                                        <Badge className="bg-green-600/20 text-green-300 border-green-600/50">
+                                            <span>Premio: </span>
+                                            <span className="[&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_li]:ml-2 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: torneo.prize }} />
+                                        </Badge>
+                                    )}
                                 </div>
                             </div>
                         </div>

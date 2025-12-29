@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import {
-    Trophy, Calendar, DollarSign, Users, ArrowLeft, Phone, Star,
+    Trophy, Calendar, Users, ArrowLeft, Phone, Star,
     Award, Clock, Shield, Target, CheckCircle2,
     Play, FileText
 } from "lucide-react";
@@ -176,7 +176,11 @@ export function TournamentDetailsAlt() {
                                         <Award className="w-4 h-4 text-purple-400" />
                                         <p className="text-gray-500 text-sm">Premio</p>
                                     </div>
-                                    <p className="text-white text-sm">{t.prize}</p>
+                                    {t.prize ? (
+                                        <div className="text-white text-sm [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: t.prize }} />
+                                    ) : (
+                                        <p className="text-gray-600 text-sm italic">Sin premio</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -240,7 +244,7 @@ export function TournamentDetailsAlt() {
                                         Detalles del Torneo
                                     </h3>
                                     {t.detalles ? (
-                                        <p className="text-gray-300 leading-relaxed mb-6">{t.detalles}</p>
+                                        <div className="text-gray-300 leading-relaxed mb-6 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: t.detalles }} />
                                     ) : (
                                         <p className="text-gray-600 leading-relaxed mb-6 italic">No hay detalles</p>
                                     )}
@@ -290,7 +294,11 @@ export function TournamentDetailsAlt() {
                                         </div>
                                         <div className="bg-purple-900/20 border border-purple-700/30 rounded-xl p-4">
                                             <p className="text-purple-300 mb-2">Sistema de Premios</p>
-                                            <p className="text-white">Premio total: {t.prize}</p>
+                                            {t.prize ? (
+                                                <div className="text-white"><strong>Premio total:</strong> <div className="[&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:my-2 [&_li]:my-1 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: t.prize }} /></div>
+                                            ) : (
+                                                <p className="text-gray-600 italic">Sin premio</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

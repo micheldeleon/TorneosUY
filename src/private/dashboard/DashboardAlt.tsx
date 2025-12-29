@@ -7,7 +7,6 @@ import {
     Target, ChevronRight, Settings, X, Save, User, Mail, Phone, AlertTriangle,
     Gem,
     ShieldPlusIcon,
-    Settings2Icon,
     SettingsIcon
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
@@ -392,7 +391,11 @@ export default function DashboardAlt() {
                                                     </div>
                                                     <div className="flex items-center gap-2 text-gray-400">
                                                         <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                                                        <span className="truncate">{torneo.prize}</span>
+                                                        {torneo.prize ? (
+                                                            <span className="truncate [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_li]:ml-2 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: torneo.prize }} />
+                                                        ) : (
+                                                            <span className="truncate italic">Sin premio</span>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -481,7 +484,11 @@ export default function DashboardAlt() {
                                                     </div>
                                                     <div className="flex items-center gap-2 text-gray-400">
                                                         <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                                                        <span className="truncate">{torneo.prize}</span>
+                                                        {torneo.prize ? (
+                                                            <span className="truncate [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_li]:ml-2 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: torneo.prize }} />
+                                                        ) : (
+                                                            <span className="truncate italic">Sin premio</span>
+                                                        )}
                                                     </div>
                                                 </div>
 

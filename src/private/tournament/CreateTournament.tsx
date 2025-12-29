@@ -2,8 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { createTournamentSchema, type FormValueCreateTournament } from "../../components/CustomForm/schemas/createTournament.form.model";
-import { RHFInput, RHFSelect, RHFCheckbox, RHFTextarea, Submit } from "../../components/CustomForm";
-import { Trophy, Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Award } from "lucide-react";
+import { RHFInput, RHFSelect, RHFCheckbox, Submit } from "../../components/CustomForm";
+import { Trophy, Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog";
 import { useApi } from "../../hooks/useApi";
 import type { CreateTournament } from "../../models/createTournament.model";
@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import type { UserDetails } from "../../models/userDetails.model";
 import type { UserFind } from "../../models/userFind.model";
 import type { TournamentCreated } from "../../models";
+import { RHFRichTextEditor } from "../../components/CustomForm/RHFRichTextEditor";
 
 export default function CreateTournament() {
 
@@ -159,6 +160,7 @@ export default function CreateTournament() {
       maxParticipantsPerTournament: Number(formData.maxParticipantsPerTournament),
       registrationCost: Number(formData.registrationCost),
       prize: formData.prize,
+      detalles: formData.detalles,
       isDoubleRound: formData.isDoubleRound,
     };
 
@@ -405,33 +407,25 @@ export default function CreateTournament() {
                             error={errors.registrationCost?.message}
                             disabled={!isFormatSelected}
                           />
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-purple-300">
-                              <Award className="w-4 h-4" />
-                            </div>
-                            <RHFTextarea
-                              name="prize"
-                              control={control}
-                              label="Premio (Opcional)"
-                              placeholder="Ej: $1000 USD + Trofeo"
-                              rows={2}
-                              disabled={!isFormatSelected}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-purple-300">
-                              <FileText className="w-4 h-4" />
-                            </div>
-                            <RHFTextarea
-                              name="detalles"
-                              control={control}
-                              label="Detalles (Opcional)"
-                              placeholder="Agrega información adicional sobre el torneo..."
-                              rows={3}
-                              disabled={!isFormatSelected}
-                            />
-                          </div>
                         </div>
+                        
+                        <RHFRichTextEditor
+                          name="prize"
+                          control={control}
+                          label="Premio (Opcional)"
+                          placeholder="Ej: $1000 USD + Trofeo"
+                          rows={2}
+                          disabled={!isFormatSelected}
+                        />
+                        
+                        <RHFRichTextEditor
+                          name="detalles"
+                          control={control}
+                          label="Detalles (Opcional)"
+                          placeholder="Agrega información adicional sobre el torneo..."
+                          rows={3}
+                          disabled={!isFormatSelected}
+                        />
                       </div>
 
                       {/* Liga: Ida y Vuelta */}
