@@ -13,6 +13,7 @@ export const createTournamentSchema = z.object({
   maxParticipantsPerTournament: z.number().min(1, "Debe ser al menos 1"),
   registrationCost: z.number().min(0, "El costo no puede ser negativo"),
   prize: z.string().optional(),
+  detalles: z.string().optional(),
   isPrivate: z.boolean(),
   password: z.string().optional(),
   isDoubleRound: z.boolean().optional(),

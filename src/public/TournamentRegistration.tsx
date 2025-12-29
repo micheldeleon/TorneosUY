@@ -4,7 +4,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-    ArrowLeft, Users, Shield, UserPlus, Trash2, Save, Trophy, AlertCircle
+    ArrowLeft, Users, Shield, UserPlus, Trash2, Save, Trophy, AlertCircle, Lock
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -39,6 +39,9 @@ export function TournamentRegistration() {
 
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUnlocked, setIsUnlocked] = useState(false);
+    const [passwordInput, setPasswordInput] = useState("");
+    const [passwordError, setPasswordError] = useState("");
 
     const { id } = useParams();
 
@@ -82,6 +85,31 @@ export function TournamentRegistration() {
     const user = userData
 
     const { fetch: fetchRegisterTeam } = useApi<ApiResponse, any>(registerTeam);
+
+    // Verificar si el torneo es privado y requiere contraseña
+    useEffect(() => {
+        if (torneo && !torneo.privateTournament) {
+            setIsUnlocked(true);
+        }
+    }, [torneo]);
+
+    const handlePasswordSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!torneo?.password) {
+            toast.error("Error: No se encontró la contraseña del torneo");
+            return;
+        }
+        
+        if (passwordInput === torneo.password) {
+            setIsUnlocked(true);
+            setPasswordError("");
+            toast.success("¡Acceso concedido!");
+        } else {
+            setPasswordError("Contraseña incorrecta");
+            toast.error("Contraseña incorrecta");
+        }
+    };
 
 
     const minAdicionales = torneo
@@ -246,8 +274,10 @@ export function TournamentRegistration() {
                     </Card>
                 </div>
 
-                {/* Formulario */}
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                {/* Contenido del formulario con blur si no está desbloqueado */}
+                <div className={`${torneo?.privateTournament && !isUnlocked ? 'blur-lg pointer-events-none select-none' : ''} transition-all duration-300`}>
+                    {/* Formulario */}
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     {/* Nombre del Equipo */}
                     <Card className="bg-[#2a2a2a] border-gray-800 p-6">
                         <div className="flex items-center gap-3 mb-4">
@@ -465,6 +495,65 @@ export function TournamentRegistration() {
                 </form>
             </div>
 
+            {/* Modal de contraseña para torneos privados */}
+            {torneo?.privateTournament && !isUnlocked && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm grid place-items-center p-4">
+                    <Card className="bg-[#2a2a2a] border-purple-700/50 p-8 max-w-md w-full">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Lock className="w-8 h-8 text-white" />
+                            </div>
+                            <h2 className="text-white text-2xl mb-2">Torneo Privado</h2>
+                            <p className="text-gray-400">Este torneo requiere una contraseña para inscribirse</p>
+                        </div>
+                        
+                        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-gray-300">
+                                    Contraseña del Torneo *
+                                </Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    value={passwordInput}
+                                    onChange={(e) => {
+                                        setPasswordInput(e.target.value);
+                                        setPasswordError("");
+                                    }}
+                                    placeholder="Ingresa la contraseña"
+                                    className="bg-[#1a1a1a] border-gray-700 text-white focus:border-purple-600"
+                                    autoFocus
+                                />
+                                {passwordError && (
+                                    <p className="text-rose-400 text-sm flex items-center gap-1">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {passwordError}
+                                    </p>
+                                )}
+                            </div>
+                            
+                            <div className="flex gap-3">
+                                <Button
+                                    type="button"
+                                    onClick={() => navigate(-1)}
+                                    variant="outline"
+                                    className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    className="flex-1 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
+                                >
+                                    <Lock className="w-4 h-4 mr-2" />
+                                    Desbloquear
+                                </Button>
+                            </div>
+                        </form>
+                    </Card>
+                </div>
+            )}
+
             {isSubmitting && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm grid place-items-center">
                     <div className="flex flex-col items-center gap-3 bg-[#1f1f1f] border border-gray-800 rounded-xl p-6 shadow-xl">
@@ -473,6 +562,7 @@ export function TournamentRegistration() {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 }

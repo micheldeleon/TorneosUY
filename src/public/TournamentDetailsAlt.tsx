@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
     Trophy, Calendar, DollarSign, Users, ArrowLeft, Phone, Star,
     Award, Clock, Shield, Target, CheckCircle2,
-    Play
+    Play, FileText
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
@@ -99,13 +99,11 @@ export function TournamentDetailsAlt() {
     const organizerName = organizerData ? `${organizerData.name} ${organizerData.lastName}` : "Ignacio Barcelo";
     const organizerRating = 0;
 
-    console.log(organizerData);
     // Get organizer initials
     const getInitials = (name: string) => {
         return name.split(" ").map(n => n[0]).join("").toUpperCase();
     };
     const spotsLeft = t.maxParticipantsPerTournament - t.teamsInscribed;
-    console.log(t);
 
     const getIsPrivateBadge = () => {
         if (t.privateTournament) {
@@ -238,10 +236,15 @@ export function TournamentDetailsAlt() {
                             <TabsContent value="details" className="mt-6">
                                 <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
                                     <h3 className="text-white mb-4 flex items-center gap-2">
-                                        <Award className="w-5 h-5 text-purple-400" />
-                                        Descripción del Torneo
+                                        <FileText className="w-5 h-5 text-purple-400" />
+                                        Detalles del Torneo
                                     </h3>
-                                    <p className="text-gray-300 leading-relaxed mb-6">Detalles del torneo...</p>
+                                    {t.detalles ? (
+                                        <p className="text-gray-300 leading-relaxed mb-6">{t.detalles}</p>
+                                    ) : (
+                                        <p className="text-gray-600 leading-relaxed mb-6 italic">No hay detalles</p>
+                                    )}
+
                                     <h3 className="text-white mb-4 flex items-center gap-2">
                                         <Clock className="w-5 h-5 text-purple-400" />
                                         Fecha de finalización

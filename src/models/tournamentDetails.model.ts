@@ -32,4 +32,6 @@ export type TournamentDetails = {
     collective: boolean;
     formats?: null;
   };
+  password: string | null;
+  detalles: string | null;
 };

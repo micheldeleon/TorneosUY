@@ -735,9 +735,12 @@ export function ManageTournament() {
                   </div>
 
                   <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
-                    <p className="text-gray-500 text-sm mb-1">Descripción</p>
-                    <p className="text-gray-500 text-sm mb-1">Proximamente...</p>
-                    {/* <p className="text-white">{tournamentData.description}</p> */}
+                    <p className="text-gray-500 text-sm mb-1">Detalles</p>
+                    {tournamentData.detalles ? (
+                      <p className="text-white whitespace-pre-wrap">{tournamentData.detalles}</p>
+                    ) : (
+                      <p className="text-gray-600 text-sm italic">No hay detalles</p>
+                    )}
                   </div>
 
                   {tournamentData.status !== "ABIERTO" && (

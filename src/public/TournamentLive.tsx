@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import {
     Trophy, Calendar, Users, ArrowLeft, Phone, Star,
-    Award, Shield, Target, Play
+    Award, Shield, Target, Play, FileText
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
@@ -413,6 +413,7 @@ export function TournamentLive() {
                                     <p className="text-white text-sm">{t.prize}</p>
                                 </div>
                             </div>
+
                         </div>
 
                         {/* Organizer Card */}
@@ -535,7 +536,11 @@ export function TournamentLive() {
                                         <Award className="w-5 h-5 text-purple-400" />
                                         Descripción del Torneo
                                     </h3>
-                                    <p className="text-gray-300 leading-relaxed mb-6">Detalles del torneo no disponibles</p>
+                                    {t.detalles ? (
+                                        <p className="text-gray-300 leading-relaxed mb-6">{t.detalles}</p>
+                                    ) : (
+                                        <p className="text-gray-600 leading-relaxed mb-6 italic">No hay detalles</p>
+                                    )}
 
                                     <Separator className="my-6 bg-gray-800" />
 

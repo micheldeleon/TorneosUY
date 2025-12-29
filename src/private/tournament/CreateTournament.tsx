@@ -55,6 +55,7 @@ export default function CreateTournament() {
       maxParticipantsPerTournament: 0,
       registrationCost: 0,
       prize: "",
+      detalles: "",
       isPrivate: false,
       password: "",
       isDoubleRound: false,
@@ -414,6 +415,19 @@ export default function CreateTournament() {
                               label="Premio (Opcional)"
                               placeholder="Ej: $1000 USD + Trofeo"
                               rows={2}
+                              disabled={!isFormatSelected}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-purple-300">
+                              <FileText className="w-4 h-4" />
+                            </div>
+                            <RHFTextarea
+                              name="detalles"
+                              control={control}
+                              label="Detalles (Opcional)"
+                              placeholder="Agrega información adicional sobre el torneo..."
+                              rows={3}
                               disabled={!isFormatSelected}
                             />
                           </div>

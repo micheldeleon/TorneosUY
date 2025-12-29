@@ -80,7 +80,6 @@
 //   };
 
 //   const esPrivado = t.privateTournament ? "Privado" : "Público";
-//   console.log(t);
 
 //   return (
 //     <div className="min-h-screen bg-[#1a1a1a] pt-32 pb-20 px-4">
