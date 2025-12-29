@@ -173,10 +173,10 @@ export function TournamentsExplore() {
             <div className="space-y-4">
                 <h3 className="text-white">Ubicación</h3>
                 <Select value={selectedUbicacion} onValueChange={setSelectedUbicacion}>
-                    <SelectTrigger className="bg-[#1a1a1a] border-gray-700 text-white hover:border-purple-600/50 transition-colors">
+                    <SelectTrigger className="bg-surface border-gray-700 text-white hover:border-purple-600/50 transition-colors">
                         <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#2a2a2a] border-gray-700">
+                    <SelectContent className="bg-surface border-gray-700">
                         {ubicaciones.map((ubi) => (
                             <SelectItem
                                 key={ubi.value}
@@ -226,7 +226,7 @@ export function TournamentsExplore() {
                                         e.currentTarget.blur();
                                     }
                                 }}
-                                className="bg-[#1a1a1a] border-gray-700 text-white"
+                                className="bg-surface border-gray-700 text-white"
                                 placeholder="0"
                             />
                         </div>
@@ -249,7 +249,7 @@ export function TournamentsExplore() {
                                         e.currentTarget.blur();
                                     }
                                 }}
-                                className="bg-[#1a1a1a] border-gray-700 text-white"
+                                className="bg-surface border-gray-700 text-white"
                                 placeholder="0"
                             />
                         </div>
@@ -272,7 +272,7 @@ export function TournamentsExplore() {
     ), [disciplinas, selectedDisciplinas, selectedUbicacion, ubicaciones, tournaments, filterMinPrice, filterMaxPrice, minPriceInput, maxPriceInput, applyMinPrice, applyMaxPrice, clearFilters]);
 
     return (
-        <div className="min-h-screen bg-[#1a1a1a] pt-24 pb-12">
+        <div className="min-h-screen bg-surface pt-24 pb-12">
             <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">
