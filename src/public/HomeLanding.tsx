@@ -9,7 +9,7 @@ import { getAllTournaments } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails } from "../models";
 import { TournamentCardAlt } from "../components/TournamentCard/TournamentCardAlt";
-import { Sparkles, Badge, Rocket, ChevronRight, Play } from "lucide-react";
+import { Rocket, ChevronRight, Play } from "lucide-react";
 
 export const HomeLanding: React.FC = () => {
   const navigate = useNavigate();

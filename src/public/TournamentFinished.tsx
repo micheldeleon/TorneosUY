@@ -2,12 +2,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import {
-    Trophy,
     Home,
     Search,
-    Award,
-    Medal,
-    Star,
     Sparkles,
 } from "lucide-react";
 import { useEffect } from "react";

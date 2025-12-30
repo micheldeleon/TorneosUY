@@ -1,15 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { Badge } from "../components/ui/Badge";
 import {
     AlertCircle,
-    XCircle,
     Home,
     Search,
-    Calendar,
-    Clock,
-    AlertTriangle,
 } from "lucide-react";
 import { useEffect } from "react";
 import { useApi } from "../hooks/useApi";

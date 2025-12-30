@@ -1,4 +1,4 @@
-import { Trophy, Loader2 } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 export const SplashScreen = () => {
     return (
