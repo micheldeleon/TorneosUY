@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import {
   Trophy, ArrowLeft, Edit, Trash2, UserX, Users,
   Play, AlertTriangle, Settings, Save, X,
-  UngroupIcon, CheckCircle2, XCircle, Loader2
+  UngroupIcon, CheckCircle2, XCircle, Loader2, Clock
 } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
-import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory } from "../../services/api.service";
+import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory, reportRaceResults } from "../../services/api.service";
 import { useGlobalContext } from "../../context/global.context";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -14,7 +14,6 @@ import { Card } from "../../components/ui/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
 import { Input } from "../../components/ui/Input";
 import { Label } from "../../components/ui/Label";
-import { Textarea } from "../../components/ui/Textarea";
 import { Avatar, AvatarFallback } from "../../components/ui/Avatar";
 import { ModalResultado } from "../../components/Tournament/ModalResultado";
 import { AsignarPosiciones } from "../../components/Tournament/AsignarPosiciones";
@@ -104,6 +103,7 @@ export function ManageTournament() {
   const [jornadas, setJornadas] = useState<Jornada[]>([]);
   const [etapas, setEtapas] = useState<Etapa[]>([]);
   const [tablaPosiciones, setTablaPosiciones] = useState<any[]>([]);
+  const [raceTimes, setRaceTimes] = useState<Record<number, string>>({});
   
   // Estados para loader y notificaciones
   const [showLoader, setShowLoader] = useState(false);
@@ -239,10 +239,6 @@ export function ManageTournament() {
     resultadoActual?: { local: number; visitante: number };
   }>({ isOpen: false });
 
-  const getInitials = (name: string) => {
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
-
   const handleIniciarTorneo = () => {
     if (confirm("¿Estás seguro de iniciar el torneo? No podrás editar los detalles después.")) {
       setModoEdicion(false);
@@ -283,6 +279,55 @@ export function ManageTournament() {
   const handleGuardarDetalles = () => {
     showNotification('success', 'Detalles guardados correctamente');
     setModoEdicion(false);
+  };
+
+  const handleSubmitRaceResults = async () => {
+    if (!tournamentData?.id || !tournamentData.teams) return;
+
+    try {
+      setShowLoader(true);
+      
+      const results = tournamentData.teams
+        .filter((team: any) => raceTimes[team.id])
+        .map((team: any) => ({
+          teamId: team.id,
+          timeMillis: parseTimeToMillis(raceTimes[team.id])
+        }));
+
+      if (results.length === 0) {
+        showNotification('error', 'Debes ingresar al menos un tiempo');
+        setShowLoader(false);
+        return;
+      }
+
+      const { call } = reportRaceResults({
+        tournamentId: tournamentData.id,
+        results
+      });
+      
+      await call;
+      showNotification('success', 'Resultados de carrera guardados correctamente');
+      setRaceTimes({});
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage = error?.response?.data?.message || error?.response?.data || 'Error al guardar resultados';
+      showNotification('error', errorMessage);
+    } finally {
+      setShowLoader(false);
+    }
+  };
+
+  const parseTimeToMillis = (timeString: string): number => {
+    // Formato esperado: "HH:MM:SS" o "MM:SS"
+    const parts = timeString.split(':').map(Number);
+    if (parts.length === 3) {
+      const [hours, minutes, seconds] = parts;
+      return (hours * 3600 + minutes * 60 + seconds) * 1000;
+    } else if (parts.length === 2) {
+      const [minutes, seconds] = parts;
+      return (minutes * 60 + seconds) * 1000;
+    }
+    return 0;
   };
 
   const handleAbrirModalResultado = (partido: Partido) => {
@@ -593,10 +638,17 @@ export function ManageTournament() {
               <Users className="w-4 h-4 mr-2" />
               Participantes ({participantes.length})
             </TabsTrigger>
-            <TabsTrigger value="competicion" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 text-gray-400">
-              <Trophy className="w-4 h-4 mr-2" />
-              Competición
-            </TabsTrigger>
+            {tournamentData?.format.name === "Carrera" ? (
+              <TabsTrigger value="resultados-carrera" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 text-gray-400">
+                <Clock className="w-4 h-4 mr-2" />
+                Resultados
+              </TabsTrigger>
+            ) : (
+              <TabsTrigger value="competicion" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 text-gray-400">
+                <Trophy className="w-4 h-4 mr-2" />
+                Competición
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Detalles Tab */}
@@ -765,34 +817,39 @@ export function ManageTournament() {
               <h3 className="text-white text-xl mb-6">Lista de Participantes</h3>
 
               <div className="space-y-3">
-                {participantes.map((participante) => (
-                  <div
-                    key={participante.id}
-                    className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <Avatar className="w-12 h-12 border-2 border-purple-600/30">
-                        <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white">
-                          {getInitials(participante.nombre)}
-                        </AvatarFallback>
-                      </Avatar>
+                {tournamentData.teams && tournamentData.teams.length > 0 ? (
+                  tournamentData.teams.map((team: any, index: number) => (
+                    <div
+                      key={team.id}
+                      className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center text-white font-bold">
+                          {index + 1}
+                        </div>
+                        <Avatar className="w-12 h-12 border-2 border-purple-600/30">
+                          <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white">
+                            {team.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
 
-                      <div className="flex-1">
-                        <h4 className="text-white">{participante.nombre}</h4>
-                        <p className="text-gray-500 text-sm">{participante.email}</p>
-                      </div>
+                        <div className="flex-1">
+                          <h4 className="text-white">{team.name}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Users className="w-3 h-3 text-gray-500" />
+                            <p className="text-gray-500 text-sm">
+                              {team.participants.map((p: any) => p.fullName).join(', ')}
+                            </p>
+                          </div>
+                        </div>
 
-                      <Badge className={
-                        participante.estado === "activo"
-                          ? "bg-green-600/20 text-green-300 border-green-600/50"
-                          : "bg-gray-600/20 text-gray-300 border-gray-600/50"
-                      }>
-                        {participante.estado}
-                      </Badge>
+                        <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/30">
+                          {team.participants.length} {team.participants.length === 1 ? 'participante' : 'participantes'}
+                        </Badge>
 
-                      {tournamentData.status === "ABIERTO" && participante.estado === "activo" && (
-                        <Button
-                          onClick={() => handleEliminarParticipante(participante.id)}
+                        {tournamentData.status === "ABIERTO" && (
+                          <Button
+                            onClick={() => handleEliminarParticipante(team.id)}
                           variant="ghost"
                           size="sm"
                           className="text-rose-400 hover:text-rose-300 hover:bg-rose-600/10"
@@ -802,14 +859,97 @@ export function ManageTournament() {
                       )}
                     </div>
                   </div>
-                ))}
+                ))
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No hay participantes inscritos aún</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* Resultados de Carrera Tab */}
+          <TabsContent value="resultados-carrera">
+            <Card className="bg-[#2a2a2a] border-gray-800 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-white text-xl">Registrar Tiempos</h3>
+                <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                  Formato: HH:MM:SS o MM:SS
+                </Badge>
               </div>
 
-              {tournamentData.status === "ABIERTO" && (
-                <div className="mt-6 p-4 bg-blue-900/20 border border-blue-700/30 rounded-xl">
-                  <p className="text-blue-300 text-sm">
-                    💡 Puedes eliminar participantes antes de iniciar el torneo.
+              <div className="space-y-4 mb-6">
+                {tournamentData.teams && tournamentData.teams.length > 0 ? (
+                  tournamentData.teams.map((team: any) => (
+                    <div
+                      key={team.id}
+                      className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Avatar className="w-12 h-12 border-2 border-purple-600/30">
+                          <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white">
+                            {team.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="flex-1">
+                          <h4 className="text-white">{team.name}</h4>
+                          <p className="text-gray-500 text-sm">
+                            {team.participants.map((p: any) => p.fullName).join(', ')}
+                          </p>
+                        </div>
+
+                        <div className="w-48">
+                          <Label htmlFor={`time-${team.id}`} className="text-gray-400 text-sm mb-1 block">
+                            Tiempo (HH:MM:SS)
+                          </Label>
+                          <Input
+                            id={`time-${team.id}`}
+                            placeholder="00:45:30"
+                            value={raceTimes[team.id] || ''}
+                            onChange={(e) => setRaceTimes({...raceTimes, [team.id]: e.target.value})}
+                            className="bg-[#0f0f0f] border-gray-700 text-white focus:border-purple-600"
+                            disabled={tournamentData.status === "ABIERTO"}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No hay participantes inscritos aún</p>
+                  </div>
+                )}
+              </div>
+
+              {tournamentData.status === "ABIERTO" ? (
+                <div className="p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-xl">
+                  <p className="text-yellow-300 text-sm">
+                    ⚠️ Debes iniciar el torneo para poder registrar resultados.
                   </p>
+                </div>
+              ) : (
+                <div className="flex gap-4">
+                  <Button
+                    onClick={handleSubmitRaceResults}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
+                    disabled={showLoader || Object.keys(raceTimes).length === 0}
+                  >
+                    {showLoader ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Guardando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Guardar Resultados
+                      </>
+                    )}
+                  </Button>
                 </div>
               )}
             </Card>

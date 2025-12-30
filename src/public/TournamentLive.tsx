@@ -10,25 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs"
 import { TablaPosiciones } from "../components/Tournament/TablaPosiciones";
 import { FixtureLiga } from "../components/Tournament/FixtureLiga.tsx";
 import { BracketEliminatoria } from "../components/Tournament/BracketEliminatoria";
-import { ListaParticipantes } from "../components/Tournament/ListaParticipantes";
 import { useEffect } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
-import { getTournamentById, getUserDetailsById, getTournamentFixtures, getTournamentStandings } from "../services/api.service";
+import { getTournamentById, getUserDetailsById, getTournamentFixtures, getTournamentStandings, getRaceResults } from "../services/api.service";
 import { RankingCarrera } from "../components/Tournament/RankingCarrera.tsx";
 
 type FormatoTorneo = "Liga" | "Eliminatorio" | "Carrera" | "Battle Royale";
-
-const MOCK_PARTICIPANTES = [
-    { id: 1, nombre: "Equipaso FC", email: "equipaso@example.com", estado: "activo" as const, posicion: 1, equipo: "Grupo A" },
-    { id: 2, nombre: "Los Tigres", email: "tigres@example.com", estado: "activo" as const, posicion: 2, equipo: "Grupo A" },
-    { id: 3, nombre: "Real Cracks", email: "realcracks@example.com", estado: "activo" as const, posicion: 3, equipo: "Grupo A" },
-    { id: 4, nombre: "United Stars", email: "united@example.com", estado: "activo" as const, posicion: 4, equipo: "Grupo A" },
-    { id: 5, nombre: "Juventud FC", email: "juventud@example.com", estado: "activo" as const, posicion: 5, equipo: "Grupo B" },
-    { id: 6, nombre: "Pelota de Trapo", email: "pelota@example.com", estado: "activo" as const, posicion: 6, equipo: "Grupo B" },
-    { id: 7, nombre: "Los Campeones", email: "campeones@example.com", estado: "activo" as const, posicion: 7, equipo: "Grupo B" },
-    { id: 8, nombre: "Deportivo MVD", email: "deportivo@example.com", estado: "activo" as const, posicion: 8, equipo: "Grupo B" },
-];
 
 function calculateEliminationStats(fixtures: any[]) {
     if (!fixtures || fixtures.length === 0) {
@@ -268,6 +256,7 @@ export function TournamentLive() {
     const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(getUserDetailsById);
     const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
     const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
+    const { data: raceResultsData, fetch: fetchRaceResults } = useApi<any[], number>(getRaceResults);
 
     useEffect(() => {
         if (id) {
@@ -295,6 +284,13 @@ export function TournamentLive() {
             fetchStandings(t.id);
         }
     }, [t?.id, t?.format.name, fetchStandings]);
+
+    // Fetch race results if tournament format is "Carrera"
+    useEffect(() => {
+        if (t?.id && t.format.name === "Carrera") {
+            fetchRaceResults(t.id);
+        }
+    }, [t?.id, t?.format.name, fetchRaceResults]);
 
     useEffect(() => {
         if (t && t.status == "ABIERTO") {
@@ -516,7 +512,18 @@ export function TournamentLive() {
                                 {(formatoEnUso === "Carrera" || formatoEnUso === "Battle Royale") && (
                                     <div className="overflow-x-auto bg-surface rounded-2xl">
                                         <div>
-                                            <RankingCarrera competidores={MOCK_PARTICIPANTES.map(p => ({ posicion: p.posicion || 0, nombre: p.nombre }))} />
+                                            {raceResultsData && raceResultsData.length > 0 ? (
+                                                <RankingCarrera 
+                                                    competidores={raceResultsData.map(r => ({ 
+                                                        posicion: r.position, 
+                                                        nombre: r.teamName 
+                                                    }))} 
+                                                />
+                                            ) : (
+                                                <div className="p-8 text-center">
+                                                    <p className="text-gray-400">No hay resultados disponibles aún</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -525,8 +532,40 @@ export function TournamentLive() {
                             {/* Participantes Tab */}
                             <TabsContent value="participantes" className="mt-6">
                                 <div className="overflow-x-auto bg-surface rounded-2xl">
-                                    <div>
-                                        <ListaParticipantes participantes={MOCK_PARTICIPANTES} mostrarPosicion={formatoEnUso !== "Eliminatorio"} />
+                                    <div className="space-y-4 p-6">
+                                        {t.teams && t.teams.length > 0 ? (
+                                            t.teams.map((team: any, index: number) => (
+                                                <div key={team.id} className="bg-[#2a2a2a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center text-white font-bold">
+                                                            {index + 1}
+                                                        </div>
+                                                        <Avatar className="w-12 h-12 border-2 border-purple-600/30">
+                                                            <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white">
+                                                                {team.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1">
+                                                            <h4 className="text-white font-medium">{team.name}</h4>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <Users className="w-3 h-3 text-gray-500" />
+                                                                <p className="text-gray-500 text-sm">
+                                                                    {team.participants.map((p: any) => p.fullName).join(', ')}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/30">
+                                                            {team.participants.length} {team.participants.length === 1 ? 'participante' : 'participantes'}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-12 text-gray-500">
+                                                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                                <p>No hay participantes inscritos aún</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </TabsContent>

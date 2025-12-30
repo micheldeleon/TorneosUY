@@ -318,3 +318,79 @@ export const getUserParticipatingTournaments = (params?: { id: number; email: st
         controller,
     };
 }
+
+export const registerToTournament = (
+    params?: {
+        tournamentId: number;
+        userId: number;
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/register`,
+            { userId: params?.userId },
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}
+
+export const registerRunnerToTournament = (
+    params?: {
+        tournamentId: number;
+        request?: {
+            teamName?: string;
+            bibNumber?: string;
+            category?: string;
+        }
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/register/runner`,
+            params?.request || {},
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}
+
+export const reportRaceResults = (
+    params?: {
+        tournamentId: number;
+        results: {
+            teamId: number;
+            timeMillis: number;
+        }[]
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/race/results`,
+            params?.results,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}
+
+export const getRaceResults = (tournamentId?: number): UseApiCall<{
+    teamId: number;
+    teamName: string;
+    timeMillis: number;
+    position: number;
+}[]> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<{
+            teamId: number;
+            teamName: string;
+            timeMillis: number;
+            position: number;
+        }[]>(`/api/tournaments/${tournamentId}/race/results`, { signal: controller.signal }),
+        controller,
+    };
+}

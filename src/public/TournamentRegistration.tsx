@@ -13,9 +13,10 @@ import { Label } from "../components/ui/Label";
 import { Separator } from "../components/ui/Separator";
 import { Badge } from "../components/ui/Badge";
 import { toast } from "sonner";
-import { getTournamentById, getUserDetailsById, registerTeam } from "../services/api.service";
+import { getTournamentById, getUserDetailsById, registerTeam, registerRunnerToTournament } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
 import type { ApiResponse, TournamentDetails, UserDetails, UserFind } from "../models";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../components/ui/Dialog";
 
 // Validación de CI uruguaya (8 dígitos con posible guión)
 const ciSchema = z.string()
@@ -42,6 +43,7 @@ export function TournamentRegistration() {
     const [isUnlocked, setIsUnlocked] = useState(false);
     const [passwordInput, setPasswordInput] = useState("");
     const [passwordError, setPasswordError] = useState("");
+    const [showRunnerModal, setShowRunnerModal] = useState(false);
 
     const { id } = useParams();
 
@@ -84,7 +86,10 @@ export function TournamentRegistration() {
 
     const user = userData
 
-    const { fetch: fetchRegisterTeam } = useApi<ApiResponse, any>(registerTeam);
+    const { data: runnerRegisterData, error: runnerRegisterError, loading: runnerRegisterLoading, fetch: fetchRegisterRunner } = useApi<ApiResponse, any>(registerRunnerToTournament);
+
+    // Verificar si es un torneo de carrera
+    const isRaceFormat = torneo?.format?.name?.toLowerCase() === "carrera";
 
     // Verificar si el torneo es privado y requiere contraseña
     useEffect(() => {
@@ -140,6 +145,12 @@ export function TournamentRegistration() {
     });
 
     const onSubmit = async (formData: InscripcionFormData) => {
+        // Si es formato carrera, mostrar modal de confirmación
+        if (isRaceFormat) {
+            setShowRunnerModal(true);
+            return;
+        }
+
         try {
             setIsSubmitting(true);
 
@@ -213,6 +224,49 @@ export function TournamentRegistration() {
         }
     };
 
+    const handleRunnerRegistration = () => {
+        try {
+            setIsSubmitting(true);
+
+            if (!id) {
+                toast.error("Error: no se encontró información del torneo.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            fetchRegisterRunner({
+                tournamentId: Number(id),
+                request: {} // El backend usa Authentication para obtener el usuario
+            });
+
+        } catch (error: any) {
+            console.error(error);
+            toast.error("Error al inscribirse a la carrera.");
+            setIsSubmitting(false);
+        }
+    };
+
+    // Efecto para manejar la respuesta de registro de corredor
+    useEffect(() => {
+        if (runnerRegisterData && !runnerRegisterLoading) {
+            toast.success(runnerRegisterData.message || "Inscripción exitosa");
+            setShowRunnerModal(false);
+            setIsSubmitting(false);
+            setTimeout(() => {
+                navigate("/perfil");
+            }, 600);
+        }
+        if (runnerRegisterError && !runnerRegisterLoading) {
+            const backendMessage =
+                (runnerRegisterError as any)?.response?.data?.message ||
+                (runnerRegisterError as any)?.response?.data ||
+                runnerRegisterError?.message ||
+                "Error al inscribirse a la carrera.";
+            toast.error(backendMessage);
+            setIsSubmitting(false);
+        }
+    }, [runnerRegisterData, runnerRegisterError, runnerRegisterLoading, navigate]);
+
 
     const puedeAgregarMas = fields.length < maxAdicionales;
     const totalActual = fields.length + 1; // +1 por el usuario logueado
@@ -258,7 +312,8 @@ export function TournamentRegistration() {
                         </div>
                     </Card>
 
-                    {/* Requirements Alert */}
+                    {/* Requirements Alert - solo para equipos */}
+                    {!isRaceFormat && (
                     <Card className="bg-blue-900/20 border-blue-700/30 p-4">
                         <div className="flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
@@ -275,11 +330,55 @@ export function TournamentRegistration() {
                             </div>
                         </div>
                     </Card>
+                    )}
                 </div>
 
                 {/* Contenido del formulario con blur si no está desbloqueado */}
                 <div className={`${torneo?.privateTournament && !isUnlocked ? 'blur-lg pointer-events-none select-none' : ''} transition-all duration-300`}>
-                    {/* Formulario */}
+                    {/* Formulario simplificado para carreras */}
+                    {isRaceFormat ? (
+                        <Card className="bg-[#2a2a2a] border-gray-800 p-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center">
+                                    <Trophy className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-white text-xl">Inscripción Individual</h2>
+                                    <p className="text-gray-400 text-sm">Confirma tu participación en esta carrera</p>
+                                </div>
+                            </div>
+
+                            <Card className="bg-[#1a1a1a] border-gray-800 p-4 mb-6">
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-gray-400 text-sm">Nombre Completo</p>
+                                        <p className="text-white font-medium">{user?.name} {user?.lastName}</p>
+                                    </div>
+                                    <Separator className="bg-gray-800" />
+                                    <div>
+                                        <p className="text-gray-400 text-sm">Cédula de Identidad</p>
+                                        <p className="text-white font-medium">{user?.nationalId}</p>
+                                    </div>
+                                    <Separator className="bg-gray-800" />
+                                    <div>
+                                        <p className="text-gray-400 text-sm">Email</p>
+                                        <p className="text-white font-medium">{user?.email}</p>
+                                    </div>
+                                </div>
+                            </Card>
+
+                            <Button
+                                type="button"
+                                onClick={() => setShowRunnerModal(true)}
+                                className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white h-12 text-base"
+                                disabled={isSubmitting}
+                            >
+                                <Save className="w-5 h-5 mr-2" />
+                                Inscribirme a la Carrera
+                            </Button>
+                        </Card>
+                    ) : (
+                        /* Formulario normal para equipos */
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     {/* Nombre del Equipo */}
                     <Card className="bg-[#2a2a2a] border-gray-800 p-6">
@@ -496,7 +595,83 @@ export function TournamentRegistration() {
                         </Card>
                     )}
                 </form>
+                    )}
             </div>
+
+            {/* Modal de confirmación para Runners */}
+            <Dialog open={showRunnerModal} onOpenChange={setShowRunnerModal}>
+                <DialogContent className="bg-[#2a2a2a] border-purple-700/50 text-white max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl flex items-center gap-2">
+                            <Trophy className="w-6 h-6 text-purple-400" />
+                            Confirmar Inscripción
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-400">
+                            Verifica tus datos antes de confirmar tu inscripción
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4 my-4">
+                        <Card className="bg-[#1a1a1a] border-gray-800 p-4">
+                            <div className="space-y-3">
+                                <div>
+                                    <p className="text-gray-400 text-sm">Nombre Completo</p>
+                                    <p className="text-white font-medium">{user?.name}</p>
+                                </div>
+                                <Separator className="bg-gray-800" />
+                                <div>
+                                    <p className="text-gray-400 text-sm">Cédula de Identidad</p>
+                                    <p className="text-white font-medium">{user?.nationalId}</p>
+                                </div>
+                                <Separator className="bg-gray-800" />
+                                <div>
+                                    <p className="text-gray-400 text-sm">Email</p>
+                                    <p className="text-white font-medium">{user?.email}</p>
+                                </div>
+                            </div>
+                        </Card>
+                        
+                        <Card className="bg-blue-900/20 border-blue-700/30 p-3">
+                            <div className="flex items-start gap-2">
+                                <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                                <p className="text-blue-300 text-sm">
+                                    Asegúrate de que tus datos sean correctos antes de confirmar. Una vez registrado, deberás contactar al organizador para modificar tu inscripción.
+                                </p>
+                            </div>
+                        </Card>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                        <Button
+                            type="button"
+                            onClick={() => setShowRunnerModal(false)}
+                            variant="outline"
+                            className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
+                            disabled={isSubmitting}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleRunnerRegistration}
+                            className="flex-1 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                    Registrando...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-4 h-4 mr-2" />
+                                    Confirmar Inscripción
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Modal de contraseña para torneos privados */}
             {torneo?.privateTournament && !isUnlocked && (

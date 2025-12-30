@@ -231,6 +231,10 @@ export function TournamentDetailsAlt() {
                                     <Shield className="w-4 h-4 mr-1" />
                                     Reglas
                                 </TabsTrigger>
+                                <TabsTrigger value="participantes" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
+                                    <Users className="w-4 h-4 mr-1" />
+                                    Participantes
+                                </TabsTrigger>
                                 <TabsTrigger value="info" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
                                     <Target className="w-4 h-4 mr-1" />
                                     Información
@@ -277,6 +281,50 @@ export function TournamentDetailsAlt() {
                                             <span className="text-gray-300">Regla 3</span>
                                         </li>
                                     </ul>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="participantes" className="mt-6">
+                                <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
+                                    <h3 className="text-white mb-4 flex items-center gap-2">
+                                        <Users className="w-5 h-5 text-purple-400" />
+                                        Participantes Inscritos
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {t.teams && t.teams.length > 0 ? (
+                                            t.teams.map((team: any, index: number) => (
+                                                <div key={team.id} className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                                                            {index + 1}
+                                                        </div>
+                                                        <Avatar className="w-10 h-10 border-2 border-purple-600/30">
+                                                            <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white text-sm">
+                                                                {team.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex-1">
+                                                            <h4 className="text-white font-medium">{team.name}</h4>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <Users className="w-3 h-3 text-gray-500" />
+                                                                <p className="text-gray-500 text-sm">
+                                                                    {team.participants.map((p: any) => p.fullName).join(', ')}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/30">
+                                                            {team.participants.length} {team.participants.length === 1 ? 'participante' : 'participantes'}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-12 text-gray-500">
+                                                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                                <p>No hay participantes inscritos aún</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </TabsContent>
 

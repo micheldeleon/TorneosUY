@@ -34,4 +34,15 @@ export type TournamentDetails = {
   };
   password: string | null;
   detalles: string | null;
+  teams?: {
+    id: number;
+    name: string;
+    participants: {
+      id: number;
+      nationalId: string;
+      fullName: string;
+    }[];
+    creator: any;
+    createdAt: string;
+  }[];
 };
