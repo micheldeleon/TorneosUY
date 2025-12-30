@@ -59,7 +59,16 @@ export const RegisterForm = () => {
 
   // luego del registro → login automático
   useEffect(() => {
-    if (!registerData || registerError) return;
+    if (registerError) {
+      // Extraer mensaje del backend si existe
+      const errorMsg = (registerError as any)?.response?.data?.message || 
+                       (registerError as any)?.message || 
+                       "Error al registrar usuario";
+      setUiError(errorMsg);
+      return;
+    }
+
+    if (!registerData) return;
 
     if (registerData._status === 200 && lastUser) {
       loginFetch({
@@ -71,6 +80,15 @@ export const RegisterForm = () => {
 
   // login final → navegar y guardar contexto
   useEffect(() => {
+    if (loginError) {
+      // Extraer mensaje del backend si existe
+      const errorMsg = (loginError as any)?.response?.data?.message || 
+                       (loginError as any)?.message || 
+                       "Error al iniciar sesión";
+      setUiError(errorMsg);
+      return;
+    }
+
     if (!loginData) return;
 
     if ((loginData as any).token) {
@@ -78,7 +96,7 @@ export const RegisterForm = () => {
       setUser((loginData as any).user);
       navigate("/dashboard");
     }
-  }, [loginData]);
+  }, [loginData, loginError]);
 
   // fuerza contraseña UI
   const passwordStrength = (password: string) => {
@@ -143,14 +161,11 @@ export const RegisterForm = () => {
           <div className="relative z-10">
 
             {/* errores API */}
-            {(registerError || loginError || uiError) && (
+            {uiError && (
               <Alert className="mb-6 bg-gradient-to-r from-red-900/30 to-pink-900/30 border-red-500/50 text-red-300 shadow-lg shadow-red-500/20">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  {registerError?.message ||
-                    loginError?.message ||
-                    uiError ||
-                    "Ocurrió un error."}
+                  {uiError}
                 </AlertDescription>
               </Alert>
             )}

@@ -423,24 +423,10 @@ export function TournamentDetailsAlt() {
 
                             {/* Guarantee Card */}
                             <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-700/30 rounded-2xl p-6">
-                                <h4 className="text-white mb-3 flex items-center gap-2">
+                                <h4 className="text-white flex items-center gap-2">
                                     <Shield className="w-4 h-4 text-purple-400" />
                                     Garantía TuTorneo
                                 </h4>
-                                <ul className="space-y-2 text-sm text-gray-300">
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                                        <span>Reembolso 48h antes del evento</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                                        <span>Pago seguro encriptado</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                                        <span>Soporte 24/7</span>
-                                    </li>
-                                </ul>
                             </div>
                         </div>
                     </div>

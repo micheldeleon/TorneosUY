@@ -3,23 +3,25 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { createTournamentSchema, type FormValueCreateTournament } from "../../components/CustomForm/schemas/createTournament.form.model";
 import { RHFInput, RHFSelect, RHFCheckbox, Submit } from "../../components/CustomForm";
-import { Trophy, Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign } from "lucide-react";
+import { Trophy, Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog";
 import { useApi } from "../../hooks/useApi";
 import type { CreateTournament } from "../../models/createTournament.model";
 import { createTournament } from "../../services/api.service";
 import { getDisciplines, getFormatsByDiscipline, getUsersByIdAndEmail } from "../../services/api.service";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import type { UserDetails } from "../../models/userDetails.model";
 import type { UserFind } from "../../models/userFind.model";
 import type { TournamentCreated } from "../../models";
 import { RHFRichTextEditor } from "../../components/CustomForm/RHFRichTextEditor";
+import { Alert, AlertDescription } from "../../components/ui/Alert";
+import { AlertCircle } from "lucide-react";
 
 export default function CreateTournament() {
 
   const navigate = useNavigate();
 
-  const { fetch } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
+  const { data: userData, fetch, loading: loadingUserData } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
 
   const { data, fetch: createTournamentFetch } = useApi<TournamentCreated, { organizerId: number; tournament: CreateTournament }>(createTournament);
 
@@ -128,6 +130,20 @@ export default function CreateTournament() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading] = useState(false);
 
+  // Verificar si faltan campos obligatorios del perfil
+  const isProfileIncomplete = (() => {
+    if (!userData) return true;
+    const requiredFields = [
+      userData.name,
+      userData.lastName,
+      userData.email,
+      userData.dateOfBirth,
+      userData.nationalId,
+      userData.phoneNumber,
+    ];
+    return requiredFields.some((field) => !field || field.toString().trim() === "");
+  })();
+
   const isPrivate = watch("isPrivate");
   const acceptTerms = watch("acceptTerms");
 
@@ -210,6 +226,27 @@ export default function CreateTournament() {
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-pink-500 rounded-full filter blur-3xl opacity-20"></div>
 
           <div className="relative z-10">
+            {/* Loader mientras se cargan los datos del usuario */}
+            {loadingUserData && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border-purple-500/50 rounded-lg flex items-center justify-center gap-3">
+                <Loader2 className="w-5 h-5 text-purple-300 animate-spin" />
+                <span className="text-purple-300">Cargando información del perfil...</span>
+              </div>
+            )}
+
+            {/* Alerta de perfil incompleto - solo mostrar después de cargar */}
+            {!loadingUserData && isProfileIncomplete && (
+              <Alert className="mb-6 bg-gradient-to-r from-yellow-900/30 to-orange-900/30 border-yellow-500/50 text-yellow-300 shadow-lg shadow-yellow-500/20">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Debes completar tu perfil antes de crear un torneo.{" "}
+                  <Link to="/perfil" className="underline font-semibold hover:text-yellow-200">
+                    Ir a mi perfil
+                  </Link>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Step 1: Disciplina */}
               <div className="p-6 bg-gradient-to-br from-surface-dark-900/20 to-transparent rounded-xl border border-purple-500/20">
@@ -226,6 +263,7 @@ export default function CreateTournament() {
                   placeholder="Elige un juego"
                   options={disciplineOptions}
                   error={errors.discipline?.message}
+                  disabled={isProfileIncomplete}
                 />
               </div>
 
@@ -556,6 +594,7 @@ export default function CreateTournament() {
               <div className="pt-4">
                 <Submit
                   txt={loading ? "Creando torneo..." : "Crear Torneo"}
+                  disabled={isProfileIncomplete}
                 />
                 {!isValid && isFormatSelected && (
                   <p className="text-yellow-400 text-sm text-center mt-3 flex items-center justify-center gap-2">
