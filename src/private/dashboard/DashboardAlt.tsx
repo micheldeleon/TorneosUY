@@ -7,7 +7,9 @@ import {
     Target, ChevronRight, Settings, X, Save, User, Mail, Phone, AlertTriangle,
     Gem,
     ShieldPlusIcon,
-    SettingsIcon
+    SettingsIcon,
+    Filter,
+    ArrowUpDown
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -36,6 +38,14 @@ export default function DashboardAlt() {
     const [showEditModal, setShowEditModal] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [disciplineFilterActive, setDisciplineFilterActive] = useState<string>("all");
+    const [disciplineFilterFinished, setDisciplineFilterFinished] = useState<string>("all");
+    const [disciplineFilterOrganizedActive, setDisciplineFilterOrganizedActive] = useState<string>("all");
+    const [disciplineFilterOrganizedFinished, setDisciplineFilterOrganizedFinished] = useState<string>("all");
+    const [sortOrderActive, setSortOrderActive] = useState<"asc" | "desc">("desc");
+    const [sortOrderFinished, setSortOrderFinished] = useState<"asc" | "desc">("desc");
+    const [sortOrderOrganizedActive, setSortOrderOrganizedActive] = useState<"asc" | "desc">("desc");
+    const [sortOrderOrganizedFinished, setSortOrderOrganizedFinished] = useState<"asc" | "desc">("desc");
 
     const toDateInputValue = (isoString: string) => {
         if (!isoString) return "";
@@ -214,6 +224,132 @@ export default function DashboardAlt() {
         return name.split(" ").map(n => n[0]).join("").toUpperCase();
     };
 
+    // Filtrar y dividir torneos organizados
+    const organizedActiveTournaments = useMemo(() => {
+        if (!organizedTournaments) return [];
+        return organizedTournaments.filter(
+            t => t.status === "ABIERTO" || t.status === "INICIADO"
+        );
+    }, [organizedTournaments]);
+
+    const organizedFinishedTournaments = useMemo(() => {
+        if (!organizedTournaments) return [];
+        return organizedTournaments.filter(
+            t => t.status === "FINALIZADO" || t.status === "CANCELADO"
+        );
+    }, [organizedTournaments]);
+
+    // Aplicar filtro y orden a torneos organizados activos
+    const filteredOrganizedActiveTournaments = useMemo(() => {
+        let filtered = organizedActiveTournaments;
+        if (disciplineFilterOrganizedActive !== "all") {
+            filtered = filtered.filter(
+                t => t.discipline?.name === disciplineFilterOrganizedActive
+            );
+        }
+        return [...filtered].sort((a, b) => {
+            const dateA = new Date(a.startAt).getTime();
+            const dateB = new Date(b.startAt).getTime();
+            return sortOrderOrganizedActive === "asc" ? dateA - dateB : dateB - dateA;
+        });
+    }, [organizedActiveTournaments, disciplineFilterOrganizedActive, sortOrderOrganizedActive]);
+
+    // Aplicar filtro y orden a torneos organizados terminados
+    const filteredOrganizedFinishedTournaments = useMemo(() => {
+        let filtered = organizedFinishedTournaments;
+        if (disciplineFilterOrganizedFinished !== "all") {
+            filtered = filtered.filter(
+                t => t.discipline?.name === disciplineFilterOrganizedFinished
+            );
+        }
+        return [...filtered].sort((a, b) => {
+            const dateA = new Date(a.startAt).getTime();
+            const dateB = new Date(b.startAt).getTime();
+            return sortOrderOrganizedFinished === "asc" ? dateA - dateB : dateB - dateA;
+        });
+    }, [organizedFinishedTournaments, disciplineFilterOrganizedFinished, sortOrderOrganizedFinished]);
+
+    // Obtener lista única de disciplinas de torneos organizados activos
+    const organizedActiveDisciplines = useMemo(() => {
+        const disciplines = new Set<string>();
+        organizedActiveTournaments.forEach(t => {
+            if (t.discipline?.name) disciplines.add(t.discipline.name);
+        });
+        return Array.from(disciplines).sort();
+    }, [organizedActiveTournaments]);
+
+    // Obtener lista única de disciplinas de torneos organizados terminados
+    const organizedFinishedDisciplines = useMemo(() => {
+        const disciplines = new Set<string>();
+        organizedFinishedTournaments.forEach(t => {
+            if (t.discipline?.name) disciplines.add(t.discipline.name);
+        });
+        return Array.from(disciplines).sort();
+    }, [organizedFinishedTournaments]);
+
+    // Filtrar y dividir torneos participando
+    const activeTournaments = useMemo(() => {
+        if (!participatingTournaments) return [];
+        return participatingTournaments.filter(
+            t => t.status === "ABIERTO" || t.status === "INICIADO"
+        );
+    }, [participatingTournaments]);
+
+    const finishedTournaments = useMemo(() => {
+        if (!participatingTournaments) return [];
+        return participatingTournaments.filter(
+            t => t.status === "FINALIZADO" || t.status === "CANCELADO"
+        );
+    }, [participatingTournaments]);
+
+    // Aplicar filtro de disciplina a torneos activos
+    const filteredActiveTournaments = useMemo(() => {
+        let filtered = activeTournaments;
+        if (disciplineFilterActive !== "all") {
+            filtered = filtered.filter(
+                t => t.discipline?.name === disciplineFilterActive
+            );
+        }
+        return [...filtered].sort((a, b) => {
+            const dateA = new Date(a.startAt).getTime();
+            const dateB = new Date(b.startAt).getTime();
+            return sortOrderActive === "asc" ? dateA - dateB : dateB - dateA;
+        });
+    }, [activeTournaments, disciplineFilterActive, sortOrderActive]);
+
+    // Aplicar filtro de disciplina a torneos terminados
+    const filteredFinishedTournaments = useMemo(() => {
+        let filtered = finishedTournaments;
+        if (disciplineFilterFinished !== "all") {
+            filtered = filtered.filter(
+                t => t.discipline?.name === disciplineFilterFinished
+            );
+        }
+        return [...filtered].sort((a, b) => {
+            const dateA = new Date(a.startAt).getTime();
+            const dateB = new Date(b.startAt).getTime();
+            return sortOrderFinished === "asc" ? dateA - dateB : dateB - dateA;
+        });
+    }, [finishedTournaments, disciplineFilterFinished, sortOrderFinished]);
+
+    // Obtener lista única de disciplinas de torneos activos
+    const activeDisciplines = useMemo(() => {
+        const disciplines = new Set<string>();
+        activeTournaments.forEach(t => {
+            if (t.discipline?.name) disciplines.add(t.discipline.name);
+        });
+        return Array.from(disciplines).sort();
+    }, [activeTournaments]);
+
+    // Obtener lista única de disciplinas de torneos terminados
+    const finishedDisciplines = useMemo(() => {
+        const disciplines = new Set<string>();
+        finishedTournaments.forEach(t => {
+            if (t.discipline?.name) disciplines.add(t.discipline.name);
+        });
+        return Array.from(disciplines).sort();
+    }, [finishedTournaments]);
+
     return (
         <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4">
             <div className="container mx-auto max-w-7xl">
@@ -313,52 +449,156 @@ export default function DashboardAlt() {
                 </div>
 
                 {/* Main Content with Tabs */}
-                <Tabs defaultValue={isOrganizer ? "organizados" : "participando"} className="w-full">
+                <Tabs defaultValue={isOrganizer ? "organizadosActivos" : "activos"} className="w-full">
                     <div className="overflow-x-auto -mx-4 px-4 mb-6">
-                        <TabsList className="bg-[#2a2a2a] text-gray-400 border border-gray-800 inline-flex w-full sm:w-auto">
-                            {isOrganizer && (
+                        {/* Desktop: Barra única con separadores visuales */}
+                        <div className="hidden lg:block">
+                            <TabsList className="bg-[#2a2a2a] text-gray-400 border border-gray-800 inline-flex">
+                                {isOrganizer && (
+                                    <>
+                                        <TabsTrigger
+                                            value="organizadosActivos"
+                                            className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-sm"
+                                        >
+                                            <Trophy className="w-4 h-4 mr-2" />
+                                            Organizados Activos
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="organizadosTerminados"
+                                            className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-sm"
+                                        >
+                                            <Settings className="w-4 h-4 mr-2" />
+                                            Organizados Terminados
+                                        </TabsTrigger>
+                                        <div className="w-px bg-gray-700 mx-2 my-2"></div>
+                                    </>
+                                )}
                                 <TabsTrigger
-                                    value="organizados"
-                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
+                                    value="activos"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-sm"
+                                >
+                                    <Calendar className="w-4 h-4 mr-2" />
+                                    Torneos Activos
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="terminados"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-sm"
+                                >
+                                    <Trophy className="w-4 h-4 mr-2" />
+                                    Torneos Terminados
+                                </TabsTrigger>
+                                <div className="w-px bg-gray-700 mx-2 my-2"></div>
+                                <TabsTrigger
+                                    value="perfil"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-sm"
+                                >
+                                    <User className="w-4 h-4 mr-2" />
+                                    Mi Perfil
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
+
+                        {/* Mobile: Dos filas */}
+                        <div className="lg:hidden flex flex-col gap-2">
+                            {isOrganizer && (
+                                <TabsList className="bg-[#2a2a2a] text-gray-400 border border-gray-800 inline-flex w-full">
+                                    <TabsTrigger
+                                        value="organizadosActivos"
+                                        className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm flex-1"
+                                    >
+                                        <Trophy className="w-4 h-4 mr-1 sm:mr-2" />
+                                        <span className="hidden sm:inline">Organizados Activos</span>
+                                        <span className="sm:hidden">Org. Activos</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="organizadosTerminados"
+                                        className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm flex-1"
+                                    >
+                                        <Settings className="w-4 h-4 mr-1 sm:mr-2" />
+                                        <span className="hidden sm:inline">Organizados Terminados</span>
+                                        <span className="sm:hidden">Org. Term.</span>
+                                    </TabsTrigger>
+                                </TabsList>
+                            )}
+                            
+                            <TabsList className="bg-[#2a2a2a] text-gray-400 border border-gray-800 inline-flex w-full">
+                                <TabsTrigger
+                                    value="activos"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm flex-1"
+                                >
+                                    <Calendar className="w-4 h-4 mr-1 sm:mr-2" />
+                                    <span className="hidden sm:inline">Torneos Activos</span>
+                                    <span className="sm:hidden">Activos</span>
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="terminados"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm flex-1"
                                 >
                                     <Trophy className="w-4 h-4 mr-1 sm:mr-2" />
-                                    <span className="hidden sm:inline">Torneos Organizados</span>
-                                    <span className="sm:hidden">Organizados</span>
+                                    <span className="hidden sm:inline">Torneos Terminados</span>
+                                    <span className="sm:hidden">Terminados</span>
                                 </TabsTrigger>
-                            )}
-                            <TabsTrigger
-                                value="participando"
-                                className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
-                            >
-                                <Calendar className="w-4 h-4 mr-1 sm:mr-2" />
-                                <span className="hidden sm:inline">Torneos Participando</span>
-                                <span className="sm:hidden">Participando</span>
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="perfil"
-                                className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm"
-                            >
-                                <Settings className="w-4 h-4 mr-1 sm:mr-2" />
-                                <span className="hidden sm:inline">Mi Perfil</span>
-                                <span className="sm:hidden">Perfil</span>
-                            </TabsTrigger>
-                        </TabsList>
+                                <TabsTrigger
+                                    value="perfil"
+                                    className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 whitespace-nowrap text-xs sm:text-sm flex-1"
+                                >
+                                    <User className="w-4 h-4 mr-1 sm:mr-2" />
+                                    <span className="hidden sm:inline">Mi Perfil</span>
+                                    <span className="sm:hidden">Perfil</span>
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
                     </div>
 
-                    {/* Torneos Organizados - Solo si es organizador */}
+                    {/* Torneos Organizados Activos - Solo si es organizador */}
                     {isOrganizer && (
-                        <TabsContent value="organizados">
+                        <TabsContent value="organizadosActivos">
                         {loadingOrganized ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                                {[1, 2].map((i) => (
-                                    <Card key={i} className="bg-[#2a2a2a] border-gray-800 p-4 sm:p-6">
-                                        <Skeleton className="h-24 w-full" />
-                                    </Card>
-                                ))}
+                            <div className="flex items-center justify-center py-12">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 border-4 border-purple-600/30 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+                                    <p className="text-gray-400 text-sm">Cargando torneos organizados activos...</p>
+                                </div>
                             </div>
-                        ) : organizedTournaments && organizedTournaments.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                                {organizedTournaments.map((torneo) => {
+                        ) : organizedActiveTournaments && organizedActiveTournaments.length > 0 ? (
+                            <div>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                                    <div>
+                                        <h2 className="text-white text-xl sm:text-2xl font-bold mb-1">Torneos Organizados Activos</h2>
+                                        <p className="text-gray-400 text-sm">Torneos que estás organizando actualmente</p>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                                        {organizedActiveDisciplines.length > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <Filter className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                <select
+                                                    value={disciplineFilterOrganizedActive}
+                                                    onChange={(e) => setDisciplineFilterOrganizedActive(e.target.value)}
+                                                    className="bg-[#2a2a2a] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:border-purple-600 focus:outline-none w-full sm:w-auto"
+                                                >
+                                                    <option value="all">Todas las disciplinas</option>
+                                                    {organizedActiveDisciplines.map((discipline) => (
+                                                        <option key={discipline} value={discipline}>
+                                                            {discipline}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        <Button
+                                            onClick={() => setSortOrderOrganizedActive(sortOrderOrganizedActive === "asc" ? "desc" : "asc")}
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-purple-600 text-purple-300 hover:bg-purple-600/10 flex items-center gap-2"
+                                        >
+                                            <ArrowUpDown className="w-4 h-4" />
+                                            <span className="hidden sm:inline">{sortOrderOrganizedActive === "asc" ? "Más antiguos" : "Más recientes"}</span>
+                                            <span className="sm:hidden">{sortOrderOrganizedActive === "asc" ? "Antiguos" : "Recientes"}</span>
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                {filteredOrganizedActiveTournaments.map((torneo) => {
                                     const estadoBadge = getEstadoBadge(torneo.status);
                                     return (
                                         <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group">
@@ -420,12 +660,13 @@ export default function DashboardAlt() {
                                     );
                                 })}
                             </div>
+                            </div>
                         ) : (
                             <Card className="bg-[#2a2a2a] border-gray-800 p-8 sm:p-12">
                                 <div className="text-center">
                                     <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-4" />
-                                    <h3 className="text-white mb-2 text-sm sm:text-base">No has organizado torneos</h3>
-                                    <p className="text-gray-400 mb-6 text-xs sm:text-sm">Crea tu primer torneo y empieza a competir</p>
+                                    <h3 className="text-white mb-2 text-sm sm:text-base">No tienes torneos organizados activos</h3>
+                                    <p className="text-gray-400 mb-6 text-xs sm:text-sm">Crea tu primer torneo y empieza a organizar</p>
                                     <Button
                                         onClick={() => navigate("/crearTorneo")}
                                         className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white text-sm"
@@ -439,26 +680,62 @@ export default function DashboardAlt() {
                     </TabsContent>
                     )}
 
-                    {/* Torneos Participando */}
-                    <TabsContent value="participando">
-                        {loadingParticipating ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                                {[1, 2].map((i) => (
-                                    <Card key={i} className="bg-[#2a2a2a] border-gray-800 p-4 sm:p-6">
-                                        <Skeleton className="h-24 w-full" />
-                                    </Card>
-                                ))}
+                    {/* Torneos Organizados Terminados - Solo si es organizador */}
+                    {isOrganizer && (
+                        <TabsContent value="organizadosTerminados">
+                        {loadingOrganized ? (
+                            <div className="flex items-center justify-center py-12">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 border-4 border-purple-600/30 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+                                    <p className="text-gray-400 text-sm">Cargando torneos organizados terminados...</p>
+                                </div>
                             </div>
-                        ) : participatingTournaments && participatingTournaments.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                                {participatingTournaments.map((torneo) => {
+                        ) : organizedFinishedTournaments && organizedFinishedTournaments.length > 0 ? (
+                            <div>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                                    <div>
+                                        <h2 className="text-white text-xl sm:text-2xl font-bold mb-1">Torneos Organizados Terminados</h2>
+                                        <p className="text-gray-400 text-sm">Historial de torneos que organizaste</p>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                                        {organizedFinishedDisciplines.length > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <Filter className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                <select
+                                                    value={disciplineFilterOrganizedFinished}
+                                                    onChange={(e) => setDisciplineFilterOrganizedFinished(e.target.value)}
+                                                    className="bg-[#2a2a2a] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:border-purple-600 focus:outline-none w-full sm:w-auto"
+                                                >
+                                                    <option value="all">Todas las disciplinas</option>
+                                                    {organizedFinishedDisciplines.map((discipline) => (
+                                                        <option key={discipline} value={discipline}>
+                                                            {discipline}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        <Button
+                                            onClick={() => setSortOrderOrganizedFinished(sortOrderOrganizedFinished === "asc" ? "desc" : "asc")}
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-purple-600 text-purple-300 hover:bg-purple-600/10 flex items-center gap-2"
+                                        >
+                                            <ArrowUpDown className="w-4 h-4" />
+                                            <span className="hidden sm:inline">{sortOrderOrganizedFinished === "asc" ? "Más antiguos" : "Más recientes"}</span>
+                                            <span className="sm:hidden">{sortOrderOrganizedFinished === "asc" ? "Antiguos" : "Recientes"}</span>
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                {filteredOrganizedFinishedTournaments.map((torneo) => {
                                     const estadoBadge = getEstadoBadge(torneo.status);
                                     return (
-                                        <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group">
+                                        <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group opacity-80">
                                             <div className="p-4 sm:p-6">
                                                 <div className="flex items-start justify-between gap-3 mb-4">
                                                     <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
                                                             <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                                         </div>
                                                         <div className="min-w-0 flex-1">
@@ -479,8 +756,8 @@ export default function DashboardAlt() {
                                                         <span className="truncate">{formatDate(torneo.startAt)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-gray-400">
-                                                        <Target className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                                                        <span>{torneo.format?.name || "Formato"}</span>
+                                                        <Users className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                        <span>{torneo.teamsInscribed}/{torneo.maxParticipantsPerTournament} inscritos</span>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-gray-400">
                                                         <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
@@ -492,20 +769,12 @@ export default function DashboardAlt() {
                                                     </div>
                                                 </div>
 
-                                                <div className="mb-4">
-                                                    <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
-                                                        <span className="text-gray-400">Participantes</span>
-                                                        <span className="text-white">{torneo.teamsInscribed}/{torneo.maxParticipantsPerTournament}</span>
-                                                    </div>
-                                                    <Progress value={(torneo.teamsInscribed / torneo.maxParticipantsPerTournament) * 100} className="h-2" />
-                                                </div>
-
-                                                <Link to={`/torneo/${torneo.id}`}>
+                                                <Link to={`/manejar-torneo/${torneo.id}`}>
                                                     <Button
-                                                        className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 text-sm"
+                                                        className="w-full bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white text-sm"
                                                     >
-                                                        Ver Detalles
-                                                        <ChevronRight className="w-4 h-4 ml-2" />
+                                                        Gestionar
+                                                        <SettingsIcon className="w-4 h-4 ml-2" />
                                                     </Button>
                                                 </Link>
                                             </div>
@@ -513,11 +782,149 @@ export default function DashboardAlt() {
                                     );
                                 })}
                             </div>
+                            </div>
+                        ) : (
+                            <Card className="bg-[#2a2a2a] border-gray-800 p-8 sm:p-12">
+                                <div className="text-center">
+                                    <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-4" />
+                                    <h3 className="text-white mb-2 text-sm sm:text-base">No tienes torneos organizados terminados</h3>
+                                    <p className="text-gray-400 text-xs sm:text-sm">Los torneos finalizados aparecerán aquí</p>
+                                </div>
+                            </Card>
+                        )}
+                    </TabsContent>
+                    )}
+
+                    {/* Torneos Activos */}
+                    <TabsContent value="activos">
+                        {loadingParticipating ? (
+                            <div className="flex items-center justify-center py-12">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 border-4 border-purple-600/30 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+                                    <p className="text-gray-400 text-sm">Cargando torneos activos...</p>
+                                </div>
+                            </div>
+                        ) : activeTournaments && activeTournaments.length > 0 ? (
+                            <div>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                                        <div>
+                                            <h2 className="text-white text-xl sm:text-2xl font-bold mb-1">Torneos Activos</h2>
+                                            <p className="text-gray-400 text-sm">Torneos en los que estás participando actualmente</p>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                                        {activeDisciplines.length > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <Filter className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                <select
+                                                    value={disciplineFilterActive}
+                                                    onChange={(e) => setDisciplineFilterActive(e.target.value)}
+                                                    className="bg-[#2a2a2a] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:border-purple-600 focus:outline-none w-full sm:w-auto"
+                                                >
+                                                    <option value="all">Todas las disciplinas</option>
+                                                    {activeDisciplines.map((discipline) => (
+                                                        <option key={discipline} value={discipline}>
+                                                            {discipline}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        <Button
+                                            onClick={() => setSortOrderActive(sortOrderActive === "asc" ? "desc" : "asc")}
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-purple-600 text-purple-300 hover:bg-purple-600/10 flex items-center gap-2"
+                                        >
+                                            <ArrowUpDown className="w-4 h-4" />
+                                            <span className="hidden sm:inline">{sortOrderActive === "asc" ? "Más antiguos" : "Más recientes"}</span>
+                                            <span className="sm:hidden">{sortOrderActive === "asc" ? "Antiguos" : "Recientes"}</span>
+                                        </Button>
+                                        </div>
+                                    </div>
+
+                                    {filteredActiveTournaments.length > 0 ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                            {filteredActiveTournaments.map((torneo) => {
+                                                const estadoBadge = getEstadoBadge(torneo.status);
+                                                return (
+                                                    <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group">
+                                                        <div className="p-4 sm:p-6">
+                                                            <div className="flex items-start justify-between gap-3 mb-4">
+                                                                <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                                        <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                                                    </div>
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
+                                                                            {torneo.name}
+                                                                        </h3>
+                                                                        <p className="text-gray-500 text-xs sm:text-sm truncate">{torneo.discipline?.name || "Torneo"}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <Badge className={`text-xs sm:text-sm whitespace-nowrap ${estadoBadge.className}`}>
+                                                                    {estadoBadge.text}
+                                                                </Badge>
+                                                            </div>
+
+                                                            <div className="space-y-2 sm:space-y-3 mb-4 text-xs sm:text-sm">
+                                                                <div className="flex items-center gap-2 text-gray-400">
+                                                                    <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                                    <span className="truncate">{formatDate(torneo.startAt)}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-gray-400">
+                                                                    <Target className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                                    <span>{torneo.format?.name || "Formato"}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-gray-400">
+                                                                    <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                                    {torneo.prize ? (
+                                                                        <span className="truncate [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_li]:ml-2 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: torneo.prize }} />
+                                                                    ) : (
+                                                                        <span className="truncate italic">Sin premio</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="mb-4">
+                                                                <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
+                                                                    <span className="text-gray-400">Participantes</span>
+                                                                    <span className="text-white">{torneo.teamsInscribed}/{torneo.maxParticipantsPerTournament}</span>
+                                                                </div>
+                                                                <Progress value={(torneo.teamsInscribed / torneo.maxParticipantsPerTournament) * 100} className="h-2" />
+                                                            </div>
+
+                                                            <Link to={`/torneo/${torneo.id}`}>
+                                                                <Button
+                                                                    className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 text-sm"
+                                                                >
+                                                                    Ver Detalles
+                                                                    <ChevronRight className="w-4 h-4 ml-2" />
+                                                                </Button>
+                                                            </Link>
+                                                        </div>
+                                                    </Card>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <Card className="bg-[#2a2a2a] border-gray-800 p-8">
+                                            <div className="text-center">
+                                                <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                                                <h3 className="text-white mb-1 text-sm">No hay torneos activos</h3>
+                                                <p className="text-gray-400 text-xs">
+                                                    {disciplineFilterActive !== "all" 
+                                                        ? "No hay torneos activos en esta disciplina" 
+                                                        : "No estás participando en torneos activos"}
+                                                </p>
+                                            </div>
+                                        </Card>
+                                    )}
+                                </div>
                         ) : (
                             <Card className="bg-[#2a2a2a] border-gray-800 p-8 sm:p-12">
                                 <div className="text-center">
                                     <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-4" />
-                                    <h3 className="text-white mb-2 text-sm sm:text-base">No estás participando en torneos</h3>
+                                    <h3 className="text-white mb-2 text-sm sm:text-base">No estás participando en torneos activos</h3>
                                     <p className="text-gray-400 mb-6 text-xs sm:text-sm">Explora torneos disponibles y únete a la competencia</p>
                                     <Button
                                         onClick={() => navigate("/explorar-torneos")}
@@ -525,6 +932,134 @@ export default function DashboardAlt() {
                                     >
                                         Explorar Torneos
                                     </Button>
+                                </div>
+                            </Card>
+                        )}
+                    </TabsContent>
+
+                    {/* Torneos Terminados */}
+                    <TabsContent value="terminados">
+                        {loadingParticipating ? (
+                            <div className="flex items-center justify-center py-12">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 border-4 border-purple-600/30 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+                                    <p className="text-gray-400 text-sm">Cargando torneos terminados...</p>
+                                </div>
+                            </div>
+                        ) : finishedTournaments && finishedTournaments.length > 0 ? (
+                            <div>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                                        <div>
+                                            <h2 className="text-white text-xl sm:text-2xl font-bold mb-1">Torneos Terminados</h2>
+                                            <p className="text-gray-400 text-sm">Historial de torneos finalizados o cancelados</p>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                                        {finishedDisciplines.length > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <Filter className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                <select
+                                                    value={disciplineFilterFinished}
+                                                    onChange={(e) => setDisciplineFilterFinished(e.target.value)}
+                                                    className="bg-[#2a2a2a] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:border-purple-600 focus:outline-none w-full sm:w-auto"
+                                                >
+                                                    <option value="all">Todas las disciplinas</option>
+                                                    {finishedDisciplines.map((discipline) => (
+                                                        <option key={discipline} value={discipline}>
+                                                            {discipline}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                        <Button
+                                            onClick={() => setSortOrderFinished(sortOrderFinished === "asc" ? "desc" : "asc")}
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-purple-600 text-purple-300 hover:bg-purple-600/10 flex items-center gap-2"
+                                        >
+                                            <ArrowUpDown className="w-4 h-4" />
+                                            <span className="hidden sm:inline">{sortOrderFinished === "asc" ? "Más antiguos" : "Más recientes"}</span>
+                                            <span className="sm:hidden">{sortOrderFinished === "asc" ? "Antiguos" : "Recientes"}</span>
+                                        </Button>
+                                        </div>
+                                    </div>
+
+                                    {filteredFinishedTournaments.length > 0 ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                                            {filteredFinishedTournaments.map((torneo) => {
+                                                const estadoBadge = getEstadoBadge(torneo.status);
+                                                return (
+                                                    <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group opacity-80">
+                                                        <div className="p-4 sm:p-6">
+                                                            <div className="flex items-start justify-between gap-3 mb-4">
+                                                                <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                                        <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                                                    </div>
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
+                                                                            {torneo.name}
+                                                                        </h3>
+                                                                        <p className="text-gray-500 text-xs sm:text-sm truncate">{torneo.discipline?.name || "Torneo"}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <Badge className={`text-xs sm:text-sm whitespace-nowrap ${estadoBadge.className}`}>
+                                                                    {estadoBadge.text}
+                                                                </Badge>
+                                                            </div>
+
+                                                            <div className="space-y-2 sm:space-y-3 mb-4 text-xs sm:text-sm">
+                                                                <div className="flex items-center gap-2 text-gray-400">
+                                                                    <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                                    <span className="truncate">{formatDate(torneo.startAt)}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-gray-400">
+                                                                    <Target className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                                    <span>{torneo.format?.name || "Formato"}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-gray-400">
+                                                                    <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                                                                    {torneo.prize ? (
+                                                                        <span className="truncate [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_li]:ml-2 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: torneo.prize }} />
+                                                                    ) : (
+                                                                        <span className="truncate italic">Sin premio</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <Link to={`/torneo/${torneo.id}`}>
+                                                                <Button
+                                                                    className="w-full bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white text-sm"
+                                                                >
+                                                                    Ver Detalles
+                                                                    <ChevronRight className="w-4 h-4 ml-2" />
+                                                                </Button>
+                                                            </Link>
+                                                        </div>
+                                                    </Card>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <Card className="bg-[#2a2a2a] border-gray-800 p-8">
+                                            <div className="text-center">
+                                                <Trophy className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                                                <h3 className="text-white mb-1 text-sm">No hay torneos terminados</h3>
+                                                <p className="text-gray-400 text-xs">
+                                                    {disciplineFilterFinished !== "all" 
+                                                        ? "No hay torneos terminados en esta disciplina" 
+                                                        : "No tienes torneos finalizados aún"}
+                                                </p>
+                                            </div>
+                                        </Card>
+                                    )}
+                                </div>
+                        ) : (
+                            <Card className="bg-[#2a2a2a] border-gray-800 p-8 sm:p-12">
+                                <div className="text-center">
+                                    <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600 mx-auto mb-4" />
+                                    <h3 className="text-white mb-2 text-sm sm:text-base">No tienes torneos terminados</h3>
+                                    <p className="text-gray-400 mb-6 text-xs sm:text-sm">Cuando finalices torneos, aparecerán aquí</p>
                                 </div>
                             </Card>
                         )}
