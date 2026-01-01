@@ -140,6 +140,42 @@ export function ManageTournament() {
     }, 3000);
   };
 
+  // Estado para diálogo de confirmación
+  const [confirmDialog, setConfirmDialog] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+  }>({ show: false, title: '', message: '', onConfirm: () => {} });
+
+  const showConfirmDialog = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    options?: {
+      confirmText?: string;
+      cancelText?: string;
+      type?: 'danger' | 'warning' | 'info';
+    }
+  ) => {
+    setConfirmDialog({
+      show: true,
+      title,
+      message,
+      onConfirm,
+      confirmText: options?.confirmText || 'Confirmar',
+      cancelText: options?.cancelText || 'Cancelar',
+      type: options?.type || 'warning',
+    });
+  };
+
+  const hideConfirmDialog = () => {
+    setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => {} });
+  };
+
   // Estados para edición
   const [modoEdicion, setModoEdicion] = useState(false);
 
@@ -260,47 +296,58 @@ export function ManageTournament() {
   }>({ isOpen: false });
 
   const handleIniciarTorneo = () => {
-    if (confirm("¿Estás seguro de iniciar el torneo? No podrás editar los detalles después.")) {
-      setModoEdicion(false);
-    }
+    showConfirmDialog(
+      'Iniciar Torneo',
+      '¿Estás seguro de iniciar el torneo? No podrás editar los detalles después.',
+      () => {
+        setModoEdicion(false);
+        hideConfirmDialog();
+      },
+      { confirmText: 'Iniciar', type: 'info' }
+    );
   };
 
   const handleCancelarTorneo = async () => {
-    if (!confirm("¿Estás seguro de cancelar el torneo? Esta acción no se puede deshacer.")) {
-      return;
-    }
+    showConfirmDialog(
+      'Cancelar Torneo',
+      '¿Estás seguro de cancelar el torneo? Esta acción no se puede deshacer. Los participantes serán notificados.',
+      async () => {
+        hideConfirmDialog();
+        try {
+          if (tournamentId) {
+            setShowLoader(true);
+            cancelTournamentFetch(tournamentId);
 
-    try {
-      if (tournamentId) {
-        setShowLoader(true);
-        cancelTournamentFetch(tournamentId);
-
-        setTimeout(() => {
+            setTimeout(() => {
+              setShowLoader(false);
+              showNotification('success', 'Torneo cancelado correctamente. Los participantes serán notificados.');
+              setTimeout(() => {
+                navigate("/perfil");
+              }, 1500);
+            }, 1000);
+          }
+        } catch (error) {
+          console.error("Error al cancelar torneo:", error);
           setShowLoader(false);
-          showNotification('success', 'Torneo cancelado correctamente. Los participantes serán notificados.');
-          setTimeout(() => {
-            navigate("/perfil");
-          }, 1500);
-        }, 1000);
-      }
-    } catch (error) {
-      console.error("Error al cancelar torneo:", error);
-      setShowLoader(false);
-      showNotification('error', 'Error al cancelar el torneo. Por favor intenta nuevamente.');
-    }
+          showNotification('error', 'Error al cancelar el torneo. Por favor intenta nuevamente.');
+        }
+      },
+      { confirmText: 'Sí, cancelar', cancelText: 'No, mantener', type: 'danger' }
+    );
   };
 
-  const handleEliminarParticipante = async (teamId: number) => {
-    if (!confirm("¿Eliminar este participante del torneo?")) {
-      return;
-    }
-
+  const handleEliminarParticipante = async (teamId: number, teamName: string) => {
     if (!tournamentData?.id || !user?.id) {
       showNotification('error', 'Error: Datos incompletos');
       return;
     }
 
-    try {
+    showConfirmDialog(
+      'Eliminar Participante',
+      `¿Estás seguro de que deseas eliminar a "${teamName}" del torneo? Esta acción no se puede deshacer.`,
+      async () => {
+        hideConfirmDialog();
+        try {
       setShowLoader(true);
 
       await removeTeam({
@@ -312,19 +359,24 @@ export function ManageTournament() {
         }
       });
 
-      // Refetch tournament data to update the teams list
-      if (tournamentId) {
-        await refetchTournament(tournamentId);
-      }
-
-      setShowLoader(false);
       showNotification('success', 'Participante eliminado correctamente');
+      
+      // Refetch tournament data to update the teams list
+      setTimeout(() => {
+        if (tournamentId) {
+          refetchTournament(tournamentId);
+        }
+        setShowLoader(false);
+      }, 300);
     } catch (error: any) {
       console.error("Error al eliminar participante:", error);
       setShowLoader(false);
       const errorMessage = error?.response?.data?.message || error?.response?.data || 'Error al eliminar el participante';
       showNotification('error', errorMessage);
-    }
+        }
+      },
+      { confirmText: 'Sí, eliminar', cancelText: 'Cancelar', type: 'danger' }
+    );
   };
 
   const handleGuardarDetalles = () => {
@@ -908,7 +960,7 @@ export function ManageTournament() {
 
                         {tournamentData.status === "ABIERTO" && (
                           <Button
-                            onClick={() => handleEliminarParticipante(team.id)}
+                            onClick={() => handleEliminarParticipante(team.id, team.name)}
                             variant="ghost"
                             size="sm"
                             className="text-rose-400 hover:text-rose-300 hover:bg-rose-600/10"
@@ -1202,6 +1254,49 @@ export function ManageTournament() {
               <p className="text-white text-lg">
                 {notification.message}
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {confirmDialog.show && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+          <div className="max-w-md w-full mx-4 bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div
+              className={`p-6 border-b border-gray-800 ${confirmDialog.type === 'danger'
+                ? 'bg-rose-900/20'
+                : confirmDialog.type === 'warning'
+                  ? 'bg-yellow-900/20'
+                  : 'bg-blue-900/20'
+                }`}
+            >
+              <h3 className="text-white text-xl font-bold">{confirmDialog.title}</h3>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-300 text-base leading-relaxed mb-6">
+                {confirmDialog.message}
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  onClick={hideConfirmDialog}
+                  variant="outline"
+                  className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                >
+                  {confirmDialog.cancelText || 'Cancelar'}
+                </Button>
+                <Button
+                  onClick={confirmDialog.onConfirm}
+                  className={`${confirmDialog.type === 'danger'
+                    ? 'bg-gradient-to-r from-rose-600 to-rose-800 hover:from-rose-700 hover:to-rose-900'
+                    : confirmDialog.type === 'warning'
+                      ? 'bg-gradient-to-r from-yellow-600 to-yellow-800 hover:from-yellow-700 hover:to-yellow-900'
+                      : 'bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900'
+                    } text-white`}
+                >
+                  {confirmDialog.confirmText || 'Confirmar'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
