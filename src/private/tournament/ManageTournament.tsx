@@ -6,7 +6,7 @@ import {
   UngroupIcon, CheckCircle2, XCircle, Loader2, Clock
 } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
-import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory, reportRaceResults } from "../../services/api.service";
+import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory, reportRaceResults, removeTeamFromTournament } from "../../services/api.service";
 import { useGlobalContext } from "../../context/global.context";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -59,7 +59,7 @@ export function ManageTournament() {
   const { user } = useGlobalContext();
   const tournamentId = params.id ? parseInt(params.id) : undefined;
 
-  const { data: tournamentData, loading, error } = useApi(
+  const { data: tournamentData, loading, error, fetch: refetchTournament } = useApi(
     getTournamentById,
     { autoFetch: true, params: tournamentId }
   );
@@ -69,6 +69,7 @@ export function ManageTournament() {
   const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
   const { fetch: generateFixtureLeague } = useApi(generateFixtureForLeague);
   const { fetch: generateFixtureEliminatory } = useApi(generateFixtureForEliminatory);
+  const { fetch: removeTeam } = useApi(removeTeamFromTournament);
 
 
   // Verificar si el usuario es el organizador
@@ -289,9 +290,40 @@ export function ManageTournament() {
     }
   };
 
-  const handleEliminarParticipante = (id: number) => {
-    if (confirm("¿Eliminar este participante del torneo?")) {
-      setParticipantes(participantes.filter(p => p.id !== id));
+  const handleEliminarParticipante = async (teamId: number) => {
+    if (!confirm("¿Eliminar este participante del torneo?")) {
+      return;
+    }
+
+    if (!tournamentData?.id || !user?.id) {
+      showNotification('error', 'Error: Datos incompletos');
+      return;
+    }
+
+    try {
+      setShowLoader(true);
+
+      await removeTeam({
+        tournamentId: tournamentData.id,
+        data: {
+          organizerId: user.id,
+          teamId: teamId,
+          comment: "Equipo eliminado por el organizador"
+        }
+      });
+
+      // Refetch tournament data to update the teams list
+      if (tournamentId) {
+        await refetchTournament(tournamentId);
+      }
+
+      setShowLoader(false);
+      showNotification('success', 'Participante eliminado correctamente');
+    } catch (error: any) {
+      console.error("Error al eliminar participante:", error);
+      setShowLoader(false);
+      const errorMessage = error?.response?.data?.message || error?.response?.data || 'Error al eliminar el participante';
+      showNotification('error', errorMessage);
     }
   };
 
@@ -492,12 +524,17 @@ export function ManageTournament() {
         await generateFixtureEliminatory({ tournamentId });
       }
 
-      // Refetch fixtures after generation
-      setTimeout(() => {
-        fetchFixtures(tournamentId);
-        setShowLoader(false);
-        showNotification('success', 'Fixture generado correctamente');
-      }, 1000);
+      // Refetch fixtures and tournament data after generation
+      if (tournamentId) {
+        await fetchFixtures(tournamentId);
+        await refetchTournament(tournamentId);
+        if (tournamentData.format.name === "Liga") {
+          await fetchStandings(tournamentId);
+        }
+      }
+      
+      setShowLoader(false);
+      showNotification('success', 'Fixture generado correctamente');
     } catch (error) {
       console.error("Error al generar fixture:", error);
       setShowLoader(false);

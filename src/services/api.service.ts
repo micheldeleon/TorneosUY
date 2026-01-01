@@ -394,3 +394,24 @@ export const getRaceResults = (tournamentId?: number): UseApiCall<{
         controller,
     };
 }
+
+export const removeTeamFromTournament = (
+    params?: {
+        tournamentId: number;
+        data: {
+            organizerId: number;
+            teamId: number;
+            comment?: string;
+        }
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/remove-team`,
+            params?.data,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}
