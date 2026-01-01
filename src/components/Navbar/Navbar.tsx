@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Trophy, Menu, X } from "lucide-react";
+import { Trophy, Menu, X, Bell } from "lucide-react";
 import { Button } from "../ui/Button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGlobalContext } from "../../context/global.context";
 
 
 export interface NavItem {
@@ -22,6 +23,8 @@ export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { unreadNotifications } = useGlobalContext();
 
   const handleNavClick = (link: NavItem) => {
     if (!link.sectionId) return;
@@ -73,6 +76,20 @@ export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps)
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <div className="hidden md:flex items-center gap-2">
+              <Link to="/notificaciones" className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-purple-300 hover:text-purple-200 hover:bg-purple-600/10 relative"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                      {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                    </span>
+                  )}
+                </Button>
+              </Link>
               <Link to="/perfil">
                 <Button className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
                   Mi Perfil
@@ -174,6 +191,17 @@ export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps)
               <div className="border-t border-purple-900/20 pt-4 mt-2 space-y-2">
                 {isAuthenticated ? (
                   <>
+                    <Link to="/notificaciones" onClick={() => setMobileMenuOpen(false)} className="relative block">
+                      <Button variant="outline" className="w-full mb-2 border-purple-600 text-purple-300 hover:bg-purple-600/10 relative">
+                        <Bell className="w-5 h-5 mr-2" />
+                        Notificaciones
+                        {unreadNotifications > 0 && (
+                          <span className="absolute top-2 right-2 w-5 h-5 bg-rose-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                            {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                          </span>
+                        )}
+                      </Button>
+                    </Link>
                     <Link to="/perfil" onClick={() => setMobileMenuOpen(false)}>
                       <Button className="w-full mb-2 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white">
                         Mi Perfil

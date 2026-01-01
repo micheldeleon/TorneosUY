@@ -1,13 +1,16 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { User } from "../models/user.model";
 import { isTokenExpired, decodeJWT } from "../services/utilities/jwt.utility";
+import { getUnreadNotificationsCount } from "../services/api.service";
 
 interface GlobalContextType {
   user: User | null;
   token: string | null;
+  unreadNotifications: number;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   setToken: React.Dispatch<React.SetStateAction<string | null>>;
   logout: () => void;
+  refreshNotifications: () => void;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -22,6 +25,39 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     if (!raw) return null;
     try { return JSON.parse(raw) as User; } catch { return null; }
   });
+  const [unreadNotifications, setUnreadNotifications] = useState<number>(0);
+
+  // Función para actualizar notificaciones
+  const refreshNotifications = async () => {
+    if (!token || !user) {
+      setUnreadNotifications(0);
+      return;
+    }
+
+    try {
+      const { call } = getUnreadNotificationsCount();
+      const response = await call;
+      // El backend devuelve directamente el número
+      const count = typeof response.data === 'number' ? response.data : (response.data?.count || 0);
+      setUnreadNotifications(count);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      setUnreadNotifications(0);
+    }
+  };
+
+  // Obtener notificaciones al cargar la app o cuando cambia el token/user
+  useEffect(() => {
+    if (token && user) {
+      refreshNotifications();
+      
+      // Poll cada 30 segundos
+      const interval = setInterval(refreshNotifications, 30000);
+      return () => clearInterval(interval);
+    } else {
+      setUnreadNotifications(0);
+    }
+  }, [token, user]);
 
   // 2) Persistencia: token
   useEffect(() => {
@@ -38,6 +74,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setToken(null);
     setUser(null);
+    setUnreadNotifications(0);
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_USER);
     localStorage.removeItem("isOrganizer"); // Limpiar también el estado de organizador
@@ -96,7 +133,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   }, [token]);
 
   return (
-    <GlobalContext.Provider value={{ user, token, setUser, setToken, logout }}>
+    <GlobalContext.Provider value={{ user, token, unreadNotifications, setUser, setToken, logout, refreshNotifications }}>
       {children}
     </GlobalContext.Provider>
   );

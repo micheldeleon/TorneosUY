@@ -18,6 +18,7 @@ import { NavbarModern } from "./components/Navbar/NavbarModern";
 import TournamentCanceled from "./public/TournamentCanceled";
 import TournamentFinished from "./public/TournamentFinished";
 import Error404 from "./public/Error404";
+import { Notifications } from "./public/Notifications";
 
 
 
@@ -43,6 +44,7 @@ function App() {
     '/login',
     '/signup',
     '/crearTorneo',
+    '/notificaciones',
   ];
 
   const isValidRoute = validRoutes.includes(location.pathname) ||
@@ -154,6 +156,13 @@ function App() {
             path="/torneos"
             element={
               <TournamentsExplore />
+            } />
+          <Route
+            path="/notificaciones"
+            element={
+              <PrivateRoute isPrivate={true}>
+                <Notifications />
+              </PrivateRoute>
             } />
           
           {/* Ruta 404 - Debe estar al final */}

@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Trophy, Menu, X, Sparkles, LogOut, User, ChevronDown } from "lucide-react";
+import { Trophy, Menu, X, Sparkles, LogOut, User, ChevronDown, Bell } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGlobalContext } from "../../context/global.context";
 
 export interface NavItem {
   label: string;
@@ -34,6 +35,8 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
   const [userName, setUserName] = useState<string>("");
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { unreadNotifications } = useGlobalContext();
 
   // Obtener el nombre del usuario del localStorage
   useEffect(() => {
@@ -145,6 +148,18 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
             <div className="flex items-center gap-3">
               {isAuthenticated ? (
                 <div className="hidden lg:flex items-center gap-2">
+                  {/* Notifications Bell */}
+                  <Link to="/notificaciones" className="relative">
+                    <button className="relative p-2 text-gray-300 hover:text-white hover:bg-purple-600/10 rounded-xl transition-all">
+                      <Bell className="w-5 h-5" />
+                      {unreadNotifications > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                          {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                        </span>
+                      )}
+                    </button>
+                  </Link>
+
                   {/* User Menu Dropdown */}
                   <div className="relative">
                     <button
@@ -320,6 +335,21 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                 >
                   {isAuthenticated ? (
                     <>
+                      <Link
+                        to="/notificaciones"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block"
+                      >
+                        <Button className="w-full relative bg-gradient-to-r from-purple-900/50 to-purple-800/50 hover:from-purple-800/60 hover:to-purple-700/60 border border-purple-600/30 text-white backdrop-blur-sm">
+                          <Bell className="w-4 h-4 mr-2" />
+                          Notificaciones
+                          {unreadNotifications > 0 && (
+                            <span className="absolute top-2 right-2 w-5 h-5 bg-rose-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                              {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                            </span>
+                          )}
+                        </Button>
+                      </Link>
                       <Link
                         to="/perfil"
                         onClick={() => setMobileMenuOpen(false)}

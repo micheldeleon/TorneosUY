@@ -415,3 +415,44 @@ export const removeTeamFromTournament = (
         controller,
     };
 }
+
+// Notifications
+export const getAllNotifications = (): UseApiCall<any[]> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<any[]>(`/api/notifications`, { signal: controller.signal }),
+        controller,
+    };
+}
+
+export const getUnreadNotifications = (): UseApiCall<any[]> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<any[]>(`/api/notifications/unread`, { signal: controller.signal }),
+        controller,
+    };
+}
+
+export const getUnreadNotificationsCount = (): UseApiCall<{ count: number }> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<{ count: number }>(`/api/notifications/unread/count`, { signal: controller.signal }),
+        controller,
+    };
+}
+
+export const markNotificationAsRead = (notificationId?: number): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.put<ApiResponse>(`/api/notifications/${notificationId}/read`, {}, { signal: controller.signal }),
+        controller,
+    };
+}
+
+export const markAllNotificationsAsRead = (): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.put<ApiResponse>(`/api/notifications/read-all`, {}, { signal: controller.signal }),
+        controller,
+    };
+}
