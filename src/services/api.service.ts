@@ -417,10 +417,10 @@ export const removeTeamFromTournament = (
 }
 
 // Notifications
-export const getAllNotifications = (): UseApiCall<any[]> => {
+export const getAllNotifications = (): UseApiCall<import("../models").NotificationResponse> => {
     const controller = loadAbort();
     return {
-        call: axiosInstance.get<any[]>(`/api/notifications`, { signal: controller.signal }),
+        call: axiosInstance.get<import("../models").NotificationResponse>(`/api/notifications`, { signal: controller.signal }),
         controller,
     };
 }

@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { Navbar, type NavItem } from "./components/Navbar";
+import type { NavItem } from "./components/Navbar";
 import { HomeLanding, LoginForm, TournamentDetailsAlt, RegisterForm, About, Contact, Faq } from "./public";
 import { useEffect, useState } from "react";
 import { Footer } from "./components/Footer";
@@ -19,13 +19,52 @@ import TournamentCanceled from "./public/TournamentCanceled";
 import TournamentFinished from "./public/TournamentFinished";
 import Error404 from "./public/Error404";
 import { Notifications } from "./public/Notifications";
+import { NotificationToastContainer } from "./components/ui/NotificationToast";
+import { NotificationDetailModal } from "./components/ui/NotificationDetailModal";
+import type { Notification } from "./models";
+import { useApi } from "./hooks/useApi";
+import { markNotificationAsRead } from "./services/api.service";
 
 
 
 function App() {
-  const { token, logout } = useGlobalContext()
+  const { token, logout, toastNotifications, removeToastNotification, markNotificationAsReadLocal } = useGlobalContext()
   const navigate = useNavigate();
   const location = useLocation();
+  
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const { fetch: markAsRead } = useApi(markNotificationAsRead);
+
+  const handleOpenNotificationDetail = (notification: Notification) => {
+    setSelectedNotification(notification);
+    setIsModalOpen(true);
+  };
+
+  const handleMarkAsReadFromModal = async () => {
+    if (selectedNotification) {
+      markNotificationAsReadLocal(selectedNotification.id);
+      try {
+        await markAsRead(selectedNotification.id);
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+      }
+    }
+  };
+
+  // Solicitar permisos de notificaciones del navegador al cargar la app
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          console.log('✅ Permisos de notificaciones del navegador otorgados');
+        } else {
+          console.log('⚠️ Permisos de notificaciones del navegador denegados');
+        }
+      });
+    }
+  }, []);
 
   // Scroll to top on route change
   useEffect(() => {
@@ -173,6 +212,26 @@ function App() {
 
 
       {!hideChrome && <Footer />}
+
+      {/* Toast notifications para notificaciones en tiempo real */}
+      <NotificationToastContainer 
+        notifications={toastNotifications}
+        onRemove={removeToastNotification}
+        onOpenDetail={handleOpenNotificationDetail}
+      />
+
+      {/* Modal de detalles de notificación desde toast */}
+      {selectedNotification && (
+        <NotificationDetailModal
+          notification={selectedNotification}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedNotification(null);
+          }}
+          onMarkAsRead={handleMarkAsReadFromModal}
+        />
+      )}
 
       {/* Global toast renderer */}
       <Toaster richColors position="top-center" />

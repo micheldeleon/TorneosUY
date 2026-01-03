@@ -1,16 +1,24 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import type { User } from "../models/user.model";
+import type { Notification } from "../models";
 import { isTokenExpired, decodeJWT } from "../services/utilities/jwt.utility";
-import { getUnreadNotificationsCount } from "../services/api.service";
+import { getAllNotifications } from "../services/api.service";
+import { useNotificationStream } from "../hooks/useNotificationStream";
 
 interface GlobalContextType {
   user: User | null;
   token: string | null;
   unreadNotifications: number;
+  notifications: Notification[];
+  toastNotifications: Notification[];
+  isConnectedSSE: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   setToken: React.Dispatch<React.SetStateAction<string | null>>;
   logout: () => void;
   refreshNotifications: () => void;
+  markNotificationAsReadLocal: (notificationId: number) => void;
+  markAllNotificationsAsReadLocal: () => void;
+  removeToastNotification: (notificationId: number) => void;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -26,25 +34,174 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     try { return JSON.parse(raw) as User; } catch { return null; }
   });
   const [unreadNotifications, setUnreadNotifications] = useState<number>(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [toastNotifications, setToastNotifications] = useState<Notification[]>([]);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+
+  // Inicializar AudioContext después de la primera interacción del usuario
+  useEffect(() => {
+    const initAudio = () => {
+      if (!audioContext) {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setAudioContext(ctx);
+        // Remover el listener después de la primera interacción
+        document.removeEventListener('click', initAudio);
+        document.removeEventListener('keydown', initAudio);
+      }
+    };
+
+    document.addEventListener('click', initAudio, { once: true });
+    document.addEventListener('keydown', initAudio, { once: true });
+
+    return () => {
+      document.removeEventListener('click', initAudio);
+      document.removeEventListener('keydown', initAudio);
+    };
+  }, [audioContext]);
+
+  // Callback para manejar notificaciones en tiempo real
+  const handleRealtimeNotification = useCallback((notification: Notification) => {
+    console.log('📢 Notificación en tiempo real recibida:', notification);
+    
+    // Agregar la notificación al inicio del array
+    setNotifications(prev => [notification, ...prev]);
+    
+    // Incrementar contador si no está leída
+    if (!notification.read) {
+      setUnreadNotifications(prev => prev + 1);
+    }
+
+    // Agregar toast notification
+    setToastNotifications(prev => [...prev, notification]);
+
+    // Reproducir sonido de notificación
+    try {
+      // Solo reproducir si AudioContext está disponible
+      if (audioContext && audioContext.state === 'running') {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Configurar el sonido
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+      } else if (audioContext && audioContext.state === 'suspended') {
+        // Intentar reanudar si está suspendido
+        audioContext.resume().then(() => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.value = 800;
+          oscillator.type = 'sine';
+          
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+          
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.2);
+        });
+      }
+    } catch (err) {
+      console.log('Error playing notification sound:', err);
+    }
+
+    // Mostrar notificación del navegador si tiene permisos (como respaldo)
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const browserNotif = new Notification(notification.title, {
+        body: notification.message,
+        icon: '/logo.png',
+        tag: `notification-${notification.id}`,
+        badge: '/logo.png',
+      });
+
+      // Cerrar automáticamente después de 5 segundos
+      setTimeout(() => browserNotif.close(), 5000);
+    }
+  }, []);
+
+  // Conectar al stream SSE
+  const { isConnected: isConnectedSSE } = useNotificationStream(token, {
+    onNotification: handleRealtimeNotification,
+    onConnected: () => {
+      console.log('✅ Conectado al stream de notificaciones en tiempo real');
+    },
+    onError: (error) => {
+      console.error('❌ Error en el stream SSE:', error);
+    },
+  });
 
   // Función para actualizar notificaciones
   const refreshNotifications = async () => {
     if (!token || !user) {
       setUnreadNotifications(0);
+      setNotifications([]);
+      return;
+    }
+
+    // Verificar si el token es válido antes de hacer la petición
+    try {
+      if (isTokenExpired(token)) {
+        console.warn('Token expirado, no se pueden obtener notificaciones');
+        setUnreadNotifications(0);
+        setNotifications([]);
+        return;
+      }
+    } catch (error) {
+      console.error('Error verificando token:', error);
       return;
     }
 
     try {
-      const { call } = getUnreadNotificationsCount();
+      const { call } = getAllNotifications();
       const response = await call;
-      // El backend devuelve directamente el número
-      const count = typeof response.data === 'number' ? response.data : (response.data?.count || 0);
-      setUnreadNotifications(count);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+      if (response.data?.notifications) {
+        setNotifications(response.data.notifications);
+        setUnreadNotifications(response.data.unreadCount || 0);
+      }
+    } catch (error: any) {
+      // Solo mostrar error si no es 401 o 403 (esos ya son manejados por el interceptor)
+      if (error.response?.status !== 401 && error.response?.status !== 403) {
+        console.error('Error fetching notifications:', error);
+      }
       setUnreadNotifications(0);
+      setNotifications([]);
     }
   };
+
+  // Marcar una notificación como leída localmente (sin esperar la API)
+  const markNotificationAsReadLocal = (notificationId: number) => {
+    setNotifications(prev => 
+      prev.map(notif => 
+        notif.id === notificationId ? { ...notif, read: true, readAt: new Date().toISOString() } : notif
+      )
+    );
+    setUnreadNotifications(prev => Math.max(0, prev - 1));
+  };
+
+  // Marcar todas las notificaciones como leídas localmente
+  const markAllNotificationsAsReadLocal = () => {
+    const now = new Date().toISOString();
+    setNotifications(prev => 
+      prev.map(notif => ({ ...notif, read: true, readAt: now }))
+    );
+    setUnreadNotifications(0);
+  };
+
+  // Remover toast notification
+  const removeToastNotification = useCallback((notificationId: number) => {
+    setToastNotifications(prev => prev.filter(n => n.id !== notificationId));
+  }, []);
 
   // Obtener notificaciones al cargar la app o cuando cambia el token/user
   useEffect(() => {
@@ -56,6 +213,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
       return () => clearInterval(interval);
     } else {
       setUnreadNotifications(0);
+      setNotifications([]);
     }
   }, [token, user]);
 
@@ -75,6 +233,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     setUser(null);
     setUnreadNotifications(0);
+    setNotifications([]);
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_USER);
     localStorage.removeItem("isOrganizer"); // Limpiar también el estado de organizador
@@ -133,7 +292,21 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   }, [token]);
 
   return (
-    <GlobalContext.Provider value={{ user, token, unreadNotifications, setUser, setToken, logout, refreshNotifications }}>
+    <GlobalContext.Provider value={{ 
+      user, 
+      token, 
+      unreadNotifications, 
+      notifications,
+      toastNotifications,
+      isConnectedSSE,
+      setUser, 
+      setToken, 
+      logout, 
+      refreshNotifications,
+      markNotificationAsReadLocal,
+      markAllNotificationsAsReadLocal,
+      removeToastNotification
+    }}>
       {children}
     </GlobalContext.Provider>
   );

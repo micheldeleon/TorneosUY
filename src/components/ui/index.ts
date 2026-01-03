@@ -8,3 +8,5 @@ export * from "./Dropdown";
 export * from "./SectionHeader";
 export * from "./DetailsUserForm/DescriptionList";
 export * from "./Checkbox";
+export * from "./NotificationToast";
+export * from "./NotificationDetailModal";

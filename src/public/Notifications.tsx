@@ -1,39 +1,84 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, BellOff, CheckCheck, ArrowLeft, Trash2, Calendar, Trophy } from "lucide-react";
+import { Bell, BellOff, CheckCheck, ArrowLeft, Calendar, Trophy } from "lucide-react";
 import { useApi } from "../hooks/useApi";
-import { getAllNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "../services/api.service";
+import { markNotificationAsRead, markAllNotificationsAsRead } from "../services/api.service";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
+import { NotificationDetailModal } from "../components/ui/NotificationDetailModal";
 import { useGlobalContext } from "../context/global.context";
+import type { Notification } from "../models";
 
 export function Notifications() {
   const navigate = useNavigate();
-  const { refreshNotifications } = useGlobalContext();
-  
-  const { data: notifications, loading, fetch: refetchNotifications } = useApi(getAllNotifications, {
-    autoFetch: true,
-  });
+  const { 
+    notifications, 
+    unreadNotifications, 
+    refreshNotifications,
+    token,
+    markNotificationAsReadLocal,
+    markAllNotificationsAsReadLocal 
+  } = useGlobalContext();
 
   const { fetch: markAsRead } = useApi(markNotificationAsRead);
   const { fetch: markAllAsRead } = useApi(markAllNotificationsAsRead);
 
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Refrescar notificaciones al entrar a la página (solo si hay token)
+  useEffect(() => {
+    if (token) {
+      refreshNotifications();
+    }
+  }, [token]);
+
   const handleMarkAsRead = async (notificationId: number) => {
-    await markAsRead(notificationId);
-    refetchNotifications();
-    refreshNotifications(); // Actualizar el contador global
+    // Actualizar el estado global inmediatamente para feedback instantáneo
+    markNotificationAsReadLocal(notificationId);
+    
+    // Llamar a la API en segundo plano (sin esperar ni refrescar inmediatamente)
+    try {
+      await markAsRead(notificationId);
+      // No refrescamos aquí para evitar revertir el cambio local antes de que el backend lo procese
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      // Si falla, refrescar para revertir
+      await refreshNotifications();
+    }
   };
 
   const handleMarkAllAsRead = async () => {
-    await markAllAsRead();
-    refetchNotifications();
-    refreshNotifications(); // Actualizar el contador global
+    // Actualizar el estado global inmediatamente para feedback instantáneo
+    markAllNotificationsAsReadLocal();
+    
+    // Llamar a la API en segundo plano (sin esperar ni refrescar inmediatamente)
+    try {
+      await markAllAsRead();
+      // No refrescamos aquí para evitar revertir el cambio local antes de que el backend lo procese
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      // Si falla, refrescar para revertir
+      await refreshNotifications();
+    }
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    setSelectedNotification(notification);
+    setIsModalOpen(true);
+  };
+
+  const handleMarkAsReadFromModal = () => {
+    if (selectedNotification) {
+      handleMarkAsRead(selectedNotification.id);
+    }
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "TOURNAMENT_CANCELLED":
+      case "TOURNAMENT_CANCELED":
       case "TOURNAMENT_STARTED":
       case "TOURNAMENT_FINISHED":
         return <Trophy className="w-5 h-5" />;
@@ -48,6 +93,7 @@ export function Notifications() {
   const getNotificationColor = (type: string) => {
     switch (type) {
       case "TOURNAMENT_CANCELLED":
+      case "TOURNAMENT_CANCELED":
         return "bg-rose-600/20 text-rose-300 border-rose-600/50";
       case "TOURNAMENT_STARTED":
         return "bg-green-600/20 text-green-300 border-green-600/50";
@@ -77,23 +123,6 @@ export function Notifications() {
     return date.toLocaleDateString('es-UY', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  // Extraer el array de notificaciones de la respuesta
-  const notificationsList = Array.isArray(notifications?.notifications) 
-    ? notifications.notifications 
-    : [];
-  const unreadCount = notifications?.unreadCount || 0;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Cargando notificaciones...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4">
       <div className="container mx-auto max-w-4xl">
@@ -115,15 +144,15 @@ export function Notifications() {
               </div>
               <div>
                 <h1 className="text-white text-3xl">Notificaciones</h1>
-                {unreadCount > 0 && (
+                {unreadNotifications > 0 && (
                   <p className="text-gray-400">
-                    Tienes {unreadCount} notificación{unreadCount > 1 ? 'es' : ''} sin leer
+                    Tienes {unreadNotifications} notificación{unreadNotifications > 1 ? 'es' : ''} sin leer
                   </p>
                 )}
               </div>
             </div>
 
-            {notificationsList && notificationsList.length > 0 && unreadCount > 0 && (
+            {notifications.length > 0 && unreadNotifications > 0 && (
               <Button
                 onClick={handleMarkAllAsRead}
                 variant="outline"
@@ -137,12 +166,13 @@ export function Notifications() {
         </div>
 
         {/* Notifications List */}
-        {notificationsList && notificationsList.length > 0 ? (
+        {notifications.length > 0 ? (
           <div className="space-y-3">
-            {notificationsList.map((notification: any) => (
+            {notifications.map((notification: Notification) => (
               <Card
                 key={notification.id}
-                className={`bg-[#2a2a2a] border-gray-800 p-4 transition-all hover:border-purple-600/50 ${
+                onClick={() => handleNotificationClick(notification)}
+                className={`bg-[#2a2a2a] border-gray-800 p-4 transition-all hover:border-purple-600/50 cursor-pointer ${
                   !notification.read ? 'border-l-4 border-l-purple-600' : ''
                 }`}
               >
@@ -172,17 +202,13 @@ export function Notifications() {
                         {formatDate(notification.createdAt)}
                       </span>
 
-                      {!notification.read && (
-                        <Button
-                          onClick={() => handleMarkAsRead(notification.id)}
-                          size="sm"
-                          variant="ghost"
-                          className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10"
-                        >
-                          <CheckCheck className="w-4 h-4 mr-1" />
-                          Marcar como leída
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {notification.relatedEntityId && (
+                          <span className="text-xs text-purple-400">
+                            Haz clic para ver detalles
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -203,6 +229,19 @@ export function Notifications() {
           </Card>
         )}
       </div>
+
+      {/* Modal de detalles */}
+      {selectedNotification && (
+        <NotificationDetailModal
+          notification={selectedNotification}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedNotification(null);
+          }}
+          onMarkAsRead={handleMarkAsReadFromModal}
+        />
+      )}
     </div>
   );
 }
