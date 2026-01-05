@@ -19,15 +19,6 @@ interface NavbarModernProps {
 }
 
 // Función para obtener las iniciales del nombre
-const getInitials = (fullName: string): string => {
-  if (!fullName) return "U";
-  const names = fullName.trim().split(" ");
-  if (names.length === 1) {
-    return names[0].charAt(0).toUpperCase();
-  }
-  return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
-};
-
 export function NavbarModern({ title, links, isAuthenticated, onLogout }: NavbarModernProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -111,7 +102,7 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {links.map((link, index) => (
+              {links.map((link) => (
                 link.sectionId ? (
                   <button
                     key={link.sectionId}

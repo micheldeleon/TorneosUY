@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Calendar, Users, DollarSign, Trophy, Target, Gamepad2, PlayIcon, PersonStanding, LockIcon, Play, DoorOpen, XCircle, CheckCircle, DoorClosed } from "lucide-react";
+import { Calendar, Users, DollarSign, Trophy, Target, Gamepad2, PlayIcon, PersonStanding, LockIcon, Play, XCircle, CheckCircle, DoorClosed } from "lucide-react";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import type { TournamentDetails } from "../../models";

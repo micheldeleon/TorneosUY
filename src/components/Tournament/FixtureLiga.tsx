@@ -1,6 +1,5 @@
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "../ui/Card";
-import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { useState } from "react";
 
@@ -26,18 +25,6 @@ interface FixtureLigaProps {
 
 export function FixtureLiga({ jornadas }: FixtureLigaProps) {
   const [jornadaActual, setJornadaActual] = useState(1);
-  const getEstadoBadge = (estado: Partido["estado"]) => {
-    switch (estado) {
-      case "jugado":
-        return <Badge className="bg-gray-600/20 text-gray-300 border-gray-600/50">Finalizado</Badge>;
-      case "en_vivo":
-        return <Badge className="bg-green-600/20 text-green-300 border-green-600/50 animate-pulse">En Vivo</Badge>;
-      case "pendiente":
-        return <Badge className="bg-blue-600/20 text-blue-300 border-blue-600/50">Próximo</Badge>;
-      default:
-        return null;
-    }
-  };
 
   const jornadaSeleccionada = jornadas.find(j => j.numero === jornadaActual) || jornadas[0];
   const totalJornadas = jornadas.length;
@@ -157,3 +144,4 @@ export function FixtureLiga({ jornadas }: FixtureLigaProps) {
     </Card>
   );
 }
+

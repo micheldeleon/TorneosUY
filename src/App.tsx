@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import type { NavItem } from "./components/Navbar";
+import { type NavItem } from "./components/Navbar/NavbarModern";
 import { HomeLanding, LoginForm, TournamentDetailsAlt, RegisterForm, About, Contact, Faq } from "./public";
 import { useEffect, useState } from "react";
 import { Footer } from "./components/Footer";

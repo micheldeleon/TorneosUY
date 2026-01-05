@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Avatar } from "../ui/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/Avatar";
 import { Menu, MenuItem } from "../ui/Dropdown";
 import { useNavigate } from "react-router-dom";
 
@@ -60,13 +60,15 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         aria-expanded={open}
         aria-label="Abrir menú de usuario"
       >
-        <Avatar
-          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-            username
-          )}&background=1c1d6a&color=fff`}
-          alt="User avatar"
-          size="sm"
-        />
+        <Avatar className="h-8 w-8">
+          <AvatarImage
+            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+              username
+            )}&background=1c1d6a&color=fff`}
+            alt="User avatar"
+          />
+          <AvatarFallback>{username?.slice(0, 1).toUpperCase() || "U"}</AvatarFallback>
+        </Avatar>
       </button>
 
       {open && (
