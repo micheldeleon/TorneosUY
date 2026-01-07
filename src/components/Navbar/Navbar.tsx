@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Trophy, Menu, X, Bell } from "lucide-react";
 import { Button } from "../ui/Button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGlobalContext } from "../../context/global.context";
 
