@@ -5,11 +5,15 @@ import {
     Home,
     Search,
     Sparkles,
+    Star,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails } from "../models";
-import { getTournamentById, getTournamentFixtures, getTournamentStandings } from "../services/api.service";
+import { getTournamentById, getTournamentFixtures, getTournamentStandings, rateOrganizer, getUserDetailsById } from "../services/api.service";
+import { useGlobalContext } from "../context/global.context";
+import { RateOrganizerModal } from "../components/Reputation";
+import { OrganizerReputation } from "../components/Reputation";
 import { SplashScreen } from "./SplashScreen";
 import { TablaPosiciones } from "../components/Tournament/TablaPosiciones";
 import { FixtureLiga } from "../components/Tournament/FixtureLiga";
@@ -131,16 +135,86 @@ function transformFixturesToBracket(fixtures: any[]) {
 export default function TournamentFinished() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { user } = useGlobalContext();
 
     const { data: t, loading, error, fetch } = useApi<TournamentDetails, number>(getTournamentById);
     const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
     const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
+    const { fetch: rateOrganizerFetch } = useApi(rateOrganizer);
+    const { data: userDetails, fetch: fetchUserDetails } = useApi(getUserDetailsById);
+
+    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+    const [notification, setNotification] = useState<{ show: boolean; type: 'success' | 'error'; message: string }>({ show: false, type: 'success', message: '' });
+
+    const showNotification = (type: 'success' | 'error', message: string) => {
+        setNotification({ show: true, type, message });
+        setTimeout(() => setNotification({ show: false, type, message: '' }), 3000);
+    };
+
+    // Check if user participated - verify multiple possible data structures
+    const userParticipated = userDetails && t?.teams?.some((team: any) => {
+        // Check if team has participants array
+        if (team.participants && Array.isArray(team.participants)) {
+            return team.participants.some((p: any) => {
+                // Compare by nationalId (cedula)
+                if (userDetails.nationalId && p.nationalId === userDetails.nationalId) {
+                    return true;
+                }
+                // Compare by fullName as fallback
+                const userFullName = `${userDetails.name} ${userDetails.lastName}`.trim();
+                if (p.fullName && p.fullName === userFullName) {
+                    return true;
+                }
+                return false;
+            });
+        }
+        return false;
+    });
+
+    // Debug logging
+    console.log('Debug - User:', user?.id);
+    console.log('Debug - User Details:', userDetails);
+    console.log('Debug - Tournament:', t?.id);
+    console.log('Debug - Organizer:', t?.organizerId);
+    console.log('Debug - Teams:', t?.teams);
+    console.log('Debug - User Participated:', userParticipated);
+
+    const canRate = user && t && userParticipated && user.id !== t.organizerId;
+    
+    console.log('Debug - Can Rate:', canRate);
+
+    const handleRateSubmit = async (score: number, comment?: string) => {
+        if (!t || !user) return;
+
+        try {
+            await rateOrganizerFetch({
+                organizerId: t.organizerId,
+                data: {
+                    tournamentId: t.id,
+                    score,
+                    comment
+                }
+            });
+            showNotification('success', '¡Gracias por tu calificación! Tu opinión ayuda a mejorar la comunidad.');
+            setIsRatingModalOpen(false);
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || error?.response?.data || 'Error al enviar la calificación';
+            showNotification('error', errorMessage);
+        }
+    };
 
     useEffect(() => {
         if (id) {
             fetch(Number(id));
         }
     }, [id, fetch]);
+
+    // Fetch user details when user is available
+    useEffect(() => {
+        if (user?.id) {
+            fetchUserDetails(user.id);
+        }
+    }, [user?.id, fetchUserDetails]);
 
     // Fetch fixtures if tournament format is "Eliminatorio" or "Liga"
     useEffect(() => {
@@ -269,7 +343,45 @@ export default function TournamentFinished() {
                             </div>
                         )}
                     </div>
-                </div>
+                    {/* Organizer Reputation */}
+                    {t.organizerId && (
+                        <div className="space-y-4">
+                            <OrganizerReputation organizerId={t.organizerId} />
+                            
+                            {/* Debug Info - Remove this after testing */}
+                            {!canRate && user && (
+                                <Card className="bg-blue-900/20 border border-blue-700/30 p-4">
+                                    <p className="text-blue-300 text-sm">
+                                        <strong>Debug Info:</strong> El botón de calificación no se muestra porque:<br/>
+                                        - Usuario autenticado: {user ? '✅' : '❌'}<br/>
+                                        - Torneo cargado: {t ? '✅' : '❌'}<br/>
+                                        - Usuario participó: {userParticipated ? '✅' : '❌'}<br/>
+                                        - No es el organizador: {user.id !== t.organizerId ? '✅' : '❌'}<br/>
+                                        <br/>
+                                        Revisa la consola del navegador para más detalles.
+                                    </p>
+                                </Card>
+                            )}
+                            
+                            {canRate && (
+                                <Card className="bg-gradient-to-r from-yellow-500/10 to-purple-500/10 border border-yellow-500/20 p-6">
+                                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                                        <div className="flex-1">
+                                            <h3 className="text-white font-semibold mb-1">¿Cómo fue tu experiencia?</h3>
+                                            <p className="text-gray-400 text-sm">Ayuda a otros jugadores calificando al organizador</p>
+                                        </div>
+                                        <Button
+                                            onClick={() => setIsRatingModalOpen(true)}
+                                            className="bg-gradient-to-r from-yellow-600 to-yellow-800 hover:from-yellow-700 hover:to-yellow-900 text-white"
+                                        >
+                                            <Star className="w-4 h-4 mr-2" />
+                                            Calificar Organizador
+                                        </Button>
+                                    </div>
+                                </Card>
+                            )}
+                        </div>
+                    )}                </div>
                 {/* Sugerencias */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <Card onClick={() => navigate('/torneos')} className="bg-gray-900/50 border-purple-500/20 p-4 sm:p-5 backdrop-blur-sm hover:border-purple-500/40 transition-all duration-300 hover:scale-105 cursor-pointer group">
@@ -296,6 +408,38 @@ export default function TournamentFinished() {
                             </div>
                         </Card>
                     </div>
+
+                {/* Rate Organizer Modal */}
+                {t && canRate && (
+                    <RateOrganizerModal
+                        isOpen={isRatingModalOpen}
+                        onClose={() => setIsRatingModalOpen(false)}
+                        onSubmit={handleRateSubmit}
+                        organizerName={t.organizerName || "Organizador"}
+                        tournamentName={t.name}
+                    />
+                )}
+
+                {/* Notification Overlay */}
+                {notification.show && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-300">
+                        <div className="max-w-md w-full mx-4 p-8 rounded-2xl bg-[#1a1a1a] border border-gray-800">
+                            <div className="text-center">
+                                {notification.type === 'success' ? (
+                                    <Star className="w-20 h-20 text-yellow-400 mx-auto mb-4 fill-yellow-400" />
+                                ) : (
+                                    <div className="w-20 h-20 bg-rose-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="text-rose-400 text-4xl">✕</span>
+                                    </div>
+                                )}
+                                <h3 className={`text-2xl font-bold mb-2 ${notification.type === 'success' ? 'text-yellow-400' : 'text-rose-400'}`}>
+                                    {notification.type === 'success' ? '¡Éxito!' : 'Error'}
+                                </h3>
+                                <p className="text-white text-lg">{notification.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

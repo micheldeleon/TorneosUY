@@ -478,3 +478,71 @@ export const markAllNotificationsAsRead = (): UseApiCall<ApiResponse> => {
         controller,
     };
 }
+
+// Organizer Reputation
+export const rateOrganizer = (
+    params?: {
+        organizerId: number;
+        data: {
+            tournamentId: number;
+            score: number;
+            comment?: string;
+        }
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<ApiResponse>(
+            `/api/organizers/${params?.organizerId}/rate`,
+            params?.data,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+}
+
+export const getOrganizerReputation = (organizerId?: number): UseApiCall<{
+    organizerId: number;
+    organizerName: string;
+    averageScore: number;
+    totalRatings: number;
+    distribution: {
+        fiveStars: number;
+        fourStars: number;
+        threeStars: number;
+        twoStars: number;
+        oneStars: number;
+    };
+    recentRatings: Array<{
+        userName: string;
+        tournamentName: string;
+        score: number;
+        comment: string | null;
+        createdAt: string;
+    }>;
+}> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<{
+            organizerId: number;
+            organizerName: string;
+            averageScore: number;
+            totalRatings: number;
+            distribution: {
+                fiveStars: number;
+                fourStars: number;
+                threeStars: number;
+                twoStars: number;
+                oneStars: number;
+            };
+            recentRatings: Array<{
+                userName: string;
+                tournamentName: string;
+                score: number;
+                comment: string | null;
+                createdAt: string;
+            }>;
+        }>(`/api/organizers/${organizerId}/reputation`, { signal: controller.signal }),
+        controller,
+    };
+}

@@ -13,7 +13,7 @@ import { BracketEliminatoria } from "../components/Tournament/BracketEliminatori
 import { useEffect } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
-import { getTournamentById, getUserDetailsById, getTournamentFixtures, getTournamentStandings, getRaceResults } from "../services/api.service";
+import { getTournamentById, getUserDetailsById, getTournamentFixtures, getTournamentStandings, getRaceResults, getOrganizerReputation } from "../services/api.service";
 import { RankingCarrera } from "../components/Tournament/RankingCarrera.tsx";
 
 type FormatoTorneo = "Liga" | "Eliminatorio" | "Carrera" | "Battle Royale";
@@ -254,6 +254,7 @@ export function TournamentLive() {
 
     const { data: t, loading, error, fetch } = useApi<TournamentDetails, number>(getTournamentById);
     const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(getUserDetailsById);
+    const { data: organizerReputation, fetch: fetchOrganizerReputation } = useApi(getOrganizerReputation);
     const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
     const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
     const { data: raceResultsData, fetch: fetchRaceResults } = useApi<any[], number>(getRaceResults);
@@ -268,8 +269,9 @@ export function TournamentLive() {
     useEffect(() => {
         if (t?.organizerId) {
             fetchOrganizer(t.organizerId);
+            fetchOrganizerReputation(t.organizerId);
         }
-    }, [t?.organizerId, fetchOrganizer]);
+    }, [t?.organizerId, fetchOrganizer, fetchOrganizerReputation]);
 
     // Fetch fixtures if tournament format is "Eliminatorio" or "Liga"
     useEffect(() => {
@@ -428,18 +430,28 @@ export function TournamentLive() {
                                     {organizerData?.email && (
                                         <p className="text-white/70 text-sm mt-1">{organizerData.email}</p>
                                     )}
-                                    <div className="flex items-center gap-1 mt-1">
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-4 h-4 ${i < 4
-                                                    ? "fill-yellow-400 text-yellow-400"
-                                                    : "text-white/30"
-                                                    }`}
-                                            />
-                                        ))}
-                                        <span className="text-white/80 text-sm ml-1">4/5</span>
-                                    </div>
+                                    {organizerReputation && (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="flex items-center gap-0.5">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <Star
+                                                        key={star}
+                                                        className={`w-4 h-4 ${
+                                                            star <= Math.round(organizerReputation.averageScore)
+                                                                ? "fill-yellow-400 text-yellow-400"
+                                                                : "text-white/30"
+                                                        }`}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <span className="text-white/80 text-sm">
+                                                {organizerReputation.averageScore.toFixed(1)}
+                                            </span>
+                                            <span className="text-white/60 text-xs">
+                                                ({organizerReputation.totalRatings})
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                                 <Button
                                     className="bg-white/10 hover:bg-white/20 border-0"

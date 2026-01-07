@@ -14,7 +14,8 @@ import { Separator } from "../components/ui/Separator";
 import { useCallback, useEffect, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
-import { getTournamentById, getUserDetailsById } from "../services/api.service";
+import { getTournamentById, getUserDetailsById, getOrganizerReputation } from "../services/api.service";
+import { OrganizerReputation } from "../components/Reputation";
 
 
 
@@ -67,12 +68,14 @@ export function TournamentDetailsAlt() {
 
     // Fetch organizer details when organizerId is available
     const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(memorizedGetUserDetailsById);
+    const { data: organizerReputation, fetch: fetchOrganizerReputation } = useApi(getOrganizerReputation);
 
     useEffect(() => {
         if (t?.organizerId) {
             fetchOrganizer(t.organizerId);
+            fetchOrganizerReputation(t.organizerId);
         }
-    }, [t?.organizerId, fetchOrganizer]);
+    }, [t?.organizerId, fetchOrganizer, fetchOrganizerReputation]);
 
     // Mostrar error SOLO si hay error
     if (error) {
@@ -97,7 +100,6 @@ export function TournamentDetailsAlt() {
 
 
     const organizerName = organizerData ? `${organizerData.name} ${organizerData.lastName}` : "Ignacio Barcelo";
-    const organizerRating = 0;
 
     // Get organizer initials
     const getInitials = (name: string) => {
@@ -199,18 +201,28 @@ export function TournamentDetailsAlt() {
                                     {organizerData?.email && (
                                         <p className="text-white/70 text-sm mt-1">{organizerData.email}</p>
                                     )}
-                                    <div className="flex items-center gap-1 mt-1">
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-4 h-4 ${i < Math.floor(organizerData?.reputation || organizerRating)
-                                                    ? "fill-yellow-400 text-yellow-400"
-                                                    : "text-white/30"
-                                                    }`}
-                                            />
-                                        ))}
-                                        <span className="text-white/80 text-sm ml-1">{organizerData?.reputation || organizerRating}/5</span>
-                                    </div>
+                                    {organizerReputation && (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className="flex items-center gap-0.5">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <Star
+                                                        key={star}
+                                                        className={`w-4 h-4 ${
+                                                            star <= Math.round(organizerReputation.averageScore)
+                                                                ? "fill-yellow-400 text-yellow-400"
+                                                                : "text-white/30"
+                                                        }`}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <span className="text-white/80 text-sm">
+                                                {organizerReputation.averageScore.toFixed(1)}
+                                            </span>
+                                            <span className="text-white/60 text-xs">
+                                                ({organizerReputation.totalRatings})
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                                 <Button
                                     className="bg-white/10 hover:bg-white/20 border-0"
@@ -238,8 +250,10 @@ export function TournamentDetailsAlt() {
                                 <TabsTrigger value="info" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 flex-col sm:flex-row gap-0.5 sm:gap-2 py-1.5 sm:py-2">
                                     <Target className="w-4 h-4" />
                                     <span className="text-xs sm:text-sm">Información</span>
-                                </TabsTrigger>
-                            </TabsList>
+                                </TabsTrigger>                                <TabsTrigger value="reputation" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 flex-col sm:flex-row gap-0.5 sm:gap-2 h-14 sm:h-auto py-1.5 sm:py-2">
+                                    <Star className="w-4 h-4" />
+                                    <span className="text-xs sm:text-sm">Organizador</span>
+                                </TabsTrigger>                            </TabsList>
 
                             <TabsContent value="details" className="mt-6">
                                 <div className="bg-surface border border-purple-800/20 rounded-2xl p-6">
@@ -350,6 +364,10 @@ export function TournamentDetailsAlt() {
                                         </div>
                                     </div>
                                 </div>
+                            </TabsContent>
+
+                            <TabsContent value="reputation" className="mt-6">
+                                {t.organizerId && <OrganizerReputation organizerId={t.organizerId} />}
                             </TabsContent>
                         </Tabs>
                     </div>
