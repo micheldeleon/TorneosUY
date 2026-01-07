@@ -205,6 +205,28 @@ export const cancelTournament = (tournamentId?: number): UseApiCall<ApiResponse>
     };
 }
 
+export const startTournament = (tournamentId?: number): UseApiCall<{
+    tournamentId: number;
+    status: string;
+    startedAt: string;
+    startedBy: string;
+    participantsCount: number;
+    message: string;
+}> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<{
+            tournamentId: number;
+            status: string;
+            startedAt: string;
+            startedBy: string;
+            participantsCount: number;
+            message: string;
+        }>(`/api/tournaments/${tournamentId}/start`, {}, { signal: controller.signal }),
+        controller,
+    };
+}
+
 export const setResultForMatchEliminatorio = (
     params?: {
         tournamentId: number;

@@ -222,22 +222,22 @@ export function TournamentDetailsAlt() {
 
                         {/* Tabs Content */}
                         <Tabs defaultValue="details" className="w-full">
-                            <TabsList className="bg-surface text-gray-400 border border-purple-800/20 inline-flex w-full sm:w-auto rounded-full p-1">
-                                <TabsTrigger value="details" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
-                                    <Award className="w-4 h-4 mr-1" />
-                                    Detalles
+                            <TabsList className="bg-surface text-gray-400 border border-purple-800/20 inline-flex w-full sm:w-auto rounded-full p-1 h-16 sm:h-auto">
+                                <TabsTrigger value="details" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 flex-col sm:flex-row gap-0.5 sm:gap-2 py-1.5 sm:py-2">
+                                    <Award className="w-4 h-4" />
+                                    <span className="text-xs sm:text-sm">Detalles</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="rules" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
-                                    <Shield className="w-4 h-4 mr-1" />
-                                    Reglas
+                                <TabsTrigger value="rules" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 flex-col sm:flex-row gap-0.5 sm:gap-2 py-1.5 sm:py-2">
+                                    <Shield className="w-4 h-4" />
+                                    <span className="text-xs sm:text-sm">Reglas</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="participantes" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
-                                    <Users className="w-4 h-4 mr-1" />
-                                    Participantes
+                                <TabsTrigger value="participantes" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 flex-col sm:flex-row gap-0.5 sm:gap-2 py-1.5 sm:py-2">
+                                    <Users className="w-4 h-4" />
+                                    <span className="text-xs sm:text-sm">Equipos</span>
                                 </TabsTrigger>
-                                <TabsTrigger value="info" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300">
-                                    <Target className="w-4 h-4 mr-1" />
-                                    Información
+                                <TabsTrigger value="info" className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300 flex-col sm:flex-row gap-0.5 sm:gap-2 py-1.5 sm:py-2">
+                                    <Target className="w-4 h-4" />
+                                    <span className="text-xs sm:text-sm">Información</span>
                                 </TabsTrigger>
                             </TabsList>
 

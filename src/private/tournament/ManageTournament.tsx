@@ -6,7 +6,7 @@ import {
   UngroupIcon, CheckCircle2, XCircle, Loader2, Clock
 } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
-import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory, reportRaceResults, removeTeamFromTournament } from "../../services/api.service";
+import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, startTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory, reportRaceResults, removeTeamFromTournament } from "../../services/api.service";
 import { useGlobalContext } from "../../context/global.context";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -59,13 +59,14 @@ export function ManageTournament() {
   const { user } = useGlobalContext();
   const tournamentId = params.id ? parseInt(params.id) : undefined;
 
-  const { data: tournamentData, loading, error, fetch: refetchTournament } = useApi(
+  const { data: tournamentData, error, fetch: refetchTournament } = useApi(
     getTournamentById,
     { autoFetch: true, params: tournamentId }
   );
 
   const { data: fixturesData, fetch: fetchFixtures } = useApi<any, number>(getTournamentFixtures);
   const { fetch: cancelTournamentFetch, loading: cancelLoading } = useApi<any, number>(cancelTournament);
+  const { data: startTournamentData, error: startTournamentError, fetch: startTournamentFetch } = useApi<any, number>(startTournament);
   const { data: standingsData, fetch: fetchStandings } = useApi<any, number>(getTournamentStandings);
   const { fetch: generateFixtureLeague } = useApi(generateFixtureForLeague);
   const { fetch: generateFixtureEliminatory } = useApi(generateFixtureForEliminatory);
@@ -299,13 +300,44 @@ export function ManageTournament() {
     showConfirmDialog(
       'Iniciar Torneo',
       '¿Estás seguro de iniciar el torneo? No podrás editar los detalles después.',
-      () => {
-        setModoEdicion(false);
+      async () => {
         hideConfirmDialog();
+        if (!tournamentId) return;
+
+        setShowLoader(true);
+        startTournamentFetch(tournamentId);
       },
       { confirmText: 'Iniciar', type: 'info' }
     );
   };
+
+  // Effect to handle start tournament response
+  useEffect(() => {
+    if (startTournamentData && showLoader) {
+      setShowLoader(false);
+      if (startTournamentData.message) {
+        showNotification('success', startTournamentData.message);
+      } else {
+        showNotification('success', 'Torneo iniciado correctamente');
+      }
+      setModoEdicion(false);
+      if (tournamentId) {
+        refetchTournament(tournamentId);
+      }
+    }
+  }, [startTournamentData]);
+
+  // Effect to handle start tournament error
+  useEffect(() => {
+    if (startTournamentError && showLoader) {
+      setShowLoader(false);
+      const errorMessage = (startTournamentError as any)?.response?.data?.message 
+        || (startTournamentError as any)?.response?.data 
+        || startTournamentError?.message 
+        || 'Error al iniciar el torneo. Por favor intenta nuevamente.';
+      showNotification('error', errorMessage);
+    }
+  }, [startTournamentError]);
 
   const handleCancelarTorneo = async () => {
     showConfirmDialog(
