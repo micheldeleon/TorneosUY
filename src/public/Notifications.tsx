@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, BellOff, CheckCheck, ArrowLeft, Calendar, Trophy } from "lucide-react";
+import { Bell, BellOff, CheckCheck, ArrowLeft, Calendar, Trophy, Sparkles } from "lucide-react";
 import { useApi } from "../hooks/useApi";
 import { markNotificationAsRead, markAllNotificationsAsRead } from "../services/api.service";
 import { Button } from "../components/ui/Button";
@@ -77,6 +77,8 @@ export function Notifications() {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
+      case "WELCOME":
+        return <Sparkles className="w-5 h-5" />;
       case "TOURNAMENT_CANCELLED":
       case "TOURNAMENT_CANCELED":
       case "TOURNAMENT_STARTED":
@@ -92,6 +94,8 @@ export function Notifications() {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
+      case "WELCOME":
+        return "bg-cyan-600/20 text-cyan-300 border-cyan-600/50";
       case "TOURNAMENT_CANCELLED":
       case "TOURNAMENT_CANCELED":
         return "bg-rose-600/20 text-rose-300 border-rose-600/50";

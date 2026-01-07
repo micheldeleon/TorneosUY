@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { X, ExternalLink, Bell, Trophy, Calendar, CheckCheck } from 'lucide-react';
+import { X, ExternalLink, Bell, Trophy, Calendar, CheckCheck, Sparkles } from 'lucide-react';
 import type { Notification } from '../../models';
 import { Button } from './Button';
 import { Badge } from './Badge';
@@ -23,6 +23,8 @@ export function NotificationDetailModal({
 
   const getIcon = () => {
     switch (notification.type) {
+      case 'WELCOME':
+        return <Sparkles className="w-6 h-6" />;
       case 'TOURNAMENT_CANCELLED':
       case 'TOURNAMENT_CANCELED':
       case 'TOURNAMENT_STARTED':
@@ -38,6 +40,8 @@ export function NotificationDetailModal({
 
   const getColor = () => {
     switch (notification.type) {
+      case 'WELCOME':
+        return 'from-cyan-500 to-cyan-600';
       case 'TOURNAMENT_CANCELLED':
       case 'TOURNAMENT_CANCELED':
         return 'from-rose-500 to-rose-600';
@@ -56,6 +60,8 @@ export function NotificationDetailModal({
 
   const getTypeLabel = () => {
     switch (notification.type) {
+      case 'WELCOME':
+        return 'Bienvenida';
       case 'TOURNAMENT_CANCELLED':
       case 'TOURNAMENT_CANCELED':
         return 'Torneo Cancelado';
@@ -143,10 +149,30 @@ export function NotificationDetailModal({
 
             {/* Mensaje */}
             <div>
-              <h4 className="text-gray-400 text-xs uppercase font-semibold mb-2">Mensaje</h4>
-              <p className="text-white text-base leading-relaxed">
-                {notification.message}
-              </p>
+              <h4 className="text-gray-400 text-xs uppercase font-semibold mb-3">Mensaje</h4>
+              <div className="text-white text-base leading-relaxed space-y-3">
+                {notification.message.split('\n').map((line, index) => {
+                  // Detectar si es una línea con viñeta
+                  if (line.trim().startsWith('•')) {
+                    return (
+                      <div key={index} className="flex gap-2 pl-2">
+                        <span className="text-gray-400 flex-shrink-0">•</span>
+                        <span className="text-gray-200">{line.trim().substring(1).trim()}</span>
+                      </div>
+                    );
+                  }
+                  // Detectar si es una línea vacía (solo para separación)
+                  if (line.trim() === '') {
+                    return <div key={index} className="h-2" />;
+                  }
+                  // Línea normal
+                  return (
+                    <p key={index} className="text-gray-100">
+                      {line}
+                    </p>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Fecha */}
