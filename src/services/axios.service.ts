@@ -2,7 +2,7 @@ import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosReques
 import { isTokenExpired } from "./utilities/jwt.utility";
 
 let axiosInstance: AxiosInstance | null = null;
-const DEFAULT_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+const DEFAULT_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://localhost:8080");
 const createAxios = (baseURL: string) => {
     axiosInstance = axios.create({ baseURL });
 };
