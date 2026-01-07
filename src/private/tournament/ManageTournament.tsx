@@ -59,7 +59,7 @@ export function ManageTournament() {
   const { user } = useGlobalContext();
   const tournamentId = params.id ? parseInt(params.id) : undefined;
 
-  const { data: tournamentData, loading, error, fetch: refetchTournament } = useApi(
+  const { data: tournamentData, error, fetch: refetchTournament } = useApi(
     getTournamentById,
     { autoFetch: true, params: tournamentId }
   );
