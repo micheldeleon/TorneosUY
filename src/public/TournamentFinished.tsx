@@ -184,7 +184,7 @@ export default function TournamentFinished() {
     console.log('Debug - Can Rate:', canRate);
 
     const handleRateSubmit = async (score: number, comment?: string) => {
-        if (!t || !user) return;
+        if (!t || !user || !t.organizerId) return;
 
         try {
             await rateOrganizerFetch({
@@ -347,22 +347,6 @@ export default function TournamentFinished() {
                     {t.organizerId && (
                         <div className="space-y-4">
                             <OrganizerReputation organizerId={t.organizerId} />
-                            
-                            {/* Debug Info - Remove this after testing */}
-                            {!canRate && user && (
-                                <Card className="bg-blue-900/20 border border-blue-700/30 p-4">
-                                    <p className="text-blue-300 text-sm">
-                                        <strong>Debug Info:</strong> El botón de calificación no se muestra porque:<br/>
-                                        - Usuario autenticado: {user ? '✅' : '❌'}<br/>
-                                        - Torneo cargado: {t ? '✅' : '❌'}<br/>
-                                        - Usuario participó: {userParticipated ? '✅' : '❌'}<br/>
-                                        - No es el organizador: {user.id !== t.organizerId ? '✅' : '❌'}<br/>
-                                        <br/>
-                                        Revisa la consola del navegador para más detalles.
-                                    </p>
-                                </Card>
-                            )}
-                            
                             {canRate && (
                                 <Card className="bg-gradient-to-r from-yellow-500/10 to-purple-500/10 border border-yellow-500/20 p-6">
                                     <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -415,7 +399,7 @@ export default function TournamentFinished() {
                         isOpen={isRatingModalOpen}
                         onClose={() => setIsRatingModalOpen(false)}
                         onSubmit={handleRateSubmit}
-                        organizerName={t.organizerName || "Organizador"}
+                        organizerName="Organizador"
                         tournamentName={t.name}
                     />
                 )}

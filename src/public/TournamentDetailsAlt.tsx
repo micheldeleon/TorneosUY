@@ -14,7 +14,7 @@ import { Separator } from "../components/ui/Separator";
 import { useCallback, useEffect, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
-import { getTournamentById, getUserDetailsById, getOrganizerReputation } from "../services/api.service";
+import { getTournamentById, getUserDetailsById } from "../services/api.service";
 import { OrganizerReputation } from "../components/Reputation";
 
 
@@ -68,14 +68,12 @@ export function TournamentDetailsAlt() {
 
     // Fetch organizer details when organizerId is available
     const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(memorizedGetUserDetailsById);
-    const { data: organizerReputation, fetch: fetchOrganizerReputation } = useApi(getOrganizerReputation);
 
     useEffect(() => {
         if (t?.organizerId) {
             fetchOrganizer(t.organizerId);
-            fetchOrganizerReputation(t.organizerId);
         }
-    }, [t?.organizerId, fetchOrganizer, fetchOrganizerReputation]);
+    }, [t?.organizerId, fetchOrganizer]);
 
     // Mostrar error SOLO si hay error
     if (error) {
@@ -200,28 +198,6 @@ export function TournamentDetailsAlt() {
                                     <h3 className="text-white">{organizerName}</h3>
                                     {organizerData?.email && (
                                         <p className="text-white/70 text-sm mt-1">{organizerData.email}</p>
-                                    )}
-                                    {organizerReputation && (
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <div className="flex items-center gap-0.5">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <Star
-                                                        key={star}
-                                                        className={`w-4 h-4 ${
-                                                            star <= Math.round(organizerReputation.averageScore)
-                                                                ? "fill-yellow-400 text-yellow-400"
-                                                                : "text-white/30"
-                                                        }`}
-                                                    />
-                                                ))}
-                                            </div>
-                                            <span className="text-white/80 text-sm">
-                                                {organizerReputation.averageScore.toFixed(1)}
-                                            </span>
-                                            <span className="text-white/60 text-xs">
-                                                ({organizerReputation.totalRatings})
-                                            </span>
-                                        </div>
                                     )}
                                 </div>
                                 <Button

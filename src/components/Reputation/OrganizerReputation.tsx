@@ -4,7 +4,6 @@ import { useApi } from "../../hooks/useApi";
 import { getOrganizerReputation } from "../../services/api.service";
 import { Card } from "../ui/Card";
 import { Avatar, AvatarFallback } from "../ui/Avatar";
-import { Progress } from "../ui/Progress";
 
 interface OrganizerReputationProps {
   organizerId: number;
@@ -33,7 +32,7 @@ export function OrganizerReputation({ organizerId }: OrganizerReputationProps) {
     return null;
   }
 
-  const { averageScore, totalRatings, distribution, recentRatings } = reputation;
+  const { averageScore, totalRatings, recentRatings } = reputation;
 
   const renderStars = (score: number, size: "sm" | "lg" = "sm") => {
     const sizeClass = size === "lg" ? "w-6 h-6" : "w-4 h-4";
@@ -53,14 +52,6 @@ export function OrganizerReputation({ organizerId }: OrganizerReputationProps) {
     );
   };
 
-  const maxCount = Math.max(
-    distribution.fiveStars,
-    distribution.fourStars,
-    distribution.threeStars,
-    distribution.twoStars,
-    distribution.oneStars,
-    1
-  );
 
   return (
     <Card className="bg-[#2a2a2a] border-gray-800 p-6">
@@ -94,34 +85,6 @@ export function OrganizerReputation({ organizerId }: OrganizerReputationProps) {
             </div>
           </div>
 
-          {/* Distribution */}
-          <div className="mb-8">
-            <h4 className="text-white font-semibold mb-4">Distribución de Calificaciones</h4>
-            <div className="space-y-3">
-              {[
-                { stars: 5, count: distribution.fiveStars },
-                { stars: 4, count: distribution.fourStars },
-                { stars: 3, count: distribution.threeStars },
-                { stars: 2, count: distribution.twoStars },
-                { stars: 1, count: distribution.oneStars },
-              ].map(({ stars, count }) => (
-                <div key={stars} className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 w-24">
-                    <span className="text-white text-sm font-medium">{stars}</span>
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  </div>
-                  <div className="flex-1">
-                    <Progress
-                      value={(count / maxCount) * 100}
-                      className="h-2"
-                    />
-                  </div>
-                  <span className="text-gray-400 text-sm w-8 text-right">{count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Recent Ratings */}
           {recentRatings.length > 0 && (
             <div>
@@ -130,7 +93,7 @@ export function OrganizerReputation({ organizerId }: OrganizerReputationProps) {
                 {recentRatings.map((rating, index) => (
                   <div
                     key={index}
-                    className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4"
+                    className="bg-surface-dark/50 border border-purple-500/20 rounded-xl p-4"
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div className="flex items-center gap-3">
@@ -141,7 +104,7 @@ export function OrganizerReputation({ organizerId }: OrganizerReputationProps) {
                         </Avatar>
                         <div>
                           <p className="text-white font-medium">{rating.userName}</p>
-                          <p className="text-gray-400 text-sm">{rating.tournamentName}</p>
+                          
                         </div>
                       </div>
                       {renderStars(rating.score)}
