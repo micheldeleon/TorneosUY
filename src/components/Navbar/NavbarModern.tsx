@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Trophy, Menu, X, Sparkles, LogOut, User, ChevronDown, Bell } from "lucide-react";
+import { Menu, X, Sparkles, LogOut, User, ChevronDown, Bell } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -85,11 +85,15 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
             <Link to="/" className="flex items-center gap-3 group">
               <div className="relative">
                 {/* Glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-55 transition-opacity" />
                 
                 {/* Logo container */}
-                <div className="relative w-12 h-12 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                  <Trophy className="w-6 h-6 text-white" />                 
+                <div className="relative w-12 h-12 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform overflow-hidden">
+                  <img 
+                    src="/logoTuTorneo png.png" 
+                    alt="Logo TuTorneo" 
+                    className="w-10 h-10 object-contain"
+                  />                 
                 </div>
               </div>
               

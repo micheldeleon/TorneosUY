@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Trophy, Menu, X, Bell } from "lucide-react";
+import { Menu, X, Bell } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,8 +44,8 @@ export function Navbar({ title, links, isAuthenticated, onLogout }: NavbarProps)
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#2a1a4a]/95 backdrop-blur-sm border-b border-purple-900/20">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-600 rounded-lg flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-purple-900" /> {/* Cambiar por logo */}
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-600 rounded-lg flex items-center justify-center overflow-hidden">
+            <img src="/logoTuTorneo blanco.png" alt="Logo TuTorneo" className="w-6 h-6 object-contain" />
           </div>
           <span className="text-white">{title}</span>
         </Link>

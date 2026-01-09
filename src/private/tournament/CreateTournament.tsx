@@ -3,7 +3,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { createTournamentSchema, type FormValueCreateTournament } from "../../components/CustomForm/schemas/createTournament.form.model";
 import { RHFInput, RHFSelect, RHFCheckbox, Submit } from "../../components/CustomForm";
-import { Trophy, Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Loader2 } from "lucide-react";
+import { Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog";
 import { useApi } from "../../hooks/useApi";
 import type { CreateTournament } from "../../models/createTournament.model";
@@ -209,10 +209,14 @@ export default function CreateTournament() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-800 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-pink-500/50 transform hover:scale-110 hover:rotate-3 transition-all duration-300 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-300 to-transparent opacity-50 rounded-2xl"></div>
-              <Trophy className="w-9 h-9 text-purple-900 relative z-10" />
-            </div>
+            {/* Logo container */}
+                <div className="relative w-25 h-25 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform overflow-hidden">
+                  <img 
+                    src="/logoTuTorneo png.png" 
+                    alt="Logo TuTorneo" 
+                    className="w-25 h-25 object-contain"
+                  />                 
+                </div>
           </div>
           <h1 className="text-white text-5xl mb-2 drop-shadow-lg">Crear Torneo</h1>
           <p className="text-purple-300">Configura tu torneo con todos los detalles necesarios</p>

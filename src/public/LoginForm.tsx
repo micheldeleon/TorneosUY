@@ -8,7 +8,7 @@ import { postLogin } from "../services/api.service";
 import { GoogleButton, RHFInput, Submit } from "../components/CustomForm";
 import { useGlobalContext } from "../context/global.context";
 import { useEffect } from "react";
-import { Trophy, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { decodeJWT } from "../services/utilities/jwt.utility";
 import { Alert, AlertDescription } from "../components/ui/Alert";
 
@@ -74,10 +74,6 @@ export const LoginForm = () => {
         {/* Logo and Title */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-400 via-pink-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-yellow-500/50 transform hover:scale-110 hover:rotate-3 transition-all duration-300 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-300 to-transparent opacity-50 rounded-2xl"></div>
-              <Trophy className="w-9 h-9 text-purple-900 relative z-10" />
-            </div>
             <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 text-5xl">
               TuTorneo
             </h1>
