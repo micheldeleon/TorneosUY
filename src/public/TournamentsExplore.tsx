@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Slider } from "../components/ui/Slider";
 import { Input } from "../components/ui/Input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../components/ui/Sheet";
-import { Filter, Loader2, SlidersHorizontal, X } from "lucide-react";
+import { Filter, Loader2, SlidersHorizontal, X, Search } from "lucide-react";
 import { Badge } from "../components/ui/Badge";
 import { getAllTournaments } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
@@ -15,6 +15,7 @@ import type { TournamentDetails } from "../models";
 
 export function TournamentsExplore() {
     const [tournaments, setTournaments] = useState<TournamentDetails[]>([]);
+    const [searchTerm, setSearchTerm] = useState<string>("");
     const [selectedDisciplinas, setSelectedDisciplinas] = useState<string[]>([]);
     const [selectedUbicaciones, setSelectedUbicaciones] = useState<string[]>([]);
     const [selectedEstados, setSelectedEstados] = useState<string[]>([]);
@@ -71,6 +72,7 @@ export function TournamentsExplore() {
     };
 
     const clearFilters = () => {
+        setSearchTerm("");
         setSelectedDisciplinas([]);
         setSelectedUbicaciones([]);
         setSelectedEstados([]);
@@ -131,6 +133,15 @@ export function TournamentsExplore() {
 
     const getFilteredTournaments = () => {
         let filtered = [...tournaments];
+
+        // Filter by search term
+        if (searchTerm.trim()) {
+            const search = searchTerm.toLowerCase();
+            filtered = filtered.filter(t => 
+                t.name?.toLowerCase().includes(search) ||
+                t.discipline?.name?.toLowerCase().includes(search)
+            );
+        }
 
         // Filter by disciplinas
         if (selectedDisciplinas.length > 0) {
@@ -432,6 +443,28 @@ export function TournamentsExplore() {
                     <p className="text-gray-400">
                         Descubre y únete a torneos de todas las disciplinas
                     </p>
+                </div>
+
+                {/* Search Bar */}
+                <div className="mb-6">
+                    <div className="relative max-w-2xl">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                            type="text"
+                            placeholder="Buscar por nombre o disciplina..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-12 pr-4 py-6 bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500 focus:border-purple-600 focus:ring-purple-600 rounded-xl text-base"
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm("")}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Toolbar */}
