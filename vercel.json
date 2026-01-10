@@ -7,6 +7,11 @@
     {
       "source": "/login",
       "destination": "http://torneosuy-backend-env.eba-p8g3zvpa.us-east-2.elasticbeanstalk.com/login"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
+
