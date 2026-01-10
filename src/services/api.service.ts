@@ -5,6 +5,9 @@ import axios from "axios";
 
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://localhost:8080");
+const LOGIN_URL = BASE_URL.includes("localhost") || BASE_URL.includes("127.0.0.1")
+    ? `${BASE_URL}/login`
+    : "/api/login";
 const axiosInstance = getAxiosInstance();
 
 
@@ -25,7 +28,7 @@ export const postRegister = (user?: UserRegister): UseApiCall<ApiResponse> => {
 export const postLogin = (user?: UserLogin): UseApiCall<AuthData> => {
     const controller = loadAbort();
     return {
-        call: axios.post<AuthData>(`${BASE_URL}/login`, user, { signal: controller.signal }),
+        call: axios.post<AuthData>(LOGIN_URL, user, { signal: controller.signal }),
         controller,
     }
 };
