@@ -84,12 +84,30 @@ const getImageColor = (disciplineName: string) => {
   return (
     <div className="group relative bg-surface-dark/60 border border-0 rounded-2xl overflow-hidden hover: border-purple-600/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
       {/* Image Section */}
-      <div className={`relative h-48 bg-gradient-to-br ${getImageColor(tournament.discipline.name || "")} overflow-hidden`}>
-        <div className="w-full h-full flex items-center justify-center">
-          <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${getImageColor(tournament.discipline.name || "")} flex items-center justify-center opacity-50 group-hover:opacity-70 transition-opacity text-white`}>
-            {getIcon()}
-          </div>
-        </div>
+      <div className="relative h-48 overflow-hidden">
+        {tournament.imageUrl ? (
+          // Si hay imagen, mostrarla
+          <img 
+            src={tournament.imageUrl} 
+            alt={tournament.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          // Si no hay imagen, mantener el diseño actual con gradiente e icono
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${getImageColor(tournament.discipline.name || "")}`} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${getImageColor(tournament.discipline.name || "")} flex items-center justify-center opacity-50 group-hover:opacity-70 transition-opacity text-white`}>
+                {getIcon()}
+              </div>
+            </div>
+          </>
+        )}
+        
+        {/* Overlay gradient para mejorar legibilidad de badges */}
+        {tournament.imageUrl && (
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50" />
+        )}
 
         {/* Badge Overlay */}
         <div className="absolute top-3 right-3">

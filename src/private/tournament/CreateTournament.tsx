@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createTournamentSchema, type FormValueCreateTournament } from "../../components/CustomForm/schemas/createTournament.form.model";
 import { RHFInput, RHFSelect, RHFCheckbox, Submit } from "../../components/CustomForm";
-import { Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Loader2 } from "lucide-react";
+import { Eye, EyeOff, FileText, Info, Calendar, Users, DollarSign, Loader2, Image as ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/Dialog";
 import { useApi } from "../../hooks/useApi";
 import type { CreateTournament } from "../../models/createTournament.model";
@@ -16,6 +16,8 @@ import type { TournamentCreated } from "../../models";
 import { RHFRichTextEditor } from "../../components/CustomForm/RHFRichTextEditor";
 import { Alert, AlertDescription } from "../../components/ui/Alert";
 import { AlertCircle } from "lucide-react";
+import { ImageUpload } from "../../components/ImageUpload";
+import { uploadTournamentImage } from "../../services/imageUpload.service";
 
 export default function CreateTournament() {
 
@@ -24,6 +26,10 @@ export default function CreateTournament() {
   const { data: userData, fetch, loading: loadingUserData } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
 
   const { data, fetch: createTournamentFetch } = useApi<TournamentCreated, { organizerId: number; tournament: CreateTournament }>(createTournament);
+
+  const [tournamentImage, setTournamentImage] = useState<File | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const tournamentProcessedRef = useRef(false);
 
   // Llamar a la API al montar el componente
   useEffect(() => {
@@ -184,10 +190,32 @@ export default function CreateTournament() {
   };
 
   useEffect(() => {
-    console.log("Tournament creation data:", data);
-    if (data?._status === 200 || data?._status === 201) {
-      navigate(`/torneo/${data.id}`);
-    }
+    // Evitar procesar múltiples veces el mismo torneo
+    if (!data || tournamentProcessedRef.current) return;
+    
+    const processCreatedTournament = async () => {
+      if (data?._status === 200 || data?._status === 201) {
+        tournamentProcessedRef.current = true;
+        
+        // Si hay una imagen, subirla DESPUÉS de crear el torneo
+        if (tournamentImage && data.id) {
+          setUploadingImage(true);
+          
+          try {
+            await uploadTournamentImage(data.id, tournamentImage);
+          } catch (err) {
+            // Continuar a la navegación aunque falle la imagen
+          } finally {
+            setUploadingImage(false);
+          }
+        }
+        
+        // Navegar al torneo creado
+        navigate(`/torneo/${data.id}`);
+      }
+    };
+    
+    processCreatedTournament();
   }, [data]);
 
 
@@ -467,6 +495,20 @@ export default function CreateTournament() {
                           placeholder="Agrega información adicional sobre el torneo..."
                           rows={3}
                           disabled={!isFormatSelected}
+                        />
+                      </div>
+
+                      {/* Imagen del Torneo */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-purple-300 mb-2">
+                          <ImageIcon className="w-5 h-5" />
+                          <span>Imagen del Torneo (Opcional)</span>
+                        </div>
+                        <ImageUpload
+                          onImageSelected={setTournamentImage}
+                          onImageRemoved={() => setTournamentImage(null)}
+                          disabled={!isFormatSelected}
+                          label="Selecciona una imagen para el torneo"
                         />
                       </div>
 

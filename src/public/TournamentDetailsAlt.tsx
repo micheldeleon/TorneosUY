@@ -130,24 +130,34 @@ export function TournamentDetailsAlt() {
                     {/* Main Content - Left Side */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Hero Card */}
-                        <div className="bg-gradient-to-br from-purple-900/40 via-purple-800/20 to-surface-dark/20 border border-purple-700/30 rounded-2xl p-8">
-                            <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-                                        <Trophy className="w-8 h-8 text-white" />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <p className="text-purple-400 text-sm">{t.discipline.name}</p>
+                        <div className="bg-gradient-to-br from-purple-900/40 to-surface-dark/20 border border-purple-700/30 rounded-2xl overflow-hidden">
+                            {/* Tournament Image Banner */}
+                            {t.imageUrl && (
+                                <div className="relative h-64 w-full">
+                                    <img 
+                                        src={t.imageUrl} 
+                                        alt={t.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-surface-dark/50 to-transparent" />
+                                </div>
+                            )}
+                            
+                            <div className="p-8">
+                                <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
+                                    <div className="flex items-center gap-4">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="text-purple-400 text-sm">{t.discipline.name}</p>
+                                            </div>
+                                            <h1 className="text-white text-3xl">{t.name}</h1>
                                         </div>
-                                        <h1 className="text-white text-3xl">{t.name}</h1>
                                     </div>
                                 </div>
-                            </div>
 
                             {/* Quick Stats Grid */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
+                                <div className="bg-transparent border border-gray-500 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Calendar className="w-4 h-4 text-purple-400" />
                                         <p className="text-gray-500 text-sm">Inicio</p>
@@ -155,7 +165,7 @@ export function TournamentDetailsAlt() {
                                     <p className="text-white text-sm">{formatDate(t.startAt)}</p>
                                 </div>
 
-                                <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
+                                <div className="bg-transparent border border-gray-500 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Play className="w-4 h-4 text-purple-400" />
                                         <p className="text-gray-500 text-sm">Formato</p>
@@ -163,7 +173,7 @@ export function TournamentDetailsAlt() {
                                     <p className="text-white text-sm truncate">{t.format.name}</p>
                                 </div>
 
-                                <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
+                                <div className="bg-transparent border border-gray-500 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Users className="w-4 h-4 text-purple-400" />
                                         <p className="text-gray-500 text-sm">Participantes</p>
@@ -171,7 +181,7 @@ export function TournamentDetailsAlt() {
                                     <p className="text-white text-sm">{t.teamsInscribed} / {t.maxParticipantsPerTournament}</p>
                                 </div>
 
-                                <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
+                                <div className="bg-transparent border border-gray-500 rounded-xl p-4 hover:border-purple-600/50 transition-colors">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Award className="w-4 h-4 text-purple-400" />
                                         <p className="text-gray-500 text-sm">Premio</p>
@@ -182,6 +192,7 @@ export function TournamentDetailsAlt() {
                                         <p className="text-gray-600 text-sm italic">Sin premio</p>
                                     )}
                                 </div>
+                            </div>
                             </div>
                         </div>
 

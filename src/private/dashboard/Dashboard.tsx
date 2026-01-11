@@ -5,6 +5,7 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { ProfileCard } from "../../components/Profile/ProfileCard";
+import { ProfileImageUploadModal } from "../../components/Profile/ProfileImageUploadModal";
 import { DescriptionList } from "../../components/ui/DetailsUserForm/DescriptionList";
 import { getUsersByIdAndEmail } from "../../services/api.service";
 import type { UserDetails } from "../../models/userDetails.model";
@@ -17,6 +18,8 @@ export default function Dashboard() {
   const { fetch, data, error, loading } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
   
   const [showOrganizerForm, setShowOrganizerForm] = useState(false);
+  const [showImageUploadModal, setShowImageUploadModal] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | undefined>();
 
   // Llamar a la API al montar el componente
   useEffect(() => {
@@ -34,6 +37,13 @@ export default function Dashboard() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Actualizar la imagen de perfil cuando se carguen los datos
+  useEffect(() => {
+    if (data?.profileImageUrl) {
+      setProfileImageUrl(data.profileImageUrl);
+    }
+  }, [data]);
 
   const userStats = {
     torneosParticipados: 12,
@@ -61,7 +71,12 @@ export default function Dashboard() {
   ];
 
   const handleEditProfile = () => {
-    alert("Editar perfil - Aquí irías a una página de edición");
+    setShowImageUploadModal(true);
+  };
+
+  const handleImageUploadSuccess = (imageUrl: string) => {
+    setProfileImageUrl(imageUrl);
+    // También podrías actualizar el localStorage si es necesario
   };
 
   const handleOrganizeClick = () => {
@@ -100,6 +115,7 @@ export default function Dashboard() {
               <ProfileCard
                 name={data?.name ?? "Usuario"}
                 email={data?.email}
+                imageUrl={profileImageUrl}
                 onEdit={handleEditProfile}
                 
               />
@@ -249,6 +265,16 @@ export default function Dashboard() {
             </div>
           )}
         </Card>
+
+        {/* Image Upload Modal */}
+        {showImageUploadModal && data && (
+          <ProfileImageUploadModal
+            userId={data.id}
+            currentImageUrl={profileImageUrl}
+            onClose={() => setShowImageUploadModal(false)}
+            onSuccess={handleImageUploadSuccess}
+          />
+        )}
 
         {/* Organizer Form Modal/Section */}
         {showOrganizerForm && (

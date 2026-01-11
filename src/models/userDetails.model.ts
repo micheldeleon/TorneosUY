@@ -9,4 +9,5 @@ export type UserDetails = {
     address: string,
     departmentId: number
     reputation?: number,
+    profileImageUrl?: string,
 }

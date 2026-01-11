@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import {
   Trophy, ArrowLeft, Edit, Trash2, UserX, Users,
   Play, AlertTriangle, Settings, Save, X,
-  UngroupIcon, CheckCircle2, XCircle, Loader2, Clock
+  UngroupIcon, CheckCircle2, XCircle, Loader2, Clock, Image as ImageIcon
 } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
 import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, startTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory, reportRaceResults, removeTeamFromTournament } from "../../services/api.service";
@@ -19,6 +19,8 @@ import { ModalResultado } from "../../components/Tournament/ModalResultado";
 import { AsignarPosiciones } from "../../components/Tournament/AsignarPosiciones";
 import { TablaPosiciones } from "../../components/Tournament/TablaPosiciones";
 import type { Participante } from "../../components/types/tournament";
+import { ImageUpload } from "../../components/ImageUpload";
+import { uploadTournamentImage } from "../../services/imageUpload.service";
 
 
 interface Partido {
@@ -179,6 +181,16 @@ export function ManageTournament() {
 
   // Estados para edición
   const [modoEdicion, setModoEdicion] = useState(false);
+  const [tournamentImage, setTournamentImage] = useState<File | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>();
+
+  // Actualizar la imagen actual cuando se carguen los datos del torneo
+  useEffect(() => {
+    if (tournamentData?.imageUrl) {
+      setCurrentImageUrl(tournamentData.imageUrl);
+    }
+  }, [tournamentData]);
 
   // Funciones de transformación de datos
   const transformStandingsToTable = (standings: any[]) => {
@@ -411,8 +423,23 @@ export function ManageTournament() {
     );
   };
 
-  const handleGuardarDetalles = () => {
-    showNotification('success', 'Detalles guardados correctamente');
+  const handleGuardarDetalles = async () => {
+    // Si hay una imagen nueva, subirla
+    if (tournamentImage && tournamentData?.id) {
+      try {
+        setUploadingImage(true);
+        const imageUrl = await uploadTournamentImage(tournamentData.id, tournamentImage);
+        setCurrentImageUrl(imageUrl);
+        setTournamentImage(null);
+        showNotification('success', 'Imagen actualizada correctamente');
+      } catch (error: any) {
+        const errorMessage = error?.response?.data?.message || 'Error al subir la imagen';
+        showNotification('error', errorMessage);
+      } finally {
+        setUploadingImage(false);
+      }
+    }
+    
     setModoEdicion(false);
   };
 
@@ -886,13 +913,29 @@ export function ManageTournament() {
                     </div>
                   </div>
 
+                  {/* Imagen del Torneo */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-gray-300 mb-2">
+                      <ImageIcon className="w-5 h-5" />
+                      <Label>Imagen del Torneo</Label>
+                    </div>
+                    <ImageUpload
+                      currentImageUrl={currentImageUrl}
+                      onImageSelected={setTournamentImage}
+                      onImageRemoved={() => setTournamentImage(null)}
+                      uploading={uploadingImage}
+                      disabled={uploadingImage}
+                      label=""
+                    />
+                  </div>
+
                   <Button
                     onClick={handleGuardarDetalles}
-                    disabled
+                    disabled={uploadingImage}
                     className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    Guardar Cambios (Proximamente)
+                    {uploadingImage ? 'Guardando...' : 'Guardar Cambios'}
                   </Button>
                 </div>
               ) : (

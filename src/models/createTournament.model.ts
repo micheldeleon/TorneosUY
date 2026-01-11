@@ -16,4 +16,5 @@ export interface CreateTournament {
   detalles?: string;
   registrationCost: number;
   isDoubleRound?: boolean;
+  imageUrl?: string;
 }

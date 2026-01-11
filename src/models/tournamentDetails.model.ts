@@ -18,6 +18,7 @@ export type TournamentDetails = {
   status: string;
   isDoubleRound?: boolean;
   _status?: number;
+  imageUrl?: string;
   format: {
     winPoints?: number;
     drawPoints?: number;

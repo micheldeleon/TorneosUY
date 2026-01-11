@@ -5,4 +5,17 @@ import tailwind from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwind()],
+  server: {
+    hmr: {
+      overlay: false
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
+  },
+  logLevel: 'error'
 })
