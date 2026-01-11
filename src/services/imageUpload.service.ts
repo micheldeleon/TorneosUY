@@ -18,15 +18,32 @@ export const uploadUserProfileImage = async (
   userId: number,
   file: File
 ): Promise<string> => {
+  console.log("[imageUploadService] uploadUserProfileImage iniciado");
+  console.log("[imageUploadService] userId:", userId);
+  console.log("[imageUploadService] file:", file.name, file.type, file.size);
+  console.log("[imageUploadService] URL endpoint:", `${BASE_URL}/api/users/${userId}/profile-image`);
+  
   const formData = new FormData();
   formData.append("image", file);
 
-  const response = await axiosInstance.post<ImageUploadResponse>(
-    `${BASE_URL}/api/users/${userId}/profile-image`,
-    formData
-  );
-
-  return response.data.imageUrl;
+  try {
+    const response = await axiosInstance.post<ImageUploadResponse>(
+      `${BASE_URL}/api/users/${userId}/profile-image`,
+      formData
+    );
+    
+    console.log("[imageUploadService] ✅ Respuesta del servidor:", response.data);
+    console.log("[imageUploadService] Status:", response.status);
+    console.log("[imageUploadService] imageUrl retornado:", response.data.imageUrl);
+    
+    return response.data.imageUrl;
+  } catch (error: any) {
+    console.error("[imageUploadService] ❌ ERROR en request:", error);
+    console.error("[imageUploadService] Error response:", error?.response);
+    console.error("[imageUploadService] Error status:", error?.response?.status);
+    console.error("[imageUploadService] Error data:", error?.response?.data);
+    throw error;
+  }
 };
 
 /**

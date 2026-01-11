@@ -8,7 +8,7 @@ interface ProfileImageUploadModalProps {
   userId: number;
   currentImageUrl?: string;
   onClose: () => void;
-  onSuccess: (imageUrl: string) => void;
+  onSuccess: () => void;
 }
 
 export const ProfileImageUploadModal = ({
@@ -37,11 +37,23 @@ export const ProfileImageUploadModal = ({
     setError(null);
 
     try {
-      const imageUrl = await uploadUserProfileImage(userId, selectedFile);
-      onSuccess(imageUrl);
+      console.log("[ProfileImageUpload] Iniciando carga de imagen para userId:", userId);
+      console.log("[ProfileImageUpload] Archivo seleccionado:", selectedFile.name, "Tamaño:", selectedFile.size, "bytes");
+      
+      await uploadUserProfileImage(userId, selectedFile);
+      
+      console.log("[ProfileImageUpload] ✅ Imagen subida exitosamente al backend");
+      
+      onSuccess();
       onClose();
     } catch (err: any) {
-      console.error("Error uploading image:", err);
+      console.error("[ProfileImageUpload] ❌ ERROR al subir imagen:", err);
+      console.error("[ProfileImageUpload] Detalles del error:", {
+        message: err?.message,
+        response: err?.response,
+        status: err?.response?.status,
+        data: err?.response?.data
+      });
       setError(err?.response?.data?.message || "Error al subir la imagen");
     } finally {
       setUploading(false);

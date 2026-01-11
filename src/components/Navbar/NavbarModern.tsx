@@ -24,6 +24,7 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
   const [scrolled, setScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [userName, setUserName] = useState<string>("");
+  const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -36,12 +37,49 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
       try {
         const user = JSON.parse(storedUser);
         setUserName(user.fullName || "Usuario");
+        setUserProfileImage(user.profileImageUrl || null);
       } catch (error) {
         console.error("Error parsing user from localStorage:", error);
         setUserName("Usuario");
+        setUserProfileImage(null);
       }
     }
   }, [isAuthenticated]);
+
+  // Escuchar cambios en localStorage para actualizar la imagen de perfil en tiempo real
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "user" && e.newValue) {
+        try {
+          const user = JSON.parse(e.newValue);
+          setUserName(user.fullName || "Usuario");
+          setUserProfileImage(user.profileImageUrl || null);
+        } catch (error) {
+          console.error("Error parsing user from storage event:", error);
+        }
+      }
+    };
+
+    const handleUserUpdate = () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          setUserName(user.fullName || "Usuario");
+          setUserProfileImage(user.profileImageUrl || null);
+        } catch (error) {
+          console.error("Error parsing user:", error);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("userUpdated", handleUserUpdate);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("userUpdated", handleUserUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -159,13 +197,17 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                   <div className="relative">
                     <button
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-900/50 to-purple-800/50 hover:from-purple-800/60 hover:to-purple-700/60 border border-purple-600/30 rounded-xl text-white backdrop-blur-sm transition-all group"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-sm transition-all group"
                     >
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-                        <User className="w-4 h-4" />
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center overflow-hidden">
+                        {userProfileImage ? (
+                          <img src={userProfileImage} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-4 h-4 text-white" />
+                        )}
                       </div>
-                      <span className="text-sm">{userName}</span>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                      <span className="text-sm bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent group-hover:from-purple-400 group-hover:to-pink-400 transition-all">{userName}</span>
+                      <ChevronDown className={`w-4 h-4 text-white group-hover:text-purple-400 transition-colors ${userMenuOpen ? "rotate-180" : ""}`} />
                     </button>
 
                     {/* Dropdown Menu */}

@@ -74,9 +74,11 @@ export default function Dashboard() {
     setShowImageUploadModal(true);
   };
 
-  const handleImageUploadSuccess = (imageUrl: string) => {
-    setProfileImageUrl(imageUrl);
-    // También podrías actualizar el localStorage si es necesario
+  const handleImageUploadSuccess = () => {
+    console.log("[Dashboard] ✅ Imagen subida exitosamente. Recargando perfil...");
+    // La imagen se recargará automáticamente al actualizar el componente
+    // porque el backend ya devuelve la imagen actualizada
+    setShowImageUploadModal(false);
   };
 
   const handleOrganizeClick = () => {

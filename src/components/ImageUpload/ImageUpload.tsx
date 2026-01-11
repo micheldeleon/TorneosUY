@@ -95,30 +95,43 @@ export const ImageUpload = ({
                 className="w-full h-full object-cover"
               />
               {!disabled && (
-                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClick();
-                    }}
-                    className="p-2 bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    <Upload className="w-5 h-5 text-white" />
-                  </button>
-                  {onImageRemoved && (
+                <>
+                  {/* Overlay permanente sutil para indicar que es clickeable */}
+                  <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+                  
+                  {/* Botones de acción que aparecen al hover */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleRemove();
+                        handleClick();
                       }}
-                      className="p-2 bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                      className="p-3 bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
                     >
-                      <X className="w-5 h-5 text-white" />
+                      <Upload className="w-5 h-5 text-white" />
+                      <span className="text-white text-sm font-medium">Cambiar</span>
                     </button>
-                  )}
-                </div>
+                    {onImageRemoved && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemove();
+                        }}
+                        className="p-3 bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                      >
+                        <X className="w-5 h-5 text-white" />
+                        <span className="text-white text-sm font-medium">Quitar</span>
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Indicador visual en la esquina */}
+                  <div className="absolute top-2 right-2 bg-purple-600/90 backdrop-blur-sm px-3 py-1 rounded-full">
+                    <p className="text-white text-xs font-medium">Clic para cambiar</p>
+                  </div>
+                </>
               )}
             </>
           ) : (

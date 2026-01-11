@@ -27,6 +27,7 @@ import { useIsOrganizer } from "../../hooks/useIsOrganizer";
 import type { UserFind } from "../../models/userFind.model";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { schema as detailsSchema, type FormValueDetails } from "../../components/ui/DetailsUserForm/details.form.model";
+import { ProfileImageUploadModal } from "../../components/Profile/ProfileImageUploadModal";
 
 export default function DashboardAlt() {
     const navigate = useNavigate();
@@ -36,6 +37,7 @@ export default function DashboardAlt() {
     const { fetch: fetchOrganizedTournaments, data: organizedTournaments, loading: loadingOrganized } = useApi<TournamentDetails[], { id: number; email: string }>(getUserOrganizedTournaments);
     const { fetch: fetchParticipatingTournaments, data: participatingTournaments, loading: loadingParticipating } = useApi<TournamentDetails[], { id: number; email: string }>(getUserParticipatingTournaments);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showImageModal, setShowImageModal] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [disciplineFilterActive, setDisciplineFilterActive] = useState<string>("all");
@@ -126,6 +128,26 @@ export default function DashboardAlt() {
         if (defaults) reset(defaults);
     }, [defaults, reset]);
 
+    // Actualizar localStorage cuando cambien los datos del usuario (especialmente la imagen)
+    useEffect(() => {
+        if (data?.profileImageUrl) {
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+                try {
+                    const user = JSON.parse(storedUser);
+                    if (user.profileImageUrl !== data.profileImageUrl) {
+                        const updatedUser = { ...user, profileImageUrl: data.profileImageUrl };
+                        localStorage.setItem("user", JSON.stringify(updatedUser));
+                        window.dispatchEvent(new Event("userUpdated"));
+                        console.log("[DashboardAlt] ✅ Usuario actualizado en localStorage con nueva imagen");
+                    }
+                } catch (e) {
+                    console.error("Error actualizando localStorage:", e);
+                }
+            }
+        }
+    }, [data?.profileImageUrl]);
+
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         if (!storedUser) {
@@ -157,6 +179,17 @@ export default function DashboardAlt() {
         } catch (error: any) {
             console.error("Error al solicitar permiso de organizador:", error);
             alert("Error al solicitar permiso de organizador: " + (error?.response?.data || "Error inesperado"));
+        }
+    };
+
+    const handleImageUploadSuccess = () => {
+        console.log("[DashboardAlt] ✅ Imagen subida exitosamente. Recargando datos del usuario desde el backend...");
+        
+        // Recargar los datos del usuario desde el backend para obtener la imagen actualizada
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            const user: UserFind = JSON.parse(storedUser);
+            fetch(user);
         }
     };
 
@@ -350,6 +383,8 @@ export default function DashboardAlt() {
         return Array.from(disciplines).sort();
     }, [finishedTournaments]);
 
+    console.log(data);
+
     return (
         <div className="min-h-screen bg-surface-dark pt-24 pb-20 px-4">
             <div className="container mx-auto max-w-7xl">
@@ -367,11 +402,20 @@ export default function DashboardAlt() {
                             {loading ? (
                                 <Skeleton className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex-shrink-0" />
                             ) : (
-                                <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-purple-600/30 shadow-lg shadow-purple-500/20 flex-shrink-0">
-                                    <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white text-lg sm:text-2xl">
-                                        {getInitials(data?.name ?? "Usuario")}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
+                                    <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-purple-600 group-hover:border-purple-400 shadow-lg shadow-purple-500/20 flex-shrink-0 transition-colors">
+                                        {data?.profileImageUrl ? (
+                                            <img src={data.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white text-lg sm:text-2xl">
+                                                {getInitials(data?.name ?? "Usuario")}
+                                            </AvatarFallback>
+                                        )}
+                                    </Avatar>
+                                    <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <Edit className="w-6 h-6 text-white" />
+                                    </div>
+                                </div>
                             )}
 
                             <div className="flex-1 min-w-0">
@@ -1217,13 +1261,23 @@ export default function DashboardAlt() {
                                 <div className="space-y-4 sm:space-y-6">
                                     {/* Avatar Section */}
                                     <div className="flex flex-col items-center gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-gray-800">
-                                        <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-purple-600/30">
-                                            <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white text-lg sm:text-2xl">
-                                                {defaults && getInitials(defaults.name || "Usuario")}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
+                                            <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-purple-600 group-hover:border-purple-400 transition-colors">
+                                                {data?.profileImageUrl ? (
+                                                    <img src={data.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <AvatarFallback className="bg-gradient-to-br from-purple-600 to-purple-800 text-white text-lg sm:text-2xl">
+                                                        {defaults && getInitials(defaults.name || "Usuario")}
+                                                    </AvatarFallback>
+                                                )}
+                                            </Avatar>
+                                            <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <Edit className="w-6 h-6 text-white" />
+                                            </div>
+                                        </div>
                                         <Button
                                             type="button"
+                                            onClick={() => setShowImageModal(true)}
                                             variant="outline"
                                             size="sm"
                                             className="border-purple-600 text-purple-300 hover:bg-purple-600/10 text-xs sm:text-sm"
@@ -1428,6 +1482,16 @@ export default function DashboardAlt() {
                             </form>
                         </Card>
                     </div>
+                )}
+
+                {/* Profile Image Upload Modal */}
+                {showImageModal && data && (
+                    <ProfileImageUploadModal
+                        userId={data.id}
+                        isOpen={showImageModal}
+                        onClose={() => setShowImageModal(false)}
+                        onSuccess={handleImageUploadSuccess}
+                    />
                 )}
             </div>
         </div>

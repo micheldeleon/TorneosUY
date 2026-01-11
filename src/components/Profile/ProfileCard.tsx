@@ -22,18 +22,27 @@ export function ProfileCard({ name, email, imageUrl, onEdit }: ProfileCardProps)
     <Card className="bg-[#2a2a2a] border-gray-800 p-6">
       <div className="flex flex-col items-center text-center space-y-4">
         {/* Avatar */}
-        <div className="relative">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={name}
-              className="w-24 h-24 rounded-full object-cover border-2 border-purple-600"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center border-2 border-purple-600">
-              <span className="text-white text-2xl">{getInitials(name)}</span>
+        <div className="relative group">
+          <div 
+            onClick={onEdit}
+            className="cursor-pointer"
+          >
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={name}
+                className="w-24 h-24 rounded-full object-cover border-2 border-purple-600 group-hover:border-purple-400 transition-colors"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center border-2 border-purple-600 group-hover:border-purple-400 transition-colors">
+                <span className="text-white text-2xl">{getInitials(name)}</span>
+              </div>
+            )}
+            {/* Overlay al hacer hover */}
+            <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Edit className="w-6 h-6 text-white" />
             </div>
-          )}
+          </div>
           <button
             onClick={onEdit}
             className="absolute bottom-0 right-0 w-8 h-8 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center border-2 border-[#2a2a2a] transition-colors"
