@@ -133,11 +133,11 @@ export const RegisterForm = () => {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-6">
+          <Link to="/" className="flex items-center justify-center gap-3 mb-6">
             <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 text-5xl">
               TuTorneo
             </h1>
-          </div>
+          </Link>
 
           <h2 className="text-white text-3xl mb-2 drop-shadow-lg">
             Crear Cuenta
