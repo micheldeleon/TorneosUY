@@ -1488,7 +1488,6 @@ export default function DashboardAlt() {
                 {showImageModal && data && (
                     <ProfileImageUploadModal
                         userId={data.id}
-                        isOpen={showImageModal}
                         onClose={() => setShowImageModal(false)}
                         onSuccess={handleImageUploadSuccess}
                     />

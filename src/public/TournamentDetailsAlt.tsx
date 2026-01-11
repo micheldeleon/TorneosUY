@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import {
-    Trophy, Calendar, Users, ArrowLeft, Phone, Star,
+    Calendar, Users, ArrowLeft, Phone, Star,
     Award, Clock, Shield, Target, CheckCircle2,
     Play, FileText
 } from "lucide-react";

@@ -28,7 +28,6 @@ export default function CreateTournament() {
   const { data, fetch: createTournamentFetch } = useApi<TournamentCreated, { organizerId: number; tournament: CreateTournament }>(createTournament);
 
   const [tournamentImage, setTournamentImage] = useState<File | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const tournamentProcessedRef = useRef(false);
 
   // Llamar a la API al montar el componente
@@ -199,14 +198,10 @@ export default function CreateTournament() {
         
         // Si hay una imagen, subirla DESPUÉS de crear el torneo
         if (tournamentImage && data.id) {
-          setUploadingImage(true);
-          
           try {
             await uploadTournamentImage(data.id, tournamentImage);
           } catch (err) {
             // Continuar a la navegación aunque falle la imagen
-          } finally {
-            setUploadingImage(false);
           }
         }
         
