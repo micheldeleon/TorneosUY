@@ -99,6 +99,16 @@ export const getAllTournaments = (): UseApiCall<any[]> => {
     };
 };
 
+export const getLatestTournaments = (): UseApiCall<TournamentDetails[]> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<TournamentDetails[]>(`${BASE_URL}/api/tournaments/latest`, {
+            signal: controller.signal,
+        }),
+        controller,
+    };
+};
+
 export const getTournamentById = (id?: number): UseApiCall<TournamentDetails> => {
     const controller = loadAbort();
 

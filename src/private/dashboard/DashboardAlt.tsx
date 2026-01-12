@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Trophy, Calendar, Users, Award, Edit, Plus,
     Target, ChevronRight, Settings, X, Save, User, Mail, Phone, AlertTriangle,
-    Gem,
+    // Gem,
     ShieldPlusIcon,
     SettingsIcon,
     Filter,
@@ -397,13 +397,13 @@ export default function DashboardAlt() {
                 {/* Header Profile Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     {/* Profile Card */}
-                    <Card className="lg:col-span-2 bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-[#2a2a2a] border-purple-700/30 p-6 sm:p-8">
+                    <Card className="lg:col-span-2 bg-gradient-to-br from-purple-900/30 via-purple-800/20 to-[#2a2a2a] p-6 sm:p-8">
                         <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
                             {loading ? (
                                 <Skeleton className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex-shrink-0" />
                             ) : (
                                 <div className="relative group cursor-pointer" onClick={() => setShowImageModal(true)}>
-                                    <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-purple-600 group-hover:border-purple-400 shadow-lg shadow-purple-500/20 flex-shrink-0 transition-colors">
+                                    <Avatar className="w-20 h-20 sm:w-24 sm:h-24 border border-surface-dark group-hover:border-purple-400  shadow-lg shadow-purple-500/20 flex-shrink-0 transition-colors">
                                         {data?.profileImageUrl ? (
                                             <img src={data.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
@@ -412,8 +412,8 @@ export default function DashboardAlt() {
                                             </AvatarFallback>
                                         )}
                                     </Avatar>
-                                    <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <Edit className="w-6 h-6 text-white" />
+                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <Edit className="w-6 h-6 text-white bg-surface-dark/50 rounded" />
                                     </div>
                                 </div>
                             )}
@@ -432,10 +432,10 @@ export default function DashboardAlt() {
                                 )}
 
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-                                    <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50 px-2 py-1 text-xs sm:text-sm whitespace-nowrap">
+                                    {/* <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50 px-2 py-1 text-xs sm:text-sm whitespace-nowrap">
                                         <Gem className="w-3 h-3 mr-1" />
                                         Membresia?
-                                    </Badge>
+                                    </Badge> */}
                                     {isProfileIncomplete && (
                                         <Badge className="bg-orange-600/20 text-orange-300 border-orange-600/50 px-2 py-1 text-xs sm:text-sm">
                                             <AlertTriangle className="w-3 h-3 mr-1 flex-shrink-0" />

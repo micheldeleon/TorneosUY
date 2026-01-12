@@ -5,7 +5,7 @@ import { About } from "./About";
 import { Faq } from "./FAQ";
 import { Contact } from "./Contact";
 import { Logo } from "../components/Logo";
-import { getAllTournaments } from "../services/api.service";
+import { getLatestTournaments } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails } from "../models";
 import { TournamentCardAlt } from "../components/TournamentCard/TournamentCardAlt";
@@ -19,7 +19,7 @@ export const HomeLanding: React.FC = () => {
 
   const {
     data: response
-  } = useApi(getAllTournaments, { autoFetch: true });
+  } = useApi(getLatestTournaments, { autoFetch: true });
 
   useEffect(() => {
     if (!response) return;
@@ -40,9 +40,6 @@ export const HomeLanding: React.FC = () => {
 
     return () => clearTimeout(t);
   }, [location]);
-
-  const TOURNAMENTS_TO_SHOW = 3;
-  const tournamentsToDisplay = tournaments.slice(0, TOURNAMENTS_TO_SHOW);
 
   return (
     <div className="min-h-screen w-full relative bg-gradient-to-b from-[#0a0a0a] via-[#1a0a2a] to-[#0f0f0f] text-slate-900">
@@ -120,7 +117,7 @@ export const HomeLanding: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-          {tournamentsToDisplay.map(t => {
+          {tournaments.map(t => {
             return (
               <TournamentCardAlt
                 key={t.id}
