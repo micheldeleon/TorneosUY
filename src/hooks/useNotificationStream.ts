@@ -15,6 +15,8 @@ export const useNotificationStream = (
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSourcePolyfill | null>(null);
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://localhost:8080");
+  const streamUrl = `${baseUrl}/api/notifications/stream`;
 
   useEffect(() => {
     // No conectar si no hay token
@@ -27,7 +29,7 @@ export const useNotificationStream = (
 
     // Crear conexión SSE con Authorization header
     const eventSource = new EventSourcePolyfill(
-      'http://localhost:8080/api/notifications/stream',
+      streamUrl,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
