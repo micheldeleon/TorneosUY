@@ -31,7 +31,7 @@ const participanteSchema = z.object({
 
 const inscripcionSchema = z.object({
     nombreEquipo: z.string().min(3, "El nombre del equipo debe tener al menos 3 caracteres"),
-    participantes: z.array(participanteSchema).min(1),
+    participantes: z.array(participanteSchema).min(0),
 });
 
 type InscripcionFormData = z.infer<typeof inscripcionSchema>; //Mover esto a un archivo 
