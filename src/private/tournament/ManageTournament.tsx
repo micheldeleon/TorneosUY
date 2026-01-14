@@ -181,6 +181,7 @@ export function ManageTournament() {
 
   // Estados para edición
   const [modoEdicion, setModoEdicion] = useState(false);
+  const [modoEdicionImagen, setModoEdicionImagen] = useState(false);
   const [tournamentImage, setTournamentImage] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>();
@@ -424,7 +425,12 @@ export function ManageTournament() {
   };
 
   const handleGuardarDetalles = async () => {
-    // Si hay una imagen nueva, subirla
+    // TODO: Implementar guardado de datos
+    showNotification('success', 'Función en desarrollo');
+    setModoEdicion(false);
+  };
+
+  const handleGuardarImagen = async () => {
     if (tournamentImage && tournamentData?.id) {
       try {
         setUploadingImage(true);
@@ -437,10 +443,11 @@ export function ManageTournament() {
         showNotification('error', errorMessage);
       } finally {
         setUploadingImage(false);
+        setModoEdicionImagen(false);
       }
+    } else {
+      showNotification('error', 'Debes seleccionar una imagen');
     }
-    
-    setModoEdicion(false);
   };
 
   const handleSubmitRaceResults = async () => {
@@ -823,7 +830,7 @@ export function ManageTournament() {
 
           {/* Detalles Tab */}
           <TabsContent value="detalles">
-            <Card className="bg-[#2a2a2a] border-gray-800 p-6">
+            <Card className="bg-[#2a2a2a] border-gray-800 p-6 mb-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-white text-xl">Información del Torneo</h3>
                 {tournamentData.status === "ABIERTO" && (
@@ -831,12 +838,18 @@ export function ManageTournament() {
                     onClick={() => setModoEdicion(!modoEdicion)}
                     variant="outline"
                     className="border-purple-600 text-purple-300 hover:bg-purple-600/10"
+                    disabled
                   >
                     {modoEdicion ? <X className="w-4 h-4 mr-2" /> : <Edit className="w-4 h-4 mr-2" />}
-                    {modoEdicion ? "Cancelar" : "Editar"}
+                    {modoEdicion ? "Cancelar" : "Editar Datos"}
                   </Button>
                 )}
               </div>
+              {tournamentData.status === "ABIERTO" && (
+                <div className="mb-4 p-3 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                  <p className="text-blue-300 text-sm">🚧 La edición de datos está en desarrollo</p>
+                </div>
+              )}
 
               {modoEdicion ? (
                 <div className="space-y-6">
@@ -913,29 +926,12 @@ export function ManageTournament() {
                     </div>
                   </div>
 
-                  {/* Imagen del Torneo */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-gray-300 mb-2">
-                      <ImageIcon className="w-5 h-5" />
-                      <Label>Imagen del Torneo</Label>
-                    </div>
-                    <ImageUpload
-                      currentImageUrl={currentImageUrl}
-                      onImageSelected={setTournamentImage}
-                      onImageRemoved={() => setTournamentImage(null)}
-                      uploading={uploadingImage}
-                      disabled={uploadingImage}
-                      label=""
-                    />
-                  </div>
-
                   <Button
                     onClick={handleGuardarDetalles}
-                    disabled={uploadingImage}
                     className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {uploadingImage ? 'Guardando...' : 'Guardar Cambios'}
+                    Guardar Cambios
                   </Button>
                 </div>
               ) : (
@@ -989,6 +985,73 @@ export function ManageTournament() {
                     <div className="p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-xl">
                       <p className="text-yellow-300 text-sm">
                         ⚠️ El torneo ya ha comenzado. No puedes editar los detalles.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+
+            {/* Sección de Imagen del Torneo */}
+            <Card className="bg-[#2a2a2a] border-gray-800 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-purple-400" />
+                  <h3 className="text-white text-xl">Imagen del Torneo</h3>
+                </div>
+                {tournamentData.status === "ABIERTO" && (
+                  <Button
+                    onClick={() => setModoEdicionImagen(!modoEdicionImagen)}
+                    variant="outline"
+                    className="border-purple-600 text-purple-300 hover:bg-purple-600/10"
+                  >
+                    {modoEdicionImagen ? <X className="w-4 h-4 mr-2" /> : <Edit className="w-4 h-4 mr-2" />}
+                    {modoEdicionImagen ? "Cancelar" : "Editar Imagen"}
+                  </Button>
+                )}
+              </div>
+
+              {modoEdicionImagen ? (
+                <div className="space-y-4">
+                  <ImageUpload
+                    currentImageUrl={currentImageUrl}
+                    onImageSelected={setTournamentImage}
+                    onImageRemoved={() => setTournamentImage(null)}
+                    uploading={uploadingImage}
+                    disabled={uploadingImage}
+                    label=""
+                  />
+
+                  <Button
+                    onClick={handleGuardarImagen}
+                    disabled={uploadingImage || !tournamentImage}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {uploadingImage ? 'Guardando...' : 'Guardar Imagen'}
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  {currentImageUrl ? (
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-4">
+                      <img 
+                        src={currentImageUrl} 
+                        alt="Imagen del torneo" 
+                        className="w-full max-w-md mx-auto rounded-lg object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-8 text-center">
+                      <ImageIcon className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                      <p className="text-gray-500">No hay imagen del torneo</p>
+                    </div>
+                  )}
+                  
+                  {tournamentData.status !== "ABIERTO" && (
+                    <div className="p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-xl mt-4">
+                      <p className="text-yellow-300 text-sm">
+                        ⚠️ El torneo ya ha comenzado. No puedes editar la imagen.
                       </p>
                     </div>
                   )}
