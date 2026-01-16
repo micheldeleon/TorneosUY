@@ -21,6 +21,7 @@ import { TablaPosiciones } from "../../components/Tournament/TablaPosiciones";
 import type { Participante } from "../../components/types/tournament";
 import { ImageUpload } from "../../components/ImageUpload";
 import { uploadTournamentImage } from "../../services/imageUpload.service";
+import { EditTournamentModal } from "../../components/EditTournamentForm";
 
 
 interface Partido {
@@ -185,6 +186,7 @@ export function ManageTournament() {
   const [tournamentImage, setTournamentImage] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Actualizar la imagen actual cuando se carguen los datos del torneo
   useEffect(() => {
@@ -759,6 +761,14 @@ export function ManageTournament() {
               </div>
               <div className="flex gap-3">
                 <Button
+                  onClick={() => setIsEditModalOpen(true)}
+                  variant="outline"
+                  className="border-purple-600 text-purple-300 hover:bg-purple-600/10"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Editar Torneo
+                </Button>
+                <Button
                   onClick={handleCancelarTorneo}
                   disabled={cancelLoading}
                   variant="outline"
@@ -835,21 +845,15 @@ export function ManageTournament() {
                 <h3 className="text-white text-xl">Información del Torneo</h3>
                 {tournamentData.status === "ABIERTO" && (
                   <Button
-                    onClick={() => setModoEdicion(!modoEdicion)}
+                    onClick={() => setIsEditModalOpen(true)}
                     variant="outline"
                     className="border-purple-600 text-purple-300 hover:bg-purple-600/10"
-                    disabled
                   >
-                    {modoEdicion ? <X className="w-4 h-4 mr-2" /> : <Edit className="w-4 h-4 mr-2" />}
-                    {modoEdicion ? "Cancelar" : "Editar Datos"}
+                    <Edit className="w-4 h-4 mr-2" />
+                    Editar Datos
                   </Button>
                 )}
               </div>
-              {tournamentData.status === "ABIERTO" && (
-                <div className="mb-4 p-3 bg-blue-900/20 border border-blue-700/30 rounded-lg">
-                  <p className="text-blue-300 text-sm">🚧 La edición de datos está en desarrollo</p>
-                </div>
-              )}
 
               {modoEdicion ? (
                 <div className="space-y-6">
@@ -1438,6 +1442,21 @@ export function ManageTournament() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Tournament Modal */}
+      {tournamentData && (
+        <EditTournamentModal
+          tournament={tournamentData}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => {
+            if (tournamentId) {
+              refetchTournament(tournamentId);
+            }
+            showNotification('success', 'Torneo actualizado exitosamente. Los participantes han sido notificados.');
+          }}
+        />
       )}
     </div>
   );

@@ -8,6 +8,7 @@ export * from "./userDetails.model"
 export * from "./tournamentDetails.model"
 export * from "./createTournament.model"
 export * from "./userFind.model"
+export * from "./updateTournament.model"
 export * from "./tournamentCreated.model"
 export * from "./notifications.model"
 

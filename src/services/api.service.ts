@@ -1,6 +1,6 @@
 import { loadAbort } from "./utilities/loadAbort.utility";
 import { getAxiosInstance } from "./axios.service";
-import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData, CreateTournament, UserDetails, TournamentDetails, UserFind, TournamentCreated } from "../models";
+import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData, CreateTournament, UserDetails, TournamentDetails, UserFind, TournamentCreated, UpdateTournamentRequest } from "../models";
 import axios from "axios";
 
 
@@ -132,6 +132,25 @@ export const createTournament = (
         call: axiosInstance.post<TournamentCreated>(
             `/api/tournaments/organizer/${params?.organizerId}`,
             params?.tournament,
+            { signal: controller.signal }
+        ),
+        controller
+    };
+};
+
+export const updateTournament = (
+    params?: { tournamentId: number; data: UpdateTournamentRequest }
+): UseApiCall<TournamentDetails> => {
+    const controller = loadAbort();
+
+    if (!params?.tournamentId) {
+        throw new Error("Tournament ID is required");
+    }
+
+    return {
+        call: axiosInstance.put<TournamentDetails>(
+            `/api/tournaments/${params.tournamentId}`,
+            params.data,
             { signal: controller.signal }
         ),
         controller
