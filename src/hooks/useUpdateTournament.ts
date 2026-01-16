@@ -15,7 +15,7 @@ export const useUpdateTournament = () => {
     setError(null);
 
     try {
-      const { call, controller } = updateTournament({ tournamentId, data });
+      const { call } = updateTournament({ tournamentId, data });
       const response = await call;
 
       setLoading(false);
