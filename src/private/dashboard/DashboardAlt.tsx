@@ -28,18 +28,19 @@ import type { UserFind } from "../../models/userFind.model";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { schema as detailsSchema, type FormValueDetails } from "../../components/ui/DetailsUserForm/details.form.model";
 import { ProfileImageUploadModal } from "../../components/Profile/ProfileImageUploadModal";
+import { useGlobalContext } from "../../context/global.context";
 
 export default function DashboardAlt() {
     const navigate = useNavigate();
     const isOrganizer = useIsOrganizer();
     const { fetch, data, error, loading } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
-    const {fetch: fetchRequestOrganizerPermission} = useApi<ApiResponse, number>(requestOrganizerPermission);
     const { fetch: fetchOrganizedTournaments, data: organizedTournaments, loading: loadingOrganized } = useApi<TournamentDetails[], { id: number; email: string }>(getUserOrganizedTournaments);
     const { fetch: fetchParticipatingTournaments, data: participatingTournaments, loading: loadingParticipating } = useApi<TournamentDetails[], { id: number; email: string }>(getUserParticipatingTournaments);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { logout } = useGlobalContext();
     const [disciplineFilterActive, setDisciplineFilterActive] = useState<string>("all");
     const [disciplineFilterFinished, setDisciplineFilterFinished] = useState<string>("all");
     const [disciplineFilterOrganizedActive, setDisciplineFilterOrganizedActive] = useState<string>("all");
@@ -168,17 +169,25 @@ export default function DashboardAlt() {
 
     const requestOrganizerPermissionHandler = async () => {
         if (!data?.id) {
-            alert("El ID del usuario no está disponible");
+            alert("El ID del usuario no esta disponible");
             return;
         }
         try {
-            fetchRequestOrganizerPermission(data.id);
-            if (data._status == 200) {
-                alert("Solicitud de permiso de organizador enviada con éxito."); // Falta validar si el usuario ya tiene el permiso
+            setIsSubmitting(true);
+            const { call } = requestOrganizerPermission(data.id);
+            const response = await call;
+            if (response.status >= 200 && response.status < 300) {
+                alert("Permiso de organizador otorgado. Para aplicar los cambios, vuelve a iniciar sesion.");
+                logout();
+                navigate("/login");
+            } else {
+                alert("No se pudo otorgar el permiso de organizador. Intenta nuevamente.");
             }
         } catch (error: any) {
             console.error("Error al solicitar permiso de organizador:", error);
             alert("Error al solicitar permiso de organizador: " + (error?.response?.data || "Error inesperado"));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 

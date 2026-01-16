@@ -141,7 +141,11 @@ export const createTournament = (
 export const requestOrganizerPermission = (userId?: number): UseApiCall<ApiResponse> => {
     const controller = loadAbort();
     return {
-        call: axiosInstance.post<ApiResponse>(`/api/users/organizer?id=${userId}`, { signal: controller.signal }),
+        call: axiosInstance.post<ApiResponse>(
+            `/api/users/organizer`,
+            {},
+            { params: { id: userId }, signal: controller.signal }
+        ),
         controller,
     }
 }
