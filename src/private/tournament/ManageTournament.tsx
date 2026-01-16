@@ -23,7 +23,6 @@ import { ImageUpload } from "../../components/ImageUpload";
 import { uploadTournamentImage } from "../../services/imageUpload.service";
 import { EditTournamentModal } from "../../components/EditTournamentForm";
 
-
 interface Partido {
   id: number;
   equipoLocal: string;
