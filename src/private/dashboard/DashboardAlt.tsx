@@ -21,7 +21,7 @@ import { Input } from "../../components/ui/Input";
 import { Label } from "../../components/ui/Label";
 import { Separator } from "../../components/ui/Separator";
 import { getUsersByIdAndEmail, requestOrganizerPermission, updateUserDetails, getUserOrganizedTournaments, getUserParticipatingTournaments } from "../../services/api.service";
-import type { UserDetails, TournamentDetails, ApiResponse } from "../../models";
+import type { UserDetails, TournamentDetails } from "../../models";
 import { useApi } from "../../hooks/useApi";
 import { useIsOrganizer } from "../../hooks/useIsOrganizer";
 import type { UserFind } from "../../models/userFind.model";
