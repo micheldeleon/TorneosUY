@@ -121,7 +121,7 @@ export const LoginForm = () => {
               <Alert className="mb-6 bg-gradient-to-r from-red-900/30 to-pink-900/30 border-red-500/50 text-red-300 shadow-lg shadow-red-500/20">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  {googleUiError ?? "No se pudo iniciar sesiÇün con Google"}
+                  {googleUiError ?? "No se pudo iniciar sesion con Google"}
                 </AlertDescription>
               </Alert>
             )}
