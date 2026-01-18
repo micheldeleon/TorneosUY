@@ -33,6 +33,26 @@ export const postLogin = (user?: UserLogin): UseApiCall<AuthData> => {
     }
 };
 
+export const postLoginWithGoogle = (googleIdToken?: string): UseApiCall<AuthData> => {
+    const controller = loadAbort();
+
+    if (!googleIdToken) {
+        throw new Error("Google ID token is required");
+    }
+
+    return {
+        call: axiosInstance.post<AuthData>(
+            `${LOGIN_URL}/google`,
+            {},
+            {
+                headers: { Authorization: `Bearer ${googleIdToken}` },
+                signal: controller.signal,
+            }
+        ),
+        controller,
+    }
+};
+
 export const getUsersByIdAndEmail = (user?: UserFind): UseApiCall<UserDetails> => {
     const controller = loadAbort();
 

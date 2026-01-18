@@ -4,13 +4,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { loginSchema, type FormValueLogin } from "../components/CustomForm/schemas";
 import { useApi } from "../hooks/useApi";
 import type { UserLogin, AuthData } from "../models";
-import { postLogin } from "../services/api.service";
-import { GoogleButton, RHFInput, Submit } from "../components/CustomForm";
+import { postLogin, postLoginWithGoogle } from "../services/api.service";
+import { RHFInput, Submit } from "../components/CustomForm";
 import { useGlobalContext } from "../context/global.context";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
 import { decodeJWT } from "../services/utilities/jwt.utility";
 import { Alert, AlertDescription } from "../components/ui/Alert";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 
 export const LoginForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormValueLogin>({
@@ -26,9 +27,32 @@ export const LoginForm = () => {
     error, 
     loading 
   } = useApi<AuthData, UserLogin>(postLogin);
+
+  const {
+    fetch: googleFetch,
+    data: googleResponse,
+    error: googleError,
+    loading: googleLoading,
+  } = useApi<AuthData, string>(postLoginWithGoogle);
   
   const { setUser, setToken } = useGlobalContext();
   const navigate = useNavigate();
+  const [googleUiError, setGoogleUiError] = useState<string | null>(null);
+
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  const handleAuthSuccess = (auth: AuthData) => {
+    if (auth.token.length !== 0 && auth.user) {
+      const decoded = decodeJWT<{ authorities?: string[] }>(auth.token);
+      const isOrganizer = decoded?.authorities?.includes("ROLE_ORGANIZER") ?? false;
+      
+      setToken(auth.token);
+      setUser(auth.user);
+      localStorage.setItem("isOrganizer", JSON.stringify(isOrganizer));
+      
+      navigate("/perfil");
+    }
+  };
 
   const onSubmit: SubmitHandler<FormValueLogin> = async (data) => {
     const userLogin: UserLogin = {
@@ -41,22 +65,14 @@ export const LoginForm = () => {
   useEffect(() => {
     if (!response) return;
     console.log('response', response);
-    if (response.token.length !== 0 && response.user) {
-      // Decodificar el token para obtener los roles
-      const decoded = decodeJWT<{ authorities?: string[] }>(response.token);
-      const isOrganizer = decoded?.authorities?.includes("ROLE_ORGANIZER") ?? false;
-      
-      // Guardar el token y usuario
-      setToken(response.token);
-      setUser(response.user);
-      
-      // Guardar si es organizador en localStorage
-      localStorage.setItem("isOrganizer", JSON.stringify(isOrganizer));
-      
-      navigate("/perfil");
-    }
+    handleAuthSuccess(response);
 
   }, [response]);
+
+  useEffect(() => {
+    if (!googleResponse) return;
+    handleAuthSuccess(googleResponse);
+  }, [googleResponse]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#1a0a2a] to-[#0f0f0f] flex items-center justify-center px-4 py-12 relative overflow-hidden">
@@ -96,6 +112,16 @@ export const LoginForm = () => {
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   Email y/o contraseña incorrectos
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Google Error Alert */}
+            {(googleUiError || googleError) && !googleLoading && (
+              <Alert className="mb-6 bg-gradient-to-r from-red-900/30 to-pink-900/30 border-red-500/50 text-red-300 shadow-lg shadow-red-500/20">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {googleUiError ?? "No se pudo iniciar sesiÇün con Google"}
                 </AlertDescription>
               </Alert>
             )}
@@ -150,7 +176,27 @@ export const LoginForm = () => {
             )}
 
             {/* Google Button */}
-            <GoogleButton text="Continuar con Google" />
+            {googleClientId && (
+              <div className="mt-6 flex justify-center">
+                <GoogleOAuthProvider clientId={googleClientId}>
+                  <GoogleLogin
+                    onSuccess={(credentialResponse) => {
+                      const googleIdToken = credentialResponse.credential;
+                      if (!googleIdToken) {
+                        setGoogleUiError("No se pudo obtener el token de Google");
+                        return;
+                      }
+                      setGoogleUiError(null);
+                      googleFetch(googleIdToken);
+                    }}
+                    onError={() => setGoogleUiError("No se pudo iniciar sesiÇün con Google")}
+                    theme="outline"
+                    size="large"
+                    text="continue_with"
+                  />
+                </GoogleOAuthProvider>
+              </div>
+            )}
           </div>
         </div>
 
