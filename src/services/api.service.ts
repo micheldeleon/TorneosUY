@@ -4,7 +4,8 @@ import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData, 
 import axios from "axios";
 
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://localhost:8080");
+const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://localhost:8080");
+const BASE_URL = RAW_BASE_URL.replace(/\/+$/, "");
 const LOGIN_URL = BASE_URL.includes("localhost") || BASE_URL.includes("127.0.0.1")
     ? `${BASE_URL}/login`
     : "/api/login";

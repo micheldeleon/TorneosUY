@@ -1,6 +1,7 @@
 import { getAxiosInstance } from "./axios.service";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://localhost:8080");
+const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://localhost:8080");
+const BASE_URL = RAW_BASE_URL.replace(/\/+$/, "");
 const axiosInstance = getAxiosInstance();
 
 export interface ImageUploadResponse {
