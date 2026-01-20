@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/login",
-      "destination": "http://torneosuy-backend-env.eba-p8g3zvpa.us-east-2.elasticbeanstalk.com/login"
+      "destination": "http://torneosuy-backend-prod-v2-env.eba-sbi5bher.us-east-2.elasticbeanstalk.com/login"
     },
     {
       "source": "/api/:path*",
-      "destination": "http://torneosuy-backend-env.eba-p8g3zvpa.us-east-2.elasticbeanstalk.com/api/:path*"
+      "destination": "http://torneosuy-backend-prod-v2-env.eba-sbi5bher.us-east-2.elasticbeanstalk.com/api/:path*"
     },
     {
       "source": "/(.*)",
