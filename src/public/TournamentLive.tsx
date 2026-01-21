@@ -326,7 +326,7 @@ export function TournamentLive() {
             <div className="min-h-screen grid place-items-center text-rose-300 bg-surface-dark">
                 <div className="text-center">
                     <p className="mb-4">Error al cargar el torneo</p>
-                    <Button onClick={() => navigate(-1)} variant="outline" className="text-purple-300 border-purple-600">
+                    <Button onClick={() => navigate(-2)} variant="outline" className="text-purple-300 border-purple-600">
                         Volver
                     </Button>
                 </div>
@@ -347,7 +347,7 @@ export function TournamentLive() {
                 {/* Back Button */}
                 <Button
                     variant="ghost"
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate(-2)}
                     className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10 mb-6"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />

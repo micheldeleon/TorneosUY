@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import {
+    ArrowLeft,
     Home,
     Search,
     Sparkles,
@@ -180,7 +181,7 @@ export default function TournamentFinished() {
     console.log('Debug - User Participated:', userParticipated);
 
     const canRate = user && t && userParticipated && user.id !== t.organizerId;
-    
+
     console.log('Debug - Can Rate:', canRate);
 
     const handleRateSubmit = async (score: number, comment?: string) => {
@@ -251,7 +252,7 @@ export default function TournamentFinished() {
             <div className="min-h-screen grid place-items-center text-rose-300 bg-gradient-to-b from-gray-950 via-purple-950/20 to-gray-950">
                 <div className="text-center">
                     <p className="mb-4">Error al cargar el torneo</p>
-                    <Button onClick={() => navigate(-1)} variant="outline" className="text-purple-300 border-purple-600">
+                    <Button onClick={() => navigate(-2)} variant="outline" className="text-purple-300 border-purple-600">
                         Volver
                     </Button>
                 </div>
@@ -269,9 +270,18 @@ export default function TournamentFinished() {
             <div className="fixed inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none z-0" />
 
             <div className="relative max-w-4xl w-full z-10">
+
                 {/* Contenido principal */}
                 <div className="p-4 sm:p-8 md:p-12 space-y-6 sm:space-y-8 mt-20">
-
+                    
+                    <Button
+                        variant="ghost"
+                        onClick={() => navigate(-2)}
+                        className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10 mb-6"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Volver
+                    </Button>
                     {/* Título y descripción */}
                     <div className="text-center space-y-3 sm:space-y-4">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-yellow-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
@@ -367,31 +377,31 @@ export default function TournamentFinished() {
                         </div>
                     )}                </div>
                 {/* Sugerencias */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                        <Card onClick={() => navigate('/torneos')} className="bg-gray-900/50 border-purple-500/20 p-4 sm:p-5 backdrop-blur-sm hover:border-purple-500/40 transition-all duration-300 hover:scale-105 cursor-pointer group">
-                            <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
-                                <div className="p-2.5 sm:p-3 rounded-xl group-hover:scale-110 transition-transform">
-                                    <Search className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-200 mb-1 text-sm sm:text-base">Nuevos Torneos</h3>
-                                    <p className="text-xs text-gray-400">Explora más competencias</p>
-                                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <Card onClick={() => navigate('/torneos')} className="bg-gray-900/50 border-purple-500/20 p-4 sm:p-5 backdrop-blur-sm hover:border-purple-500/40 transition-all duration-300 hover:scale-105 cursor-pointer group">
+                        <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
+                            <div className="p-2.5 sm:p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                <Search className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
                             </div>
-                        </Card>
+                            <div>
+                                <h3 className="font-semibold text-gray-200 mb-1 text-sm sm:text-base">Nuevos Torneos</h3>
+                                <p className="text-xs text-gray-400">Explora más competencias</p>
+                            </div>
+                        </div>
+                    </Card>
 
-                        <Card onClick={() => navigate('/')} className="bg-gray-900/50 border-purple-500/20 p-4 sm:p-5 backdrop-blur-sm hover:border-purple-500/40 transition-all duration-300 hover:scale-105 cursor-pointer group">
-                            <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
-                                <div className="p-2.5 sm:p-3 rounded-xl group-hover:scale-110 transition-transform">
-                                    <Home className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-200 mb-1 text-sm sm:text-base">Inicio</h3>
-                                    <p className="text-xs text-gray-400">Vuelve a la página principal</p>
-                                </div>
+                    <Card onClick={() => navigate('/')} className="bg-gray-900/50 border-purple-500/20 p-4 sm:p-5 backdrop-blur-sm hover:border-purple-500/40 transition-all duration-300 hover:scale-105 cursor-pointer group">
+                        <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
+                            <div className="p-2.5 sm:p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                <Home className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
                             </div>
-                        </Card>
-                    </div>
+                            <div>
+                                <h3 className="font-semibold text-gray-200 mb-1 text-sm sm:text-base">Inicio</h3>
+                                <p className="text-xs text-gray-400">Vuelve a la página principal</p>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
 
                 {/* Rate Organizer Modal */}
                 {t && canRate && (

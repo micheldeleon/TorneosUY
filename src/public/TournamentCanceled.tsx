@@ -3,6 +3,7 @@ import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import {
     AlertCircle,
+    ArrowLeft,
     Home,
     Search,
 } from "lucide-react";
@@ -45,7 +46,7 @@ export default function TournamentCanceled() {
             <div className="min-h-screen grid place-items-center text-rose-300 bg-gradient-to-b from-gray-950 via-purple-950/20 to-gray-950">
                 <div className="text-center">
                     <p className="mb-4">Error al cargar el torneo</p>
-                    <Button onClick={() => navigate(-1)} variant="outline" className="text-purple-300 border-purple-600">
+                    <Button onClick={() => navigate(-2)} variant="outline" className="text-purple-300 border-purple-600">
                         Volver
                     </Button>
                 </div>
@@ -60,7 +61,17 @@ export default function TournamentCanceled() {
 
             <div className="relative max-w-4xl w-full z-10">
                 {/* Contenido principal */}
+
                 <div className="p-4 sm:p-8 md:p-12 space-y-6 sm:space-y-8 mt-20">
+                    {/* Back Button */}
+                    <Button
+                        variant="ghost"
+                        onClick={() => navigate(-2)}
+                        className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10 mb-6"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Volver
+                    </Button>
                     {/* Título y descripción */}
                     <div className="text-center space-y-3 sm:space-y-4">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-800 via-red-500 to-red-800 bg-clip-text text-transparent">
