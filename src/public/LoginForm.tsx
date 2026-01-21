@@ -12,6 +12,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { decodeJWT } from "../services/utilities/jwt.utility";
 import { Alert, AlertDescription } from "../components/ui/Alert";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import { GoogleButton } from "../components/CustomForm/GoogleButton";
 
 export const LoginForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm<FormValueLogin>({
@@ -177,8 +178,8 @@ export const LoginForm = () => {
 
             {/* Google Button */}
             {googleClientId && (
-              <div className="mt-6 flex justify-center">
-                <GoogleOAuthProvider clientId={googleClientId}>
+              <GoogleOAuthProvider clientId={googleClientId}>
+                <div style={{ display: 'none' }}>
                   <GoogleLogin
                     onSuccess={(credentialResponse) => {
                       const googleIdToken = credentialResponse.credential;
@@ -189,13 +190,21 @@ export const LoginForm = () => {
                       setGoogleUiError(null);
                       googleFetch(googleIdToken);
                     }}
-                    onError={() => setGoogleUiError("No se pudo iniciar sesiÇün con Google")}
+                    onError={() => setGoogleUiError("No se pudo iniciar sesión con Google")}
                     theme="outline"
                     size="large"
                     text="continue_with"
                   />
-                </GoogleOAuthProvider>
-              </div>
+                </div>
+                <GoogleButton 
+                  text="Continuar con Google" 
+                  onClick={() => {
+                    // Trigger the hidden Google Login button
+                    const googleButton = document.querySelector('[role="button"][aria-labelledby]') as HTMLElement;
+                    googleButton?.click();
+                  }}
+                />
+              </GoogleOAuthProvider>
             )}
           </div>
         </div>
