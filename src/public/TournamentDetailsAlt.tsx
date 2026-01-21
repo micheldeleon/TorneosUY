@@ -9,13 +9,14 @@ import { Badge } from "../components/ui/Badge";
 import { Checkbox } from "../components/ui/Checkbox";
 import { Progress } from "../components/ui/Progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
-import { Avatar, AvatarFallback } from "../components/ui/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/Avatar";
 import { Separator } from "../components/ui/Separator";
 import { useCallback, useEffect, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
 import { getTournamentById, getUserDetailsById } from "../services/api.service";
 import { OrganizerReputation } from "../components/Reputation";
+import { toast } from "sonner";
 
 
 
@@ -119,7 +120,7 @@ export function TournamentDetailsAlt() {
                 {/* Back Button */}
                 <Button
                     variant="ghost"
-                    onClick={() => navigate(`/`)}
+                    onClick={() => navigate(-1)}
                     className="text-purple-400 hover:text-purple-300 hover:bg-purple-600/10 mb-6"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -199,7 +200,10 @@ export function TournamentDetailsAlt() {
                         {/* Organizer Card */}
                         <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-6 shadow-lg shadow-purple-500/20">
                             <div className="flex items-center gap-4">
-                                <Avatar className="w-12 h-12 md:w-16 md:h-16 border-2 border-white/20">
+                                <Avatar className="w-12 h-12 md:w-16 md:h-16 border-1 border-surface-dark/40">
+                                    {organizerData?.profileImageUrl && (
+                                        <AvatarImage src={organizerData.profileImageUrl} alt={organizerName} />
+                                    )}
                                     <AvatarFallback className="bg-white/10 text-white text-lg md:text-xl">
                                         {getInitials(organizerName)}
                                     </AvatarFallback>
@@ -213,6 +217,16 @@ export function TournamentDetailsAlt() {
                                 </div>
                                 <Button
                                     className="bg-white/10 hover:bg-white/20 border-0"
+                                    onClick={() => {
+                                        if (organizerData?.phoneNumber) {
+                                            navigator.clipboard.writeText(organizerData.phoneNumber);
+                                            toast.success("Número de teléfono copiado al portapapeles", {
+                                                description: organizerData.phoneNumber
+                                            });
+                                        } else {
+                                            toast.error("No hay número de teléfono disponible");
+                                        }
+                                    }}
                                 >
                                     <Phone className="w-5 h-5 text-white" />
                                 </Button>

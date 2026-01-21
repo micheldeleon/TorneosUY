@@ -4,7 +4,7 @@ import {
     Award, Shield, Target, Play} from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
-import { Avatar, AvatarFallback } from "../components/ui/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/Avatar";
 import { Separator } from "../components/ui/Separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
 import { TablaPosiciones } from "../components/Tournament/TablaPosiciones";
@@ -15,6 +15,7 @@ import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
 import { getTournamentById, getUserDetailsById, getTournamentFixtures, getTournamentStandings, getRaceResults, getOrganizerReputation } from "../services/api.service";
 import { RankingCarrera } from "../components/Tournament/RankingCarrera.tsx";
+import { toast } from "sonner";
 
 type FormatoTorneo = "Liga" | "Eliminatorio" | "Carrera" | "Battle Royale";
 
@@ -419,7 +420,10 @@ export function TournamentLive() {
                         {/* Organizer Card */}
                         <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl p-6 shadow-lg shadow-purple-500/20">
                             <div className="flex items-center gap-4">
-                                <Avatar className="w-12 h-12 md:w-16 md:h-16 border-2 border-white/20">
+                                <Avatar className="w-12 h-12 md:w-16 md:h-16 border-1 border-surface-dark/40">
+                                    {organizerData?.profileImageUrl && (
+                                        <AvatarImage src={organizerData.profileImageUrl} alt={`${organizerData.name} ${organizerData.lastName}`} />
+                                    )}
                                     <AvatarFallback className="bg-white/10 text-white text-lg md:text-xl">
                                         {organizerData?.name?.charAt(0).toUpperCase() || "O"}
                                     </AvatarFallback>
@@ -455,6 +459,16 @@ export function TournamentLive() {
                                 </div>
                                 <Button
                                     className="bg-white/10 hover:bg-white/20 border-0"
+                                    onClick={() => {
+                                        if (organizerData?.phoneNumber) {
+                                            navigator.clipboard.writeText(organizerData.phoneNumber);
+                                            toast.success("Número de teléfono copiado al portapapeles", {
+                                                description: organizerData.phoneNumber
+                                            });
+                                        } else {
+                                            toast.error("No hay número de teléfono disponible");
+                                        }
+                                    }}
                                 >
                                     <Phone className="w-5 h-5 text-white" />
                                 </Button>
