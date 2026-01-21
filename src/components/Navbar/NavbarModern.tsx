@@ -90,6 +90,51 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Swipe gesture to open mobile menu (right to left)
+  useEffect(() => {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    };
+
+    const handleSwipe = () => {
+      const swipeThreshold = 50; // Minimum distance for a valid swipe
+      const horizontalDistance = touchStartX - touchEndX;
+      const verticalDistance = Math.abs(touchStartY - touchEndY);
+
+      // Only trigger if swipe is more horizontal than vertical
+      if (verticalDistance < 100) {
+        // Swipe right to left (open menu)
+        if (horizontalDistance > swipeThreshold) {
+          setMobileMenuOpen(true);
+        }
+        // Swipe left to right (close menu)
+        if (horizontalDistance < -swipeThreshold && mobileMenuOpen) {
+          setMobileMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener("touchstart", handleTouchStart);
+    document.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [mobileMenuOpen]);
+
   const handleNavClick = (link: NavItem) => {
     if (!link.sectionId) return;
 
@@ -267,9 +312,23 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                 </div>
               )}
 
+              {/* Mobile Notifications Bell - Visible outside hamburger menu */}
+              {isAuthenticated && (
+                <Link to="/notificaciones" className="lg:hidden relative">
+                  <button className="relative w-10 h-10 flex items-center justify-center hover:bg-purple-800/40 rounded-xl text-white transition-all backdrop-blur-sm">
+                    <Bell className="w-5 h-5" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                        {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                      </span>
+                    )}
+                  </button>
+                </Link>
+              )}
+
               {/* Mobile Menu Button */}
               <button
-                className="lg:hidden w-10 h-10 flex items-center justify-center bg-purple-900/5 hover:bg-purple-800/40 border border-purple-600/5 rounded-xl text-white transition-all backdrop-blur-sm"
+                className="lg:hidden w-10 h-10 flex items-center justify-center hover:bg-purple-800/40 rounded-xl text-white transition-all backdrop-blur-sm"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 <AnimatePresence mode="wait">
@@ -328,7 +387,7 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                 <div className="flex justify-end mb-8">
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-10 h-10 flex items-center justify-center bg-purple-900/30 hover:bg-purple-800/40 border border-purple-600/30 rounded-xl text-white transition-all"
+                    className="w-10 h-10 flex items-center justify-center hover:bg-purple-800/40 rounded-xl text-white transition-all"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -372,21 +431,6 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                 >
                   {isAuthenticated ? (
                     <>
-                      <Link
-                        to="/notificaciones"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block"
-                      >
-                        <Button className="w-full relative bg-gradient-to-r from-purple-900/50 to-purple-800/50 hover:from-purple-800/60 hover:to-purple-700/60 border border-purple-600/30 text-white backdrop-blur-sm">
-                          <Bell className="w-4 h-4 mr-2" />
-                          Notificaciones
-                          {unreadNotifications > 0 && (
-                            <span className="absolute top-2 right-2 w-5 h-5 bg-rose-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                              {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                            </span>
-                          )}
-                        </Button>
-                      </Link>
                       <Link
                         to="/perfil"
                         onClick={() => setMobileMenuOpen(false)}
