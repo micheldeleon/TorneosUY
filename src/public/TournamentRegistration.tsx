@@ -144,7 +144,28 @@ export function TournamentRegistration() {
         name: "participantes",
     });
 
+    // Función para validar si el perfil del usuario está completo
+    const isProfileComplete = (): boolean => {
+        if (!user) return false;
+        
+        return !!(
+            user.name &&
+            user.lastName &&
+            user.nationalId &&
+            user.phoneNumber &&
+            user.dateOfBirth
+        );
+    };
+
     const onSubmit = async (formData: InscripcionFormData) => {
+        // Validar perfil completo antes de proceder
+        if (!isProfileComplete()) {
+            toast.error("Debes completar tu perfil antes de inscribirte. Por favor, ve a tu perfil y completa todos los campos requeridos.", {
+                duration: 5000
+            });
+            return;
+        }
+
         // Si es formato carrera, mostrar modal de confirmación
         if (isRaceFormat) {
             setShowRunnerModal(true);
@@ -225,6 +246,16 @@ export function TournamentRegistration() {
     };
 
     const handleRunnerRegistration = () => {
+        // Validar perfil completo antes de proceder
+        if (!isProfileComplete()) {
+            toast.error("Debes completar tu perfil antes de inscribirte. Por favor, ve a tu perfil y completa todos los campos requeridos.", {
+                duration: 5000
+            });
+            setShowRunnerModal(false);
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
             setIsSubmitting(true);
 
@@ -331,6 +362,31 @@ export function TournamentRegistration() {
                         </div>
                     </Card>
                     )}
+
+                    {/* Alerta de perfil incompleto */}
+                    {!isProfileComplete() && (
+                        <Card className="bg-red-900/20 border-red-700/30 p-4 mt-4">
+                            <div className="flex items-start gap-3">
+                                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-red-300 mb-1">
+                                        <strong>Perfil Incompleto</strong>
+                                    </p>
+                                    <p className="text-red-300 text-sm mb-2">
+                                        Debes completar tu perfil antes de inscribirte a este torneo.
+                                    </p>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => navigate("/perfil")}
+                                        className="bg-red-600/20 border-red-600/50 text-red-300 hover:bg-red-600/30"
+                                    >
+                                        Ir a Mi Perfil
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
+                    )}
                 </div>
 
                 {/* Contenido del formulario con blur si no está desbloqueado */}
@@ -371,7 +427,7 @@ export function TournamentRegistration() {
                                 type="button"
                                 onClick={() => setShowRunnerModal(true)}
                                 className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white h-12 text-base"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !isProfileComplete()}
                             >
                                 <Save className="w-5 h-5 mr-2" />
                                 Inscribirme a la Carrera
@@ -570,7 +626,7 @@ export function TournamentRegistration() {
                         </Button>
                         <Button
                             type="submit"
-                            disabled={isSubmitting || totalActual < torneo?.minParticipantsPerTeam!}
+                            disabled={isSubmitting || !isProfileComplete() || totalActual < torneo?.minParticipantsPerTeam!}
                             className="flex-1 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white disabled:opacity-50"
                         >
                             {isSubmitting ? (
