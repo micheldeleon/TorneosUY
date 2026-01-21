@@ -25,6 +25,8 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [userName, setUserName] = useState<string>("");
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -90,47 +92,96 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Swipe gesture to open mobile menu (right to left)
+  // Swipe gesture to open mobile menu (right to left) with drag effect
   useEffect(() => {
     let touchStartX = 0;
     let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
+    let touchCurrentX = 0;
+    let isValidSwipeStart = false;
 
     const handleTouchStart = (e: TouchEvent) => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
+      touchStartX = e.changedTouches[0].clientX;
+      touchStartY = e.changedTouches[0].clientY;
+      const screenWidth = window.innerWidth;
+      const edgeThreshold = 40;
+      
+      // Check if starting from right edge or if menu is already open
+      isValidSwipeStart = touchStartX >= screenWidth - edgeThreshold || mobileMenuOpen;
+      
+      if (isValidSwipeStart) {
+        setIsDragging(true);
+        // Initialize dragOffset based on menu state
+        if (mobileMenuOpen) {
+          setDragOffset(0); // Menu is open, starts at 0
+        } else {
+          setDragOffset(320); // Menu is closed, starts at 320 (off screen)
+        }
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isValidSwipeStart) return;
+      
+      touchCurrentX = e.changedTouches[0].clientX;
+      const dragDistance = touchStartX - touchCurrentX;
+      const menuWidth = 320; // Width of the menu (w-80 = 20rem = 320px)
+      
+      if (mobileMenuOpen) {
+        // If menu is open, allow dragging to the right to close
+        if (dragDistance < 0) {
+          // Dragging right, close the menu
+          const offset = Math.min(menuWidth, Math.abs(dragDistance));
+          setDragOffset(offset);
+        } else {
+          setDragOffset(0);
+        }
+      } else {
+        // If menu is closed, allow dragging to the left to open
+        if (dragDistance > 0) {
+          // Dragging left, open the menu
+          const offset = Math.max(0, menuWidth - dragDistance);
+          setDragOffset(offset);
+        } else {
+          setDragOffset(menuWidth);
+        }
+      }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      touchEndX = e.changedTouches[0].screenX;
-      touchEndY = e.changedTouches[0].screenY;
-      handleSwipe();
-    };
-
-    const handleSwipe = () => {
-      const swipeThreshold = 50; // Minimum distance for a valid swipe
+      if (!isValidSwipeStart) return;
+      
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
       const horizontalDistance = touchStartX - touchEndX;
       const verticalDistance = Math.abs(touchStartY - touchEndY);
+      const swipeThreshold = 100; // Distance to trigger open/close
+      
+      setIsDragging(false);
+      setDragOffset(0);
 
       // Only trigger if swipe is more horizontal than vertical
       if (verticalDistance < 100) {
-        // Swipe right to left (open menu)
-        if (horizontalDistance > swipeThreshold) {
-          setMobileMenuOpen(true);
-        }
-        // Swipe left to right (close menu)
-        if (horizontalDistance < -swipeThreshold && mobileMenuOpen) {
-          setMobileMenuOpen(false);
+        if (mobileMenuOpen) {
+          // Close menu if dragged enough to the right
+          if (horizontalDistance < -swipeThreshold) {
+            setMobileMenuOpen(false);
+          }
+        } else {
+          // Open menu if dragged enough to the left
+          if (horizontalDistance > swipeThreshold) {
+            setMobileMenuOpen(true);
+          }
         }
       }
     };
 
     document.addEventListener("touchstart", handleTouchStart);
+    document.addEventListener("touchmove", handleTouchMove);
     document.addEventListener("touchend", handleTouchEnd);
 
     return () => {
       document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [mobileMenuOpen]);
@@ -362,14 +413,14 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
 
       {/* Mobile Menu */}
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {(mobileMenuOpen || isDragging) && (
           <>
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: isDragging ? Math.max(0, Math.min(1, 1 - (dragOffset / 320))) : 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: isDragging ? 0 : 0.2 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
@@ -377,9 +428,11 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
             {/* Menu Panel */}
             <motion.div
               initial={{ x: "100%" }}
-              animate={{ x: 0 }}
+              animate={{ 
+                x: isDragging ? `${dragOffset}px` : 0 
+              }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              transition={ isDragging ? { duration: 0 } : { type: "spring", damping: 30, stiffness: 300 }}
               className="fixed top-0 right-0 bottom-0 w-80 bg-[#0a0a0a]/95 backdrop-blur-xl border-l border-purple-600/30 z-50 lg:hidden overflow-y-auto"
             >
               <div className="p-6">
