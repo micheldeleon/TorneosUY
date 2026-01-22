@@ -1,6 +1,6 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { type NavItem } from "./components/Navbar/NavbarModern";
-import { HomeLanding, LoginForm, TournamentDetailsAlt, RegisterForm, About, Contact, Faq } from "./public";
+import { HomeLanding, LoginForm, TournamentDetailsAlt, RegisterForm, About, Contact, Faq, BlogPage, PostDetailPage } from "./public";
 import { useEffect, useState } from "react";
 import { Footer } from "./components/Footer";
 import Dashboard from "./private/dashboard/Dashboard";
@@ -84,6 +84,7 @@ function App() {
     '/signup',
     '/crearTorneo',
     '/notificaciones',
+    '/blog',
   ];
 
   const isValidRoute = validRoutes.includes(location.pathname) ||
@@ -92,7 +93,8 @@ function App() {
     location.pathname.startsWith('/torneo-cancelado/') ||
     location.pathname.startsWith('/torneo-finalizado/') ||
     location.pathname.startsWith('/inscripcion-torneo/') ||
-    location.pathname.startsWith('/manejar-torneo/');
+    location.pathname.startsWith('/manejar-torneo/') ||
+    location.pathname.startsWith('/posts/');
 
   const hideChrome = location.pathname.startsWith("/login") || 
                      location.pathname.startsWith("/signup") ||
@@ -101,6 +103,7 @@ function App() {
   const navLinks: NavItem[] = [
     { label: "Inicio", sectionId: "inicio" },
     { label: "Torneos", path: "/torneos" },
+    { label: "Blog", path: "/blog" },
     { label: "¿Quiénes somos?", sectionId: "quienes-somos" },
     { label: "Preguntas Frecuentes", sectionId: "preguntas-frecuentes" },
     { label: "Contacto", sectionId: "contacto" },
@@ -202,6 +205,16 @@ function App() {
               <PrivateRoute isPrivate={true}>
                 <Notifications />
               </PrivateRoute>
+            } />
+          <Route
+            path="/blog"
+            element={
+              <BlogPage />
+            } />
+          <Route
+            path="/posts/:postId"
+            element={
+              <PostDetailPage />
             } />
           
           {/* Ruta 404 - Debe estar al final */}

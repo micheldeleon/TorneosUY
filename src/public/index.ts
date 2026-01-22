@@ -12,5 +12,7 @@ export * from "./TournamentLive"
 export * from "./TournamentCanceled"
 export * from "./TournamentFinished"
 export * from "./Notifications"
+export { default as BlogPage } from "./BlogPage"
+export { default as PostDetailPage } from "./PostDetailPage"
 
 

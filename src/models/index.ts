@@ -11,5 +11,6 @@ export * from "./userFind.model"
 export * from "./updateTournament.model"
 export * from "./tournamentCreated.model"
 export * from "./notifications.model"
+export * from "./post.model"
 
 
