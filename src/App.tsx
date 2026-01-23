@@ -103,6 +103,7 @@ function App() {
   const navLinks: NavItem[] = [
     { label: "Inicio", sectionId: "inicio" },
     { label: "Torneos", path: "/torneos" },
+    { label: "Planes", sectionId: "planes" },
     { label: "Blog", path: "/blog" },
     { label: "¿Quiénes somos?", sectionId: "quienes-somos" },
     { label: "Preguntas Frecuentes", sectionId: "preguntas-frecuentes" },

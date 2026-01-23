@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { About } from "./About";
 import { Faq } from "./FAQ";
 import { Contact } from "./Contact";
+import { PricingPlans } from "./PricingPlans";
 import { Logo } from "../components/Logo";
 import { getLatestTournaments } from "../services/api.service";
 import { useApi } from "../hooks/useApi";
@@ -136,6 +137,8 @@ export const HomeLanding: React.FC = () => {
           </Button>
         </div>
       </section>
+
+      <PricingPlans />
 
       <section id="quienes-somos"><About /></section>
       <section id="preguntas-frecuentes"><Faq /></section>
