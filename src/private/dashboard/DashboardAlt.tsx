@@ -28,6 +28,7 @@ import type { UserFind } from "../../models/userFind.model";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { schema as detailsSchema, type FormValueDetails } from "../../components/ui/DetailsUserForm/details.form.model";
 import { ProfileImageUploadModal } from "../../components/Profile/ProfileImageUploadModal";
+import { ChangePasswordModal } from "../../components/Profile/ChangePasswordModal";
 import { useGlobalContext } from "../../context/global.context";
 
 export default function DashboardAlt() {
@@ -38,6 +39,7 @@ export default function DashboardAlt() {
     const { fetch: fetchParticipatingTournaments, data: participatingTournaments, loading: loadingParticipating } = useApi<TournamentDetails[], { id: number; email: string }>(getUserParticipatingTournaments);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { logout } = useGlobalContext();
@@ -1202,6 +1204,7 @@ export default function DashboardAlt() {
                                             variant="outline"
                                             size="sm"
                                             className="w-full border-purple-600 text-purple-300 hover:bg-purple-600/10 text-xs sm:text-sm"
+                                            onClick={() => setShowChangePasswordModal(true)}
                                         >
                                             Actualizar Contraseña
                                         </Button>
@@ -1499,6 +1502,18 @@ export default function DashboardAlt() {
                         userId={data.id}
                         onClose={() => setShowImageModal(false)}
                         onSuccess={handleImageUploadSuccess}
+                    />
+                )}
+
+                {/* Change Password Modal */}
+                {showChangePasswordModal && data && (
+                    <ChangePasswordModal
+                        userId={data.id.toString()}
+                        onClose={() => setShowChangePasswordModal(false)}
+                        onSuccess={() => {
+                            console.log("[DashboardAlt] ✅ Contraseña cambiada exitosamente");
+                            setShowChangePasswordModal(false);
+                        }}
                     />
                 )}
             </div>

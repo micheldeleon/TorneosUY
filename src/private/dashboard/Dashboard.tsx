@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Trophy, Calendar, Award, TrendingUp, PiggyBank } from "lucide-react";
+import { Trophy, Calendar, Award, TrendingUp, PiggyBank, Lock } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { ProfileCard } from "../../components/Profile/ProfileCard";
 import { ProfileImageUploadModal } from "../../components/Profile/ProfileImageUploadModal";
+import { ChangePasswordModal } from "../../components/Profile/ChangePasswordModal";
 import { DescriptionList } from "../../components/ui/DetailsUserForm/DescriptionList";
 import { getUsersByIdAndEmail } from "../../services/api.service";
 import type { UserDetails } from "../../models/userDetails.model";
@@ -19,6 +20,7 @@ export default function Dashboard() {
   
   const [showOrganizerForm, setShowOrganizerForm] = useState(false);
   const [showImageUploadModal, setShowImageUploadModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | undefined>();
 
   // Llamar a la API al montar el componente
@@ -85,6 +87,11 @@ export default function Dashboard() {
     setShowOrganizerForm(true);
   };
 
+  const handleChangePasswordSuccess = () => {
+    console.log("[Dashboard] ✅ Contraseña cambiada exitosamente");
+    setShowChangePasswordModal(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#1a1a1a] pt-32 pb-20 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -101,7 +108,7 @@ export default function Dashboard() {
 
         
         {/* Profile Info Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
           {/* Profile Card with Photo */}
           <div>
             {loading ? (
@@ -151,6 +158,21 @@ export default function Dashboard() {
               className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
             >
               Quiero organizar torneos
+            </Button>
+          </Card>
+
+          {/* Change Password Button */}
+          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-800/10 border-blue-700/30 p-6 flex flex-col items-center justify-center text-center">
+            <Lock className="w-12 h-12 text-blue-400 mb-4" />
+            <h3 className="text-white mb-2">Seguridad</h3>
+            <p className="text-gray-400 text-sm mb-6">
+              Actualiza tu contraseña regularmente
+            </p>
+            <Button
+              onClick={() => setShowChangePasswordModal(true)}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white"
+            >
+              Cambiar Contraseña
             </Button>
           </Card>
         </div>
@@ -275,6 +297,15 @@ export default function Dashboard() {
             currentImageUrl={profileImageUrl}
             onClose={() => setShowImageUploadModal(false)}
             onSuccess={handleImageUploadSuccess}
+          />
+        )}
+
+        {/* Change Password Modal */}
+        {showChangePasswordModal && data && (
+          <ChangePasswordModal
+            userId={data.id.toString()}
+            onClose={() => setShowChangePasswordModal(false)}
+            onSuccess={handleChangePasswordSuccess}
           />
         )}
 

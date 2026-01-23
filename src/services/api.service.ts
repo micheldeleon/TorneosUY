@@ -89,6 +89,18 @@ export const updateUserDetails = (user?: UserDetails): UseApiCall<ApiResponse> =
     }
 };
 
+export const changePassword = (userId: string, currentPassword: string, newPassword: string): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.put<ApiResponse>(
+            `${BASE_URL}/api/users/${userId}/change-password`,
+            { currentPassword, newPassword },
+            { signal: controller.signal }
+        ),
+        controller,
+    }
+};
+
 export const getDisciplines = (): UseApiCall<any[]> => {
     const controller = loadAbort();
     return {
