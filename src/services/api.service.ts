@@ -615,3 +615,19 @@ export const getOrganizerReputation = (organizerId?: number): UseApiCall<{
         controller,
     };
 }
+
+export const finalizeTournament = (tournamentId?: number): UseApiCall<{
+    message: string;
+    tournamentId: number;
+    status: string;
+}> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<{
+            message: string;
+            tournamentId: number;
+            status: string;
+        }>(`/api/tournaments/${tournamentId}/finalize`, {}, { signal: controller.signal }),
+        controller,
+    };
+}

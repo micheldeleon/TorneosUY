@@ -104,7 +104,7 @@ export function OrganizerReputation({ organizerId }: OrganizerReputationProps) {
                         </Avatar>
                         <div>
                           <p className="text-white font-medium">{rating.userName}</p>
-                          
+                          <p className="text-gray-400 text-sm">Torneo: {rating.tournamentName}</p>
                         </div>
                       </div>
                       {renderStars(rating.score)}

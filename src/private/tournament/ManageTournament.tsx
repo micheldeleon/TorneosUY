@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import {
   Trophy, ArrowLeft, Edit, Trash2, UserX, Users,
   Play, AlertTriangle, Settings, Save, X,
-  UngroupIcon, CheckCircle2, XCircle, Loader2, Clock, Image as ImageIcon
+  UngroupIcon, CheckCircle2, XCircle, Loader2, Clock, Image as ImageIcon, CheckCheck
 } from "lucide-react";
 import { useApi } from "../../hooks/useApi";
-import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, startTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory, reportRaceResults, removeTeamFromTournament } from "../../services/api.service";
+import { getTournamentById, getTournamentFixtures, getTournamentStandings, cancelTournament, startTournament, setResultForMatchLiga, setResultForMatchEliminatorio, generateFixtureForLeague, generateFixtureForEliminatory, reportRaceResults, removeTeamFromTournament, finalizeTournament } from "../../services/api.service";
 import { useGlobalContext } from "../../context/global.context";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -73,6 +73,7 @@ export function ManageTournament() {
   const { fetch: generateFixtureLeague } = useApi(generateFixtureForLeague);
   const { fetch: generateFixtureEliminatory } = useApi(generateFixtureForEliminatory);
   const { fetch: removeTeam } = useApi(removeTeamFromTournament);
+  const { data: finalizeTournamentData, error: finalizeTournamentError, fetch: finalizeTournamentFetch } = useApi<any, number>(finalizeTournament);
 
 
   // Verificar si el usuario es el organizador
@@ -381,6 +382,67 @@ export function ManageTournament() {
       { confirmText: 'Sí, cancelar', cancelText: 'No, mantener', type: 'danger' }
     );
   };
+
+  const handleFinalizarTorneo = () => {
+    showConfirmDialog(
+      'Finalizar Torneo',
+      `¿Está seguro que desea finalizar el torneo \"${tournamentData?.name}\"? Una vez finalizado, no se podrán modificar más resultados.`,
+      async () => {
+        hideConfirmDialog();
+        if (!tournamentId) return;
+
+        setShowLoader(true);
+        finalizeTournamentFetch(tournamentId);
+      },
+      { confirmText: 'Sí, Finalizar', cancelText: 'Cancelar', type: 'warning' }
+    );
+  };
+
+  // Effect to handle finalize tournament response
+  useEffect(() => {
+    if (finalizeTournamentData && showLoader) {
+      setShowLoader(false);
+      showNotification('success', finalizeTournamentData.message || 'Torneo finalizado correctamente');
+      if (tournamentId) {
+        refetchTournament(tournamentId);
+      }
+    }
+  }, [finalizeTournamentData]);
+
+  // Effect to handle finalize tournament error
+  useEffect(() => {
+    if (finalizeTournamentError && showLoader) {
+      setShowLoader(false);
+      let errorMessage = 'Error al finalizar el torneo. Por favor intenta nuevamente.';
+      
+      // Extraer mensaje de error del backend
+      const errorData = (finalizeTournamentError as any)?.response?.data;
+      if (typeof errorData === 'string') {
+        errorMessage = errorData;
+      } else if (errorData?.message) {
+        errorMessage = errorData.message;
+      } else if ((finalizeTournamentError as any)?.message) {
+        errorMessage = (finalizeTournamentError as any).message;
+      }
+
+      // Mostrar error con contexto específico
+      if (errorMessage.includes('no está en estado INICIADO')) {
+        showNotification('error', `${errorMessage}. El torneo debe estar iniciado para finalizarlo.`);
+      } else if (errorMessage.includes('no tiene resultado') || errorMessage.includes('PENDING')) {
+        showNotification('error', `${errorMessage}. Completa todos los resultados antes de finalizar.`);
+      } else if (errorMessage.includes('no tiene los puntajes')) {
+        showNotification('error', `${errorMessage}. Verifica que todos los partidos tengan los puntajes completos.`);
+      } else if (errorMessage.includes('no hay resultados de carrera')) {
+        showNotification('error', `${errorMessage}. Debes reportar los tiempos de todos los equipos.`);
+      } else if (errorMessage.includes('no tiene posición asignada')) {
+        showNotification('error', `${errorMessage}. Verifica que todos los equipos tengan sus tiempos registrados.`);
+      } else if (errorMessage.includes('no encontrado')) {
+        showNotification('error', 'El torneo no existe. Por favor recarga la página.');
+      } else {
+        showNotification('error', errorMessage);
+      }
+    }
+  }, [finalizeTournamentError]);
 
   const handleEliminarParticipante = async (teamId: number, teamName: string) => {
     if (!tournamentData?.id || !user?.id) {
@@ -806,6 +868,30 @@ export function ManageTournament() {
                 >
                   <UngroupIcon className="w-4 h-4 mr-2" />
                   Generar fixture automático
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Finalize Tournament Action Bar */}
+        {tournamentData?.status === "INICIADO" && (
+          <Card className="bg-gradient-to-br from-green-900/20 to-green-800/10 border-green-700/30 p-6 mb-8">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <CheckCheck className="w-5 h-5 text-green-400" />
+                <div>
+                  <p className="text-white">El torneo está en progreso</p>
+                  <p className="text-gray-400 text-sm">Cuando todos los resultados estén registrados, puedes finalizar el torneo</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleFinalizarTorneo}
+                  className="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white"
+                >
+                  <CheckCheck className="w-4 h-4 mr-2" />
+                  Finalizar Torneo
                 </Button>
               </div>
             </div>
