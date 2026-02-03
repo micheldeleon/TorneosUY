@@ -108,9 +108,9 @@ export function TournamentDetailsAlt() {
 
     const getIsPrivateBadge = () => {
         if (t.privateTournament) {
-            return <Badge className="bg-red-600/20 text-red-300 border-red-600/50">Privado</Badge>;
+            return <Badge className="bg-rose-500/10 text-rose-200 border border-rose-500/20">Privado</Badge>;
         } else {
-            return <Badge className="bg-green-600/20 text-green-300 border-green-600/50">Público</Badge>;
+            return <Badge className="bg-emerald-500/10 text-emerald-200 border border-emerald-500/20">Público</Badge>;
         }
     };
 
@@ -327,7 +327,7 @@ export function TournamentDetailsAlt() {
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/30">
+                                                        <Badge className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
                                                             {team.participants.length} {team.participants.length === 1 ? 'participante' : 'participantes'}
                                                         </Badge>
                                                     </div>

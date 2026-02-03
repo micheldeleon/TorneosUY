@@ -82,7 +82,7 @@ const getImageColor = (disciplineName: string) => {
   const estadoTorneo = tournament.status ? tournament.status.charAt(0).toUpperCase() + tournament.status.slice(1).toLowerCase() : "";
 
   return (
-    <div className="group relative bg-surface-dark/60 border border-0 rounded-2xl overflow-hidden hover: border-purple-600/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
+    <div className="group relative bg-[#222222]/10 border border-gray-700/50 rounded-2xl overflow-hidden backdrop-blur-sm transition-all duration-300 hover:border-purple-500/40 hover:shadow-xl hover:shadow-purple-500/10">
       {/* Image Section */}
       <div className="relative h-48 overflow-hidden">
         {tournament.imageUrl ? (
@@ -130,7 +130,7 @@ const getImageColor = (disciplineName: string) => {
       </div>
 
       {/* Content Section */}
-      <div className="p-5 space-y-4">
+      <div className="p-5 space-y-4 bg-gradient-to-b from-white/[0.02] to-transparent">
         {/* Title */}
         <h3 className="text-white line-clamp-2 group-hover:text-purple-300 transition-colors">
           {tournament.name}
@@ -194,6 +194,7 @@ const getImageColor = (disciplineName: string) => {
       </div>
 
       {/* Glow Effect on Hover */}
+      <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/[0.04] pointer-events-none" />
       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600/0 to-purple-600/0 group-hover:from-purple-600/5 group-hover:to-purple-600/5 pointer-events-none transition-all duration-300" />
     </div>
   );

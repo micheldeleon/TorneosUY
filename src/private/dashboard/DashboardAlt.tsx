@@ -9,7 +9,11 @@ import {
     ShieldPlusIcon,
     SettingsIcon,
     Filter,
-    ArrowUpDown
+    ArrowUpDown,
+    LogOut,
+    Play,
+    CheckCircle,
+    XCircle
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -20,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Ta
 import { Input } from "../../components/ui/Input";
 import { Label } from "../../components/ui/Label";
 import { Separator } from "../../components/ui/Separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../components/ui/Dialog";
 import { getUsersByIdAndEmail, requestOrganizerPermission, updateUserDetails, getUserOrganizedTournaments, getUserParticipatingTournaments } from "../../services/api.service";
 import type { UserDetails, TournamentDetails } from "../../models";
 import { useApi } from "../../hooks/useApi";
@@ -30,6 +35,7 @@ import { schema as detailsSchema, type FormValueDetails } from "../../components
 import { ProfileImageUploadModal } from "../../components/Profile/ProfileImageUploadModal";
 import { ChangePasswordModal } from "../../components/Profile/ChangePasswordModal";
 import { useGlobalContext } from "../../context/global.context";
+import { useWithdrawFromTournament } from "../../hooks/useWithdrawFromTournament";
 
 export default function DashboardAlt() {
     const navigate = useNavigate();
@@ -51,6 +57,7 @@ export default function DashboardAlt() {
     const [sortOrderFinished, setSortOrderFinished] = useState<"asc" | "desc">("desc");
     const [sortOrderOrganizedActive, setSortOrderOrganizedActive] = useState<"asc" | "desc">("desc");
     const [sortOrderOrganizedFinished, setSortOrderOrganizedFinished] = useState<"asc" | "desc">("desc");
+    const [withdrawConfirmDialog, setWithdrawConfirmDialog] = useState<{ open: boolean; tournamentId: number; tournamentName: string; format: "team" | "runner" } | null>(null);
 
     const toDateInputValue = (isoString: string) => {
         if (!isoString) return "";
@@ -252,15 +259,30 @@ export default function DashboardAlt() {
     const getEstadoBadge = (status: string) => {
         switch (status) {
             case "ABIERTO":
-                return { text: "Abierto", className: "bg-green-600/20 text-green-300 border-green-600/50" };
+                return { text: "Abierto", className: "bg-emerald-500/10 text-emerald-200 border border-emerald-500/20" };
             case "INICIADO":
-                return { text: "En Vivo", className: "bg-red-600/20 text-red-300 border-red-600/50 animate-pulse" };
+                return { text: "Iniciado", className: "bg-rose-500/10 text-rose-200 border border-rose-500/20" };
             case "FINALIZADO":
-                return { text: "Finalizado", className: "bg-gray-600/20 text-gray-300 border-gray-600/50" };
+                return { text: "Finalizado", className: "bg-slate-500/10 text-slate-200 border border-slate-500/20" };
             case "CANCELADO":
-                return { text: "Cancelado", className: "bg-orange-600/20 text-orange-300 border-orange-600/50" };
+                return { text: "Cancelado", className: "bg-amber-500/10 text-amber-200 border border-amber-500/20" };
             default:
-                return { text: status, className: "bg-purple-600/20 text-purple-300 border-purple-600/50" };
+                return { text: status, className: "bg-violet-500/10 text-violet-200 border border-violet-500/20" };
+        }
+    };
+
+    const getTournamentStatusIcon = (status: string) => {
+        switch (status) {
+            case "ABIERTO":
+                return { icon: Trophy, color: "from-green-700/40 to-green-900/40", label: "Abierto" };
+            case "INICIADO":
+                return { icon: Play, color: "from-red-700/40 to-red-900/40", label: "En Vivo" };
+            case "FINALIZADO":
+                return { icon: CheckCircle, color: "from-slate-700/40 to-slate-900/40", label: "Finalizado" };
+            case "CANCELADO":
+                return { icon: XCircle, color: "from-orange-700/40 to-orange-900/40", label: "Cancelado" };
+            default:
+                return { icon: Trophy, color: "from-purple-700/40 to-purple-900/40", label: status };
         }
     };
 
@@ -448,7 +470,7 @@ export default function DashboardAlt() {
                                         Membresia?
                                     </Badge> */}
                                     {isProfileIncomplete && (
-                                        <Badge className="bg-orange-600/20 text-orange-300 border-orange-600/50 px-2 py-1 text-xs sm:text-sm">
+                                        <Badge className="bg-amber-500/10 text-amber-200 border border-amber-500/20 px-2 py-1 text-xs sm:text-sm">
                                             <AlertTriangle className="w-3 h-3 mr-1 flex-shrink-0" />
                                             <span className="hidden sm:inline">Completa tu perfil para poder participar u organizar torneos</span>
                                             <span className="sm:hidden">Completa tu perfil</span>
@@ -655,13 +677,15 @@ export default function DashboardAlt() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 {filteredOrganizedActiveTournaments.map((torneo) => {
                                     const estadoBadge = getEstadoBadge(torneo.status);
+                                    const statusIcon = getTournamentStatusIcon(torneo.status);
+                                    const StatusIcon = statusIcon.icon;
                                     return (
-                                        <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group">
+                                        <Card key={torneo.id} className="bg-[#242424]/70 border border-gray-700/40 overflow-hidden hover:border-purple-600/40 transition-all group hover:shadow-md hover:shadow-purple-500/5">
                                             <div className="p-4 sm:p-6">
                                                 <div className="flex items-start justify-between gap-3 mb-4">
                                                     <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                            <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${statusIcon.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                                                            <StatusIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                                         </div>
                                                         <div className="min-w-0 flex-1">
                                                             <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
@@ -785,13 +809,15 @@ export default function DashboardAlt() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 {filteredOrganizedFinishedTournaments.map((torneo) => {
                                     const estadoBadge = getEstadoBadge(torneo.status);
+                                    const statusIcon = getTournamentStatusIcon(torneo.status);
+                                    const StatusIcon = statusIcon.icon;
                                     return (
-                                        <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group opacity-80">
+                                                    <Card key={torneo.id} className="bg-[#242424]/70 border border-gray-700/40 overflow-hidden hover:border-purple-600/40 transition-all group opacity-80 hover:shadow-md hover:shadow-purple-500/5">
                                             <div className="p-4 sm:p-6">
                                                 <div className="flex items-start justify-between gap-3 mb-4">
                                                     <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                            <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${statusIcon.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                                                            <StatusIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                                         </div>
                                                         <div className="min-w-0 flex-1">
                                                             <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
@@ -901,27 +927,31 @@ export default function DashboardAlt() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                             {filteredActiveTournaments.map((torneo) => {
                                                 const estadoBadge = getEstadoBadge(torneo.status);
+                                                const statusIcon = getTournamentStatusIcon(torneo.status);
+                                                const StatusIcon = statusIcon.icon;
                                                 return (
-                                                    <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group">
-                                                        <div className="p-4 sm:p-6">
-                                                            <div className="flex items-start justify-between gap-3 mb-4">
-                                                                <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                                        <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                                    <Card key={torneo.id} className="bg-[#242424]/70 border border-gray-700/40 overflow-hidden hover:border-purple-600/40 transition-all group hover:shadow-md hover:shadow-purple-500/5">
+                                                        <div className="p-4 sm:p-6 space-y-4">
+                                                            <div className="flex items-start justify-between gap-3">
+                                                                <div className="flex items-start gap-3 min-w-0 flex-1">
+                                                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${statusIcon.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                                                                        <StatusIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                                                     </div>
                                                                     <div className="min-w-0 flex-1">
-                                                                        <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
+                                                                        <h3 className="text-white group-hover:text-purple-300 transition-colors text-sm sm:text-base font-semibold break-words line-clamp-2">
                                                                             {torneo.name}
                                                                         </h3>
-                                                                        <p className="text-gray-500 text-xs sm:text-sm truncate">{torneo.discipline?.name || "Torneo"}</p>
+                                                                        <p className="text-gray-400 text-xs sm:text-sm truncate mt-0.5">{torneo.discipline?.name || "Torneo"}</p>
                                                                     </div>
                                                                 </div>
-                                                                <Badge className={`text-xs sm:text-sm whitespace-nowrap ${estadoBadge.className}`}>
+                                                                <Badge className={`text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${estadoBadge.className}`}>
                                                                     {estadoBadge.text}
                                                                 </Badge>
                                                             </div>
 
-                                                            <div className="space-y-2 sm:space-y-3 mb-4 text-xs sm:text-sm">
+                                                            <div className="w-full h-px bg-gradient-to-r from-gray-700/30 via-gray-600/30 to-gray-700/30"></div>
+
+                                                            <div className="space-y-2.5 text-xs sm:text-sm">
                                                                 <div className="flex items-center gap-2 text-gray-400">
                                                                     <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
                                                                     <span className="truncate">{formatDate(torneo.startAt)}</span>
@@ -940,22 +970,41 @@ export default function DashboardAlt() {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="mb-4">
-                                                                <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
-                                                                    <span className="text-gray-400">Participantes</span>
-                                                                    <span className="text-white">{torneo.teamsInscribed}/{torneo.maxParticipantsPerTournament}</span>
+                                                            <div className="w-full h-px bg-gradient-to-r from-gray-700/30 via-gray-600/30 to-gray-700/30"></div>
+
+                                                            <div>
+                                                                <div className="flex items-center justify-between text-xs sm:text-sm mb-2.5">
+                                                                    <span className="text-gray-400 font-medium">Participantes</span>
+                                                                    <span className="text-white font-semibold">{torneo.teamsInscribed}/{torneo.maxParticipantsPerTournament}</span>
                                                                 </div>
-                                                                <Progress value={(torneo.teamsInscribed / torneo.maxParticipantsPerTournament) * 100} className="h-2" />
+                                                                <Progress value={(torneo.teamsInscribed / torneo.maxParticipantsPerTournament) * 100} className="h-2 bg-gray-700/50" />
                                                             </div>
 
-                                                            <Link to={`/torneo/${torneo.id}`}>
-                                                                <Button
-                                                                    className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 text-sm"
-                                                                >
-                                                                    Ver Detalles
-                                                                    <ChevronRight className="w-4 h-4 ml-2" />
-                                                                </Button>
-                                                            </Link>
+                                                            <div className="flex gap-2 pt-2">
+                                                                <Link to={`/torneo/${torneo.id}`} className="flex-1">
+                                                                    <Button
+                                                                        className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white group-hover:shadow-lg group-hover:shadow-purple-500/30 text-sm font-medium transition-all duration-200 group/btn"
+                                                                    >
+                                                                        Ver Detalles
+                                                                        <ChevronRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-0.5 transition-transform" />
+                                                                    </Button>
+                                                                </Link>
+                                                                {torneo.status === "ABIERTO" && (
+                                                                    <Button
+                                                                        onClick={() => setWithdrawConfirmDialog({
+                                                                            open: true,
+                                                                            tournamentId: torneo.id,
+                                                                            tournamentName: torneo.name,
+                                                                            format: torneo.format?.name?.toLowerCase() === "carrera" ? "runner" : "team"
+                                                                        })}
+                                                                        variant="outline"
+                                                                        className="text-red-400 border-red-500/30 hover:bg-red-600/10 hover:border-red-500/50 text-sm font-medium transition-all"
+                                                                        title="Salirse del torneo"
+                                                                    >
+                                                                        <LogOut className="w-4 h-4" />
+                                                                    </Button>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </Card>
                                                 );
@@ -1043,27 +1092,31 @@ export default function DashboardAlt() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                             {filteredFinishedTournaments.map((torneo) => {
                                                 const estadoBadge = getEstadoBadge(torneo.status);
+                                                const statusIcon = getTournamentStatusIcon(torneo.status);
+                                                const StatusIcon = statusIcon.icon;
                                                 return (
-                                                    <Card key={torneo.id} className="bg-[#2a2a2a] border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group opacity-80">
-                                                        <div className="p-4 sm:p-6">
-                                                            <div className="flex items-start justify-between gap-3 mb-4">
-                                                                <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                                        <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                                    <Card key={torneo.id} className="bg-[#242424]/70 border border-gray-700/40 overflow-hidden hover:border-purple-600/40 transition-all group opacity-80 hover:shadow-md hover:shadow-purple-500/5">
+                                                        <div className="p-4 sm:p-6 space-y-4">
+                                                            <div className="flex items-start justify-between gap-3">
+                                                                <div className="flex items-start gap-3 min-w-0 flex-1">
+                                                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${statusIcon.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                                                                        <StatusIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                                                     </div>
                                                                     <div className="min-w-0 flex-1">
-                                                                        <h3 className="text-white mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base break-words">
+                                                                        <h3 className="text-white group-hover:text-purple-300 transition-colors text-sm sm:text-base font-semibold break-words line-clamp-2">
                                                                             {torneo.name}
                                                                         </h3>
-                                                                        <p className="text-gray-500 text-xs sm:text-sm truncate">{torneo.discipline?.name || "Torneo"}</p>
+                                                                        <p className="text-gray-400 text-xs sm:text-sm truncate mt-0.5">{torneo.discipline?.name || "Torneo"}</p>
                                                                     </div>
                                                                 </div>
-                                                                <Badge className={`text-xs sm:text-sm whitespace-nowrap ${estadoBadge.className}`}>
+                                                                <Badge className={`text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${estadoBadge.className}`}>
                                                                     {estadoBadge.text}
                                                                 </Badge>
                                                             </div>
 
-                                                            <div className="space-y-2 sm:space-y-3 mb-4 text-xs sm:text-sm">
+                                                            <div className="w-full h-px bg-gradient-to-r from-gray-700/30 via-gray-600/30 to-gray-700/30"></div>
+
+                                                            <div className="space-y-2.5 text-xs sm:text-sm">
                                                                 <div className="flex items-center gap-2 text-gray-400">
                                                                     <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
                                                                     <span className="truncate">{formatDate(torneo.startAt)}</span>
@@ -1082,12 +1135,12 @@ export default function DashboardAlt() {
                                                                 </div>
                                                             </div>
 
-                                                            <Link to={`/torneo/${torneo.id}`}>
+                                                            <Link to={`/torneo/${torneo.id}`} className="block">
                                                                 <Button
-                                                                    className="w-full bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white text-sm"
+                                                                    className="w-full bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-600 hover:to-gray-700 text-white text-sm font-medium transition-all duration-200 group/btn"
                                                                 >
                                                                     Ver Detalles
-                                                                    <ChevronRight className="w-4 h-4 ml-2" />
+                                                                    <ChevronRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-0.5 transition-transform" />
                                                                 </Button>
                                                             </Link>
                                                         </div>
@@ -1516,7 +1569,110 @@ export default function DashboardAlt() {
                         }}
                     />
                 )}
+
+                {/* Withdraw Dialog */}
+                {withdrawConfirmDialog && (
+                    <Dialog open={withdrawConfirmDialog.open} onOpenChange={(open) => {
+                        if (!open) setWithdrawConfirmDialog(null);
+                    }}>
+                        <DialogContent className="bg-[#2a2a2a] border-purple-700/50 text-white max-w-md">
+                            <DialogHeader>
+                                <DialogTitle className="text-2xl flex items-center gap-2">
+                                    <AlertTriangle className="w-6 h-6 text-orange-400" />
+                                    Confirmar Salida
+                                </DialogTitle>
+                                <DialogDescription className="text-gray-400">
+                                    Verifica que deseas retirarte del torneo
+                                </DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="space-y-4 my-4">
+                                <Card className="bg-[#1a1a1a] border-gray-800 p-4">
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="text-gray-400 text-sm">Torneo</p>
+                                            <p className="text-white font-medium">{withdrawConfirmDialog.tournamentName}</p>
+                                        </div>
+                                    </div>
+                                </Card>
+                                
+                                <Card className="bg-red-900/20 border-red-700/30 p-3">
+                                    <div className="flex items-start gap-2">
+                                        <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                                        <p className="text-red-300 text-sm">
+                                            Una vez que te retires, perderás tu lugar en el torneo. Esta acción no se puede deshacer.
+                                        </p>
+                                    </div>
+                                </Card>
+                            </div>
+                            
+                            <div className="flex gap-3">
+                                <Button
+                                    onClick={() => setWithdrawConfirmDialog(null)}
+                                    variant="outline"
+                                    className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
+                                >
+                                    Cancelar
+                                </Button>
+                                <WithdrawConfirmButton 
+                                    tournamentId={withdrawConfirmDialog.tournamentId}
+                                    format={withdrawConfirmDialog.format}
+                                    onSuccess={() => {
+                                        setWithdrawConfirmDialog(null);
+                                        // Recargar los torneos participantes
+                                        const storedUser = localStorage.getItem("user");
+                                        if (storedUser) {
+                                            try {
+                                                const user: UserFind = JSON.parse(storedUser);
+                                                fetchParticipatingTournaments({ id: user.id, email: user.email });
+                                            } catch (e) {
+                                                console.error("Error parsing user", e);
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )}
             </div>
         </div>
+    );
+}
+
+// Componente interno para el botón de confirmación de salida
+function WithdrawConfirmButton({
+    tournamentId,
+    format,
+    onSuccess
+}: {
+    tournamentId: number;
+    format: "team" | "runner";
+    onSuccess?: () => void;
+}) {
+    const { withdraw, loading } = useWithdrawFromTournament({
+        tournamentId,
+        format,
+        onSuccess: onSuccess,
+    });
+
+    return (
+        <Button
+            onClick={() => withdraw()}
+            className="flex-1 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white"
+            disabled={loading}
+        >
+            {loading ? (
+                <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Retirándose...
+                </>
+            ) : (
+                <>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Confirmar Salida
+                </>
+            )}
+        </Button>
     );
 }

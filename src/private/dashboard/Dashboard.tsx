@@ -224,7 +224,7 @@ export default function Dashboard() {
         <Card className="bg-[#2a2a2a] border-gray-800 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-white text-xl">Mis Torneos</h3>
-            <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+            <Badge className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
               {misTorneos.length} activos
             </Badge>
           </div>
@@ -255,8 +255,8 @@ export default function Dashboard() {
                   <Badge
                     className={
                       torneo.estado === "Inscrito"
-                        ? "bg-green-600/20 text-green-300 border-green-600/50"
-                        : "bg-yellow-600/20 text-yellow-300 border-yellow-600/50"
+                        ? "bg-emerald-500/10 text-emerald-200 border border-emerald-500/20"
+                        : "bg-amber-500/10 text-amber-200 border border-amber-500/20"
                     }
                   >
                     {torneo.estado}

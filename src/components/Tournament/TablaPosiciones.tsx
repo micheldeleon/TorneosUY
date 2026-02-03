@@ -20,8 +20,8 @@ interface TablaPosicionesProps {
 
 export function TablaPosiciones({ posiciones }: TablaPosicionesProps) {
   const getPosicionBadge = (pos: number) => {
-    if (pos === 1) return { color: "bg-yellow-600/20 text-yellow-300 border-yellow-600/50", icon: Trophy };
-    return { color: "bg-gray-600/20 text-gray-300 border-gray-600/50", icon: Minus };
+    if (pos === 1) return { color: "bg-amber-500/10 text-amber-200 border border-amber-500/20", icon: Trophy };
+    return { color: "bg-slate-500/10 text-slate-200 border border-slate-500/20", icon: Minus };
   };
 
   return (

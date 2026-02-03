@@ -798,10 +798,10 @@ export function ManageTournament() {
             <div className="flex items-center gap-3">
               <Badge className={
                 tournamentData?.status === "ABIERTO"
-                  ? "bg-blue-600/20 text-blue-300 border-blue-600/50"
+                  ? "bg-blue-500/10 text-blue-200 border border-blue-500/20"
                   : tournamentData?.status === "INICIADO"
-                    ? "bg-green-600/20 text-green-300 border-green-600/50"
-                    : "bg-gray-600/20 text-gray-300 border-gray-600/50"
+                    ? "bg-emerald-500/10 text-emerald-200 border border-emerald-500/20"
+                    : "bg-slate-500/10 text-slate-200 border border-slate-500/20"
               }>
                 {tournamentData?.status === "ABIERTO" ? "Por Comenzar" : tournamentData?.status === "INICIADO" ? "En Curso" : "Finalizado"}
               </Badge>
@@ -1181,7 +1181,7 @@ export function ManageTournament() {
                           </div>
                         </div>
 
-                        <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/30">
+                        <Badge className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
                           {team.participants.length} {team.participants.length === 1 ? 'participante' : 'participantes'}
                         </Badge>
 
@@ -1213,7 +1213,7 @@ export function ManageTournament() {
             <Card className="bg-[#2a2a2a] border-gray-800 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-white text-xl">Registrar Tiempos</h3>
-                <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                <Badge className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
                   Formato: HH:MM:SS o MM:SS
                 </Badge>
               </div>
@@ -1349,8 +1349,8 @@ export function ManageTournament() {
                             <div className="mt-3 pt-3 border-t border-gray-800 flex justify-between items-center">
                               <Badge className={
                                 partido.estado === "jugado"
-                                  ? "bg-gray-600/20 text-gray-300 border-gray-600/50"
-                                  : "bg-blue-600/20 text-blue-300 border-blue-600/50"
+                                  ? "bg-slate-500/10 text-slate-200 border border-slate-500/20"
+                                  : "bg-blue-500/10 text-blue-200 border border-blue-500/20"
                               }>
                                 {partido.estado === "jugado" ? "Finalizado" : "Pendiente"}
                               </Badge>

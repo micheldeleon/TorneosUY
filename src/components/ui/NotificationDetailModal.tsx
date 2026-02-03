@@ -142,7 +142,7 @@ export function NotificationDetailModal({
           <div className="p-6 space-y-4">
             {/* Badge de estado */}
             {!notification.read && (
-              <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+              <Badge className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
                 No leída
               </Badge>
             )}

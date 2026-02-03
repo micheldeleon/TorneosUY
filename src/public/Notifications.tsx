@@ -193,7 +193,7 @@ export function Notifications() {
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h3 className="text-white font-medium">{notification.title}</h3>
                       {!notification.read && (
-                        <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50 flex-shrink-0">
+                        <Badge className="bg-violet-500/10 text-violet-200 border border-violet-500/20 flex-shrink-0">
                           Nueva
                         </Badge>
                       )}

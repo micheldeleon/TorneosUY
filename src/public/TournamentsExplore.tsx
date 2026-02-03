@@ -201,7 +201,7 @@ export function TournamentsExplore() {
                 <div className="flex items-center justify-between">
                     <h3 className="text-white">Disciplina</h3>
                     {selectedDisciplinas.length > 0 && (
-                        <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                        <Badge variant="secondary" className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
                             {selectedDisciplinas.length}
                         </Badge>
                     )}
@@ -213,7 +213,7 @@ export function TournamentsExplore() {
                                 id={`disciplina-${disciplina}`}
                                 checked={selectedDisciplinas.includes(disciplina)}
                                 onCheckedChange={() => toggleDisciplina(disciplina)}
-                                className="border-gray-600 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                                className="border-gray-600 data-[state=checked]:bg-violet-500 data-[state=checked]:border-violet-500"
                             />
                             <Label
                                 htmlFor={`disciplina-${disciplina}`}
@@ -231,7 +231,7 @@ export function TournamentsExplore() {
                 <div className="flex items-center justify-between">
                     <h3 className="text-white">Ubicación</h3>
                     {selectedUbicaciones.length > 0 && (
-                        <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                        <Badge variant="secondary" className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
                             {selectedUbicaciones.length}
                         </Badge>
                     )}
@@ -242,7 +242,7 @@ export function TournamentsExplore() {
                             <Badge
                                 key={ubi}
                                 variant="secondary"
-                                className="bg-purple-600/20 text-purple-300 border-purple-600/50 pr-1 cursor-pointer hover:bg-purple-600/30"
+                                className="bg-violet-500/10 text-violet-200 border border-violet-500/20 pr-1 cursor-pointer hover:bg-violet-500/20"
                             >
                                 {ubicaciones.find(u => u.value === ubi)?.label}
                                 <button
@@ -256,7 +256,7 @@ export function TournamentsExplore() {
                     </div>
                 )}
                 <Select value="" onValueChange={toggleUbicacion}>
-                    <SelectTrigger className="bg-surface border-gray-700 text-white hover:border-purple-600/50 transition-colors">
+                    <SelectTrigger className="bg-surface border-gray-700 text-white hover:border-violet-500/40 transition-colors">
                         <SelectValue placeholder="Seleccionar ubicación" />
                     </SelectTrigger>
                     <SelectContent className="bg-surface border-gray-700">
@@ -269,7 +269,7 @@ export function TournamentsExplore() {
                                 <SelectItem
                                     key={ubi.value}
                                     value={ubi.value}
-                                    className="text-white focus:bg-purple-600/20 focus:text-white"
+                                    className="text-white focus:bg-violet-500/20 focus:text-white"
                                 >
                                     {ubi.label}
                                 </SelectItem>
@@ -284,7 +284,7 @@ export function TournamentsExplore() {
                 <div className="flex items-center justify-between">
                     <h3 className="text-white">Estado</h3>
                     {selectedEstados.length > 0 && (
-                        <Badge variant="secondary" className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                        <Badge variant="secondary" className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
                             {selectedEstados.length}
                         </Badge>
                     )}
@@ -295,7 +295,7 @@ export function TournamentsExplore() {
                             <Badge
                                 key={est}
                                 variant="secondary"
-                                className="bg-purple-600/20 text-purple-300 border-purple-600/50 pr-1 cursor-pointer hover:bg-purple-600/30"
+                                className="bg-violet-500/10 text-violet-200 border border-violet-500/20 pr-1 cursor-pointer hover:bg-violet-500/20"
                             >
                                 {estados.find(e => e.value === est)?.label}
                                 <button
@@ -309,7 +309,7 @@ export function TournamentsExplore() {
                     </div>
                 )}
                 <Select value="" onValueChange={toggleEstado}>
-                    <SelectTrigger className="bg-surface border-gray-700 text-white hover:border-purple-600/50 transition-colors">
+                    <SelectTrigger className="bg-surface border-gray-700 text-white hover:border-violet-500/40 transition-colors">
                         <SelectValue placeholder="Seleccionar estado" />
                     </SelectTrigger>
                     <SelectContent className="bg-surface border-gray-700">
@@ -322,7 +322,7 @@ export function TournamentsExplore() {
                                 <SelectItem
                                     key={estado.value}
                                     value={estado.value}
-                                    className="text-white focus:bg-purple-600/20 focus:text-white"
+                                    className="text-white focus:bg-violet-500/20 focus:text-white"
                                 >
                                     {estado.label}
                                 </SelectItem>
@@ -342,7 +342,7 @@ export function TournamentsExplore() {
                         id="private-filter"
                         checked={showOnlyPrivate}
                         onCheckedChange={(checked) => setShowOnlyPrivate(checked === true)}
-                        className="border-gray-600 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                        className="border-gray-600 data-[state=checked]:bg-violet-500 data-[state=checked]:border-violet-500"
                     />
                     <Label
                         htmlFor="private-filter"
@@ -367,7 +367,7 @@ export function TournamentsExplore() {
                             setMinPriceInput(value[0].toString());
                             setMaxPriceInput(value[1].toString());
                         }}
-                        className="[&_[role=slider]]:bg-purple-600 [&_[role=slider]]:border-purple-600 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&>span:first-child>span]:bg-purple-400"
+                        className="[&_[role=slider]]:bg-violet-500 [&_[role=slider]]:border-violet-500 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&>span:first-child>span]:bg-violet-400"
                     />
 
                     <div className="flex items-center justify-between gap-3">
@@ -425,7 +425,7 @@ export function TournamentsExplore() {
                 <Button
                     onClick={clearFilters}
                     variant="outline"
-                    className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white hover:border-purple-600/50 transition-colors"
+                    className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white hover:border-violet-500/40 transition-colors"
                 >
                     <X className="w-4 h-4 mr-2" />
                     Limpiar Filtros
@@ -435,7 +435,7 @@ export function TournamentsExplore() {
     ), [disciplinas, selectedDisciplinas, selectedUbicaciones, ubicaciones, tournaments, filterMinPrice, filterMaxPrice, minPriceInput, maxPriceInput, applyMinPrice, applyMaxPrice, clearFilters]);
 
     return (
-        <div className="min-h-screen bg-surface pt-24 pb-12">
+        <div className="min-h-screen bg-surface-dark pt-24 pb-12">
             <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">
@@ -454,7 +454,7 @@ export function TournamentsExplore() {
                             placeholder="Buscar por nombre o disciplina..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-6 bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500 focus:border-purple-600 focus:ring-purple-600 rounded-xl text-base"
+                            className="w-full pl-12 pr-4 py-6 bg-[#2a2a2a] border-gray-700 text-white placeholder:text-gray-500 focus:border-violet-500 focus:ring-violet-500 rounded-xl text-base"
                         />
                         {searchTerm && (
                             <button
@@ -473,11 +473,13 @@ export function TournamentsExplore() {
                         {/* Mobile Filter Button */}
                         <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
                             <SheetTrigger asChild>
-                                <Button variant="outline" className="lg:hidden border-purple-600 text-purple-300 hover:bg-purple-600/10">
+                                <Button variant="outline" className="lg:hidden border-violet-500 text-violet-200 hover:bg-violet-500/10">
                                     <Filter className="w-4 h-4 mr-2" />
                                     Filtros
                                     {activeFiltersCount > 0 && (
-                                        <Badge className="ml-2 bg-purple-600">{activeFiltersCount}</Badge>
+                                        <Badge className="ml-2 bg-violet-500/20 text-violet-100 border border-violet-500/30">
+                                            {activeFiltersCount}
+                                        </Badge>
                                     )}
                                 </Button>
                             </SheetTrigger>
@@ -507,16 +509,16 @@ export function TournamentsExplore() {
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="bg-[#2a2a2a] border-gray-700">
-                                <SelectItem value="fecha-desc" className="text-white focus:bg-purple-600/20 focus:text-white">
+                                <SelectItem value="fecha-desc" className="text-white focus:bg-violet-500/20 focus:text-white">
                                     Fecha: Más reciente
                                 </SelectItem>
-                                <SelectItem value="fecha-asc" className="text-white focus:bg-purple-600/20 focus:text-white">
+                                <SelectItem value="fecha-asc" className="text-white focus:bg-violet-500/20 focus:text-white">
                                     Fecha: Más antiguo
                                 </SelectItem>
-                                <SelectItem value="precio-asc" className="text-white focus:bg-purple-600/20 focus:text-white">
+                                <SelectItem value="precio-asc" className="text-white focus:bg-violet-500/20 focus:text-white">
                                     Precio: Menor a mayor
                                 </SelectItem>
-                                <SelectItem value="precio-desc" className="text-white focus:bg-purple-600/20 focus:text-white">
+                                <SelectItem value="precio-desc" className="text-white focus:bg-violet-500/20 focus:text-white">
                                     Precio: Mayor a menor
                                 </SelectItem>
                             </SelectContent>
@@ -528,9 +530,9 @@ export function TournamentsExplore() {
                 <div className="flex gap-8">
                     {/* Desktop Filters Sidebar */}
                     <aside className="hidden lg:block w-64 flex-shrink-0">
-                        <div className="sticky top-24 bg-[#2a2a2a] border border-gray-800 rounded-2xl p-6">
+                        <div className="sticky top-24 bg-[#242424]/70 border border-gray-800 rounded-2xl p-6">
                             <div className="flex items-center gap-2 mb-6">
-                                <SlidersHorizontal className="w-5 h-5 text-purple-400" />
+                                <SlidersHorizontal className="w-5 h-5 text-violet-400" />
                                 <h2 className="text-white text-lg">Filtros</h2>
                             </div>
                             {FiltersSidebar}
@@ -542,7 +544,7 @@ export function TournamentsExplore() {
                         {loading ? (
                             <div className="text-center py-16">
                                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                                    <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
+                                    <Loader2 className="w-10 h-10 text-violet-400 animate-spin" />
                                 </div>
                                 <h3 className="text-white text-xl mb-2">Cargando torneos...</h3>
                             </div>
@@ -555,7 +557,7 @@ export function TournamentsExplore() {
                         ) : (
                             <div className="text-center py-16">
                                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
+                                    <Loader2 className="w-10 h-10 text-violet-400 animate-spin" />
                                 </div>
                             </div>
                         )}

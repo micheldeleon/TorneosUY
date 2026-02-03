@@ -326,14 +326,14 @@ export function TournamentRegistration() {
                                 <h1 className="text-white text-2xl mb-1">{torneo?.name}</h1>
                                 <p className="text-gray-400 mb-3">Inscribe a tu equipo para participar</p>
                                 <div className="flex flex-wrap gap-2">
-                                    <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                                    <Badge className="bg-violet-500/10 text-violet-200 border border-violet-500/20">
                                         {torneo?.format.name}
                                     </Badge>
-                                    <Badge className="bg-blue-600/20 text-blue-300 border-blue-600/50">
+                                    <Badge className="bg-blue-500/10 text-blue-200 border border-blue-500/20">
                                         {torneo?.registrationCost === 0 ? "Gratis" : `Costo inscripcion: $${torneo?.registrationCost}`}
                                     </Badge>
                                     {torneo?.prize && (
-                                        <Badge className="bg-green-600/20 text-green-300 border-green-600/50">
+                                        <Badge className="bg-emerald-500/10 text-emerald-200 border border-emerald-500/20">
                                             <span>Premio: </span>
                                             <span className="[&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_li]:ml-2 [&_strong]:font-bold [&_em]:italic [&_u]:underline" dangerouslySetInnerHTML={{ __html: torneo.prize }} />
                                         </Badge>
@@ -471,7 +471,7 @@ export function TournamentRegistration() {
                                 <h2 className="text-white text-xl">Capitán del Equipo</h2>
                                 <p className="text-gray-400 text-sm">Tu cuenta será el capitán automáticamente</p>
                             </div>
-                            <Badge className="bg-yellow-600/20 text-yellow-300 border-yellow-600/50">
+                            <Badge className="bg-amber-500/10 text-amber-200 border border-amber-500/20">
                                 Capitán
                             </Badge>
                         </div>

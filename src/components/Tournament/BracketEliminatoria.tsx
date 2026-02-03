@@ -109,8 +109,8 @@ export function BracketEliminatoria({ etapas }: BracketEliminatoriaProps) {
 
         {/* Estado Badge */}
         {duelo.estado === "en_vivo" && (
-          <div className="px-3 py-2 bg-green-600/10 border-t border-green-600/30">
-            <Badge className="bg-green-600/20 text-green-300 border-green-600/50 w-full justify-center animate-pulse">
+          <div className="px-3 py-2 bg-emerald-500/5 border-t border-emerald-500/20">
+            <Badge className="bg-emerald-500/10 text-emerald-200 border border-emerald-500/20 w-full justify-center animate-pulse">
               En Vivo
             </Badge>
           </div>

@@ -17,11 +17,11 @@ export function ListaParticipantes({ participantes, mostrarPosicion = false }: L
   const getEstadoBadge = (estado: string) => {
     switch (estado) {
       case "activo":
-        return <Badge className="bg-green-600/20 text-green-300 border-green-600/50">Activo</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-200 border border-emerald-500/20">Activo</Badge>;
       case "eliminado":
-        return <Badge className="bg-rose-600/20 text-rose-300 border-rose-600/50">Eliminado</Badge>;
+        return <Badge className="bg-rose-500/10 text-rose-200 border border-rose-500/20">Eliminado</Badge>;
       case "retirado":
-        return <Badge className="bg-gray-600/20 text-gray-300 border-gray-600/50">Retirado</Badge>;
+        return <Badge className="bg-slate-500/10 text-slate-200 border border-slate-500/20">Retirado</Badge>;
       default:
         return null;
     }

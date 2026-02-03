@@ -631,3 +631,36 @@ export const finalizeTournament = (tournamentId?: number): UseApiCall<{
         controller,
     };
 }
+
+// Withdraw from tournament - for teams
+export const withdrawTeamFromTournament = (
+    params?: {
+        tournamentId: number;
+        teamId?: number;
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.delete<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/withdraw/team`,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+// Withdraw from tournament - for runners (carrera format)
+export const withdrawRunnerFromTournament = (
+    params?: {
+        tournamentId: number;
+    }
+): UseApiCall<ApiResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.delete<ApiResponse>(
+            `/api/tournaments/${params?.tournamentId}/withdraw/runner`,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};

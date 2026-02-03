@@ -1,6 +1,6 @@
 import React from "react";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "violet";
 type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps
@@ -14,6 +14,8 @@ const variantClasses: Record<ButtonVariant, string> = {
     "bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white hover:cursor-pointer",
   secondary:
     "bg-white/10 text-white hover:bg-white/20",
+  violet:
+    "bg-gradient-to-r from-violet-600 to-violet-800 hover:from-violet-700 hover:to-violet-900 text-white",
   outline:
     "border border-muted text-white hover:bg-white/10",
   ghost:
