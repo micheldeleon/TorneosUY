@@ -175,10 +175,10 @@ export function TournamentsExplore() {
         // Sort
         switch (sortBy) {
             case "fecha-asc":
-                filtered.sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
+                filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
                 break;
             case "fecha-desc":
-                filtered.sort((a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime());
+                filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 break;
             case "precio-asc":
                 filtered.sort((a, b) => a.registrationCost - b.registrationCost);

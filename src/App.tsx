@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Footer } from "./components/Footer";
 import Dashboard from "./private/dashboard/Dashboard";
 import DashboardAlt from "./private/dashboard/DashboardAlt";
+import { AdminDashboard } from "./private/admin";
 import { useGlobalContext } from "./context/global.context";
 import { PrivateRoute } from "./components/PrivateRoute/PrivateRoute";
 import { SplashScreen } from "./public/SplashScreen";
@@ -80,6 +81,7 @@ function App() {
     '/torneos',
     '/perfil',
     '/perfil2',
+    '/admin',
     '/login',
     '/signup',
     '/crearTorneo',
@@ -164,6 +166,13 @@ function App() {
             element={
               <PrivateRoute isPrivate={true}>
                 <Dashboard />
+              </PrivateRoute>
+            } />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute isPrivate={true}>
+                <AdminDashboard />
               </PrivateRoute>
             } />
           <Route
