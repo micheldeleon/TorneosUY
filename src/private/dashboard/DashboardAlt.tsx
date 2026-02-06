@@ -70,6 +70,29 @@ export default function DashboardAlt() {
         return isoString.split("T")[0];
     };
 
+    const departmentOptions = [
+        { id: 0, name: "Sin seleccionar" },
+        { id: 1, name: "Artigas" },
+        { id: 2, name: "Canelones" },
+        { id: 3, name: "Cerro Largo" },
+        { id: 4, name: "Colonia" },
+        { id: 5, name: "Durazno" },
+        { id: 6, name: "Flores" },
+        { id: 7, name: "Florida" },
+        { id: 8, name: "Lavalleja" },
+        { id: 9, name: "Maldonado" },
+        { id: 10, name: "Montevideo" },
+        { id: 11, name: "Paysandu" },
+        { id: 12, name: "Rio Negro" },
+        { id: 13, name: "Rivera" },
+        { id: 14, name: "Rocha" },
+        { id: 15, name: "Salto" },
+        { id: 16, name: "San Jose" },
+        { id: 17, name: "Soriano" },
+        { id: 18, name: "Tacuarembo" },
+        { id: 19, name: "Treinta y Tres" }
+    ];
+
     // Verificar si faltan campos necesarios
     const isProfileIncomplete = useMemo(() => {
         if (!data) return true;
@@ -1517,15 +1540,18 @@ export default function DashboardAlt() {
                                                 name="departmentId"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <Input
+                                                    <select
                                                         id="departmentId"
-                                                        type="number"
-                                                        {...field}
-                                                        value={field.value ?? ""}
-                                                        onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
-                                                        className="bg-[#1a1a1a] border-gray-700 text-white focus:border-purple-600 text-sm"
-                                                        placeholder="ID del departamento"
-                                                    />
+                                                        value={field.value ?? 0}
+                                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                                        className="bg-[#1a1a1a] border border-gray-700 text-white focus:border-purple-600 focus:outline-none text-sm rounded-md h-10 px-3 w-full"
+                                                    >
+                                                        {departmentOptions.map((department) => (
+                                                            <option key={department.id} value={department.id}>
+                                                                {department.id === 0 ? "Sin seleccionar" : `${department.id} - ${department.name}`}
+                                                            </option>
+                                                        ))}
+                                                    </select>
                                                 )}
                                             />
                                             {errors.departmentId && (
