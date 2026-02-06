@@ -171,7 +171,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              <PrivateRoute isPrivate={true}>
+              <PrivateRoute isPrivate={true} requiredRole="ROLE_ADMIN">
                 <AdminDashboard />
               </PrivateRoute>
             } />

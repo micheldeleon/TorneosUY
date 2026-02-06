@@ -13,7 +13,8 @@ import {
     LogOut,
     Play,
     CheckCircle,
-    XCircle
+    XCircle,
+    ShieldCheck
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -34,12 +35,16 @@ import { Skeleton } from "../../components/ui/Skeleton";
 import { schema as detailsSchema, type FormValueDetails } from "../../components/ui/DetailsUserForm/details.form.model";
 import { ProfileImageUploadModal } from "../../components/Profile/ProfileImageUploadModal";
 import { ChangePasswordModal } from "../../components/Profile/ChangePasswordModal";
-import { useGlobalContext } from "../../context/global.context";
 import { useWithdrawFromTournament } from "../../hooks/useWithdrawFromTournament";
+import { toast } from "sonner";
+import { decodeJWT } from "../../services/utilities/jwt.utility";
+import { useGlobalContext } from "../../context/global.context";
 
 export default function DashboardAlt() {
     const navigate = useNavigate();
     const isOrganizer = useIsOrganizer();
+    const { token } = useGlobalContext();
+    const [isAdmin, setIsAdmin] = useState(false);
     const { fetch, data, error, loading } = useApi<UserDetails, UserFind>(getUsersByIdAndEmail);
     const { fetch: fetchOrganizedTournaments, data: organizedTournaments, loading: loadingOrganized } = useApi<TournamentDetails[], { id: number; email: string }>(getUserOrganizedTournaments);
     const { fetch: fetchParticipatingTournaments, data: participatingTournaments, loading: loadingParticipating } = useApi<TournamentDetails[], { id: number; email: string }>(getUserParticipatingTournaments);
@@ -48,7 +53,8 @@ export default function DashboardAlt() {
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { logout } = useGlobalContext();
+    const [showOrganizerRequestDialog, setShowOrganizerRequestDialog] = useState(false);
+    const [organizerMessage, setOrganizerMessage] = useState("");
     const [disciplineFilterActive, setDisciplineFilterActive] = useState<string>("all");
     const [disciplineFilterFinished, setDisciplineFilterFinished] = useState<string>("all");
     const [disciplineFilterOrganizedActive, setDisciplineFilterOrganizedActive] = useState<string>("all");
@@ -176,25 +182,36 @@ export default function DashboardAlt() {
         }
     }, []);
 
-    const requestOrganizerPermissionHandler = async () => {
-        if (!data?.id) {
-            alert("El ID del usuario no esta disponible");
-            return;
+    // Verificar si el usuario es admin
+    useEffect(() => {
+        if (token) {
+            const decoded = decodeJWT<{ authorities?: string[] }>(token);
+            setIsAdmin(decoded?.authorities?.includes("ROLE_ADMIN") ?? false);
+        } else {
+            setIsAdmin(false);
         }
+    }, [token]);
+
+    const requestOrganizerPermissionHandler = async () => {
         try {
             setIsSubmitting(true);
-            const { call } = requestOrganizerPermission(data.id);
+            const message = organizerMessage.trim();
+            const { call } = requestOrganizerPermission(message || undefined);
             const response = await call;
             if (response.status >= 200 && response.status < 300) {
-                alert("Permiso de organizador otorgado. Para aplicar los cambios, vuelve a iniciar sesion.");
-                logout();
-                navigate("/login");
+                toast.success("Solicitud enviada. Se revisará tu petición.");
+                setShowOrganizerRequestDialog(false);
+                setOrganizerMessage("");
             } else {
-                alert("No se pudo otorgar el permiso de organizador. Intenta nuevamente.");
+                toast.error("No se pudo enviar la solicitud. Intenta nuevamente.");
             }
         } catch (error: any) {
             console.error("Error al solicitar permiso de organizador:", error);
-            alert("Error al solicitar permiso de organizador: " + (error?.response?.data || "Error inesperado"));
+            if (error?.response?.status === 409) {
+                toast.error("Ya tienes una solicitud pendiente.");
+                return;
+            }
+            toast.error("Error al solicitar permiso de organizador: " + (error?.response?.data?.message || "Error inesperado"));
         } finally {
             setIsSubmitting(false);
         }
@@ -448,6 +465,11 @@ export default function DashboardAlt() {
                                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <Edit className="w-6 h-6 text-white bg-surface-dark/50 rounded" />
                                     </div>
+                                    {isAdmin && (
+                                        <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center border-2 border-[#2a2a2a] shadow-lg">
+                                            <ShieldCheck className="w-5 h-5 text-white" />
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -515,7 +537,7 @@ export default function DashboardAlt() {
                                 Solicita permisos de organizador para crear tus propios torneos
                             </p>
                             <Button
-                                onClick={requestOrganizerPermissionHandler}
+                                onClick={() => setShowOrganizerRequestDialog(true)}
                                 className="w-full bg-white hover:bg-white/90 text-purple-900 text-sm"
                             >
                                 <ShieldPlusIcon className="w-4 h-4 mr-2" />
@@ -1636,6 +1658,46 @@ export default function DashboardAlt() {
                     </Dialog>
                 )}
             </div>
+            {showOrganizerRequestDialog && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+                    <div className="max-w-md w-full mx-4 bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+                        <div className="p-6 border-b border-gray-800 bg-yellow-900/20">
+                            <h3 className="text-white text-xl font-bold">Solicitar permisos de organizador</h3>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-gray-300 text-base leading-relaxed mb-4">
+                                Deja un mensaje opcional con tu experiencia. El equipo revisará tu solicitud.
+                            </p>
+                            <textarea
+                                value={organizerMessage}
+                                onChange={(e) => setOrganizerMessage(e.target.value)}
+                                rows={4}
+                                className="w-full bg-[#1f1f1f] border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50"
+                                placeholder="Cuéntanos tu experiencia organizando torneos"
+                            />
+                            <div className="flex gap-3 justify-end mt-6">
+                                <Button
+                                    onClick={() => {
+                                        setShowOrganizerRequestDialog(false);
+                                        setOrganizerMessage("");
+                                    }}
+                                    variant="outline"
+                                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    onClick={requestOrganizerPermissionHandler}
+                                    className="bg-gradient-to-r from-yellow-600 to-yellow-800 hover:from-yellow-700 hover:to-yellow-900 text-white"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? "Enviando..." : "Enviar solicitud"}
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

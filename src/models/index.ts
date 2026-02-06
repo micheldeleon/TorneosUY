@@ -12,5 +12,7 @@ export * from "./updateTournament.model"
 export * from "./tournamentCreated.model"
 export * from "./notifications.model"
 export * from "./post.model"
+export * from "./organizerRequest.model"
+export * from "./adminUser.model"
 
 

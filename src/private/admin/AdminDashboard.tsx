@@ -14,62 +14,18 @@ import {
   MoreVertical,
   AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useApi } from "../../hooks/useApi";
-import { getAllTournaments } from "../../services/api.service";
-import type { TournamentDetails } from "../../models";
-
-// Mock data - será reemplazado con API calls cuando esté lista
-const mockUsers = [
-  {
-    id: 1,
-    name: "Juan García",
-    email: "juan@example.com",
-    createdAt: "2024-01-15",
-    tournamentsOrganized: 3,
-    tournamentsParticipated: 12,
-    isAdmin: false,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "María López",
-    email: "maria@example.com",
-    createdAt: "2024-02-20",
-    tournamentsOrganized: 5,
-    tournamentsParticipated: 8,
-    isAdmin: false,
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Carlos Martínez",
-    email: "carlos@example.com",
-    createdAt: "2024-03-10",
-    tournamentsOrganized: 2,
-    tournamentsParticipated: 15,
-    isAdmin: false,
-    status: "active",
-  },
-];
-
-const mockOrganizerRequests = [
-  {
-    id: 1,
-    userName: "Patricia Rodríguez",
-    email: "patricia@example.com",
-    requestDate: "2024-02-28",
-    reason: "Quiero organizar torneos de fútbol profesionales",
-    tournaments: 0,
-  },
-  {
-    id: 2,
-    userName: "Diego Fernández",
-    email: "diego@example.com",
-    requestDate: "2024-02-25",
-    reason: "Experiencia en organización de eventos esports",
-    tournaments: 2,
-  },
-];
+import {
+  approveOrganizerRequest,
+  deactivateAdminUser,
+  getAdminUsers,
+  getAllTournaments,
+  getOrganizerRequestsAdmin,
+  rejectOrganizerRequest,
+  restoreAdminUser,
+} from "../../services/api.service";
+import type { TournamentDetails, OrganizerRequest, OrganizerRequestStatus, AdminUser } from "../../models";
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -77,20 +33,60 @@ export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDeleteUser, setSelectedDeleteUser] = useState<number | null>(null);
   const [selectedDeleteTournament, setSelectedDeleteTournament] = useState<number | null>(null);
+  const [deleteReason, setDeleteReason] = useState("");
   const [disciplineFilter, setDisciplineFilter] = useState<string>("all");
   const [dateSort, setDateSort] = useState<"asc" | "desc">("desc");
   const [statusSort, setStatusSort] = useState<"none" | "asc" | "desc">("none");
+  const [includeDeleted, setIncludeDeleted] = useState(true);
+  const [requestStatusFilter, setRequestStatusFilter] = useState<OrganizerRequestStatus>("PENDING");
+  const [approveDialog, setApproveDialog] = useState<{ open: boolean; id: number | null; note: string }>({
+    open: false,
+    id: null,
+    note: "",
+  });
+  const [rejectDialog, setRejectDialog] = useState<{ open: boolean; id: number | null; reason: string }>({
+    open: false,
+    id: null,
+    reason: "",
+  });
+  const [restoreDialog, setRestoreDialog] = useState<{ open: boolean; id: number | null }>({
+    open: false,
+    id: null,
+  });
 
   // API call para obtener torneos
   const { fetch: fetchTournaments, data: tournamentsData, loading: loadingTournaments } = useApi<TournamentDetails[], undefined>(getAllTournaments);
+  const { fetch: fetchUsers, data: usersData, loading: loadingUsers } = useApi<AdminUser[], { includeDeleted?: boolean }>(getAdminUsers);
+  const { fetch: fetchOrganizerRequests, data: organizerRequestsData, loading: loadingOrganizerRequests } = useApi<OrganizerRequest[], { status?: OrganizerRequestStatus }>(getOrganizerRequestsAdmin);
 
   // Obtener torneos al montar el componente
   useEffect(() => {
     fetchTournaments();
   }, [fetchTournaments]);
 
+  useEffect(() => {
+    fetchUsers({ includeDeleted });
+  }, [fetchUsers, includeDeleted]);
+
+  useEffect(() => {
+    if (activeTab === "organizers") {
+      fetchOrganizerRequests({ status: requestStatusFilter });
+    }
+  }, [activeTab, fetchOrganizerRequests, requestStatusFilter]);
+
   // Mapear datos de la API a formato de tabla
   const tournaments = tournamentsData ? (Array.isArray(tournamentsData) ? tournamentsData : []) : [];
+  const users = usersData ? (Array.isArray(usersData) ? usersData : []) : [];
+  const organizerRequests = organizerRequestsData ? (Array.isArray(organizerRequestsData) ? organizerRequestsData : []) : [];
+
+  // Log de usuarios para debugging
+  useEffect(() => {
+    if (usersData) {
+      console.log('📊 Usuarios obtenidos de la API:', usersData);
+      console.log('📊 Usuarios procesados:', users);
+      console.log('📊 createdAt de cada usuario:', users.map(u => ({ id: u.id, fullName: u.fullName, createdAt: u.createdAt })));
+    }
+  }, [usersData]);
   const disciplines = [
     "all",
     ...Array.from(
@@ -102,18 +98,16 @@ export function AdminDashboard() {
     ),
   ];
   const normalizedQuery = searchQuery.trim().toLowerCase();
-  const filteredUsers = mockUsers.filter((u) => {
+  const filteredUsers = users.filter((u) => {
     if (!normalizedQuery) return true;
-    return (
-      u.name.toLowerCase().includes(normalizedQuery) ||
-      u.email.toLowerCase().includes(normalizedQuery)
-    );
+    const fullName = (u.fullName ?? "").trim().toLowerCase();
+    return fullName.includes(normalizedQuery) || u.email.toLowerCase().includes(normalizedQuery);
   });
-  const filteredOrganizerRequests = mockOrganizerRequests.filter((r) => {
+  const filteredOrganizerRequests = organizerRequests.filter((r) => {
     if (!normalizedQuery) return true;
     return (
-      r.userName.toLowerCase().includes(normalizedQuery) ||
-      r.email.toLowerCase().includes(normalizedQuery)
+      r.userId.toString().includes(normalizedQuery) ||
+      (r.message ?? "").toLowerCase().includes(normalizedQuery)
     );
   });
   const filteredTournaments = tournaments
@@ -177,6 +171,121 @@ export function AdminDashboard() {
     }
   };
 
+  const getRequestStatusBadge = (status: OrganizerRequestStatus) => {
+    switch (status) {
+      case "APPROVED":
+        return (
+          <span className="px-2 py-1 bg-emerald-500/10 text-emerald-200 border border-emerald-500/20 rounded-md text-xs font-medium">
+            Aprobada
+          </span>
+        );
+      case "REJECTED":
+        return (
+          <span className="px-2 py-1 bg-rose-500/10 text-rose-200 border border-rose-500/20 rounded-md text-xs font-medium">
+            Rechazada
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-1 bg-amber-500/10 text-amber-200 border border-amber-500/20 rounded-md text-xs font-medium">
+            Pendiente
+          </span>
+        );
+    }
+  };
+
+  const formatDate = (value?: string | null) => {
+    if (!value) return "—";
+    try {
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) return "—";
+      return parsed.toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      });
+    } catch (error) {
+      console.error('Error al formatear fecha:', error, value);
+      return "—";
+    }
+  };
+
+
+  const handleApproveRequest = (id: number) => {
+    setApproveDialog({ open: true, id, note: "" });
+  };
+
+  const confirmApproveRequest = async () => {
+    if (!approveDialog.id) return;
+    try {
+      const note = approveDialog.note.trim() || undefined;
+      const { call } = approveOrganizerRequest({ id: approveDialog.id, note });
+      await call;
+      toast.success("Solicitud aprobada correctamente");
+      setApproveDialog({ open: false, id: null, note: "" });
+      fetchOrganizerRequests({ status: requestStatusFilter });
+    } catch (error: any) {
+      console.error("Error al aprobar solicitud:", error);
+      toast.error(error?.response?.data?.message || "No se pudo aprobar la solicitud");
+    }
+  };
+
+  const handleRejectRequest = (id: number) => {
+    setRejectDialog({ open: true, id, reason: "" });
+  };
+
+  const confirmRejectRequest = async () => {
+    if (!rejectDialog.id) return;
+    const reason = rejectDialog.reason.trim();
+    if (!reason) {
+      toast.error("Debes ingresar un motivo de rechazo.");
+      return;
+    }
+    try {
+      const { call } = rejectOrganizerRequest({ id: rejectDialog.id, reason });
+      await call;
+      toast.success("Solicitud rechazada correctamente");
+      setRejectDialog({ open: false, id: null, reason: "" });
+      fetchOrganizerRequests({ status: requestStatusFilter });
+    } catch (error: any) {
+      console.error("Error al rechazar solicitud:", error);
+      toast.error(error?.response?.data?.message || "No se pudo rechazar la solicitud");
+    }
+  };
+
+  const handleDeactivateUser = async () => {
+    if (!selectedDeleteUser) return;
+    try {
+      const { call } = deactivateAdminUser({ id: selectedDeleteUser, reason: deleteReason.trim() || undefined });
+      await call;
+      toast.success("Usuario desactivado correctamente");
+      setSelectedDeleteUser(null);
+      setDeleteReason("");
+      fetchUsers({ includeDeleted });
+    } catch (error: any) {
+      console.error("Error al desactivar usuario:", error);
+      toast.error(error?.response?.data || "No se pudo desactivar el usuario");
+    }
+  };
+
+  const handleRestoreUser = (id: number) => {
+    setRestoreDialog({ open: true, id });
+  };
+
+  const confirmRestoreUser = async () => {
+    if (!restoreDialog.id) return;
+    try {
+      const { call } = restoreAdminUser(restoreDialog.id);
+      await call;
+      toast.success("Usuario restaurado correctamente");
+      setRestoreDialog({ open: false, id: null });
+      fetchUsers({ includeDeleted });
+    } catch (error: any) {
+      console.error("Error al restaurar usuario:", error);
+      toast.error(error?.response?.data || "No se pudo restaurar el usuario");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-surface-dark pt-24 pb-12">
       {/* Main Container */}
@@ -230,7 +339,7 @@ export function AdminDashboard() {
           >
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="hidden sm:inline">Solicitudes ({mockOrganizerRequests.length})</span>
+              <span className="hidden sm:inline">Solicitudes</span>
               <span className="sm:hidden">Solicitudes</span>
             </div>
           </button>
@@ -249,6 +358,21 @@ export function AdminDashboard() {
             />
           </div>
         </div>
+
+        {activeTab === "organizers" && (
+          <div className="mb-6 max-w-full md:max-w-xs">
+            <label className="text-xs text-gray-400 mb-1 block">Estado</label>
+            <select
+              value={requestStatusFilter}
+              onChange={(e) => setRequestStatusFilter(e.target.value as OrganizerRequestStatus)}
+              className="w-full bg-[#1f1f1f] border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50"
+            >
+              <option value="PENDING">Pendientes</option>
+              <option value="APPROVED">Aprobadas</option>
+              <option value="REJECTED">Rechazadas</option>
+            </select>
+          </div>
+        )}
 
         {/* Tournament Filters */}
         {activeTab === "tournaments" && (
@@ -298,68 +422,101 @@ export function AdminDashboard() {
           {/* Users Tab */}
           {activeTab === "users" && (
             <div className="space-y-4">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-700/50">
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">Usuario</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden md:table-cell">Email</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden lg:table-cell">Registro</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden xl:table-cell">Torneos Org.</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden xl:table-cell">Participaciones</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden sm:table-cell">Rol</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">Acciones</th>
-                    </tr>
-                  </thead>
+              <label className="flex items-center gap-2 text-sm text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={includeDeleted}
+                  onChange={(e) => setIncludeDeleted(e.target.checked)}
+                  className="accent-violet-500"
+                />
+                Mostrar usuarios desactivados
+              </label>
+              <div className="relative overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-700/50">
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Usuario</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Email</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Torneos Org.</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Participaciones</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Rol</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium sticky right-0 bg-surface-dark z-10 whitespace-nowrap">Acciones</th>
+                      </tr>
+                    </thead>
                   <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr key={user.id} className="border-b border-gray-700/30 hover:bg-[#1f1f1f]/50 transition-colors">
-                        <td className="py-4 px-4">
-                          <div className="min-w-0">
-                            <p className="font-medium truncate">{user.name}</p>
-                            <p className="text-gray-400 text-xs md:hidden truncate">{user.email}</p>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-gray-400 hidden md:table-cell text-xs lg:text-sm">{user.email}</td>
-                        <td className="py-4 px-4 text-gray-400 hidden lg:table-cell text-xs">{user.createdAt}</td>
-                        <td className="py-4 px-4 hidden xl:table-cell">{user.tournamentsOrganized}</td>
-                        <td className="py-4 px-4 hidden xl:table-cell">{user.tournamentsParticipated}</td>
-                        <td className="py-4 px-4 hidden sm:table-cell">
-                          {user.isAdmin ? (
-                            <span className="flex items-center gap-1 text-violet-400 text-xs">
-                              <Crown className="w-3 h-3" />
-                              Admin
-                            </span>
-                          ) : (
-                            <span className="text-gray-400 text-xs">Usuario</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-1 flex-wrap">
-                            {!user.isAdmin && (
-                              <button
-                                title="Hacer Administrador"
-                                className="p-1.5 hover:bg-violet-500/20 rounded-lg transition-colors"
-                              >
-                                <Crown className="w-4 h-4 text-violet-400" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => setSelectedDeleteUser(user.id)}
-                              title="Eliminar usuario"
-                              className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-400" />
-                            </button>
-                            <button className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors hidden md:inline-flex">
-                              <MoreVertical className="w-4 h-4 text-gray-400" />
-                            </button>
-                          </div>
+                    {loadingUsers ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 px-4 text-center text-gray-400">
+                          Cargando usuarios...
                         </td>
                       </tr>
-                    ))}
+                    ) : filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => {
+                        const fullName = user.fullName || `Usuario #${user.id}`;
+                        const isActive = user.deletedAt === null;
+                        const isAdmin = user.roles?.includes("ROLE_ADMIN") ?? false;
+                        const isOrganizer = user.roles?.includes("ROLE_ORGANIZER") ?? false;
+                        return (
+                          <tr key={user.id} className="border-b border-gray-700/30 hover:bg-[#1f1f1f]/50 transition-colors">
+                            <td className="py-4 px-4 min-w-[180px]">
+                              <div className="min-w-0">
+                                <p className="font-medium truncate">{fullName}</p>
+                                <p className="text-gray-500 text-xs mt-1">{isActive ? "Activo" : "Desactivado"}</p>
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 text-gray-400 text-xs lg:text-sm min-w-[200px]">{user.email}</td>
+                            <td className="py-4 px-4 text-center min-w-[120px]">{user.tournamentsOrganizedCount || 0}</td>
+                            <td className="py-4 px-4 text-center min-w-[140px]">{user.totalParticipations || 0}</td>
+                            <td className="py-4 px-4 min-w-[120px]">
+                              {isAdmin ? (
+                                <span className="flex items-center gap-1 text-violet-400 text-xs whitespace-nowrap">
+                                  <Crown className="w-3 h-3" />
+                                  Admin
+                                </span>
+                              ) : isOrganizer ? (
+                                <span className="text-gray-400 text-xs">Organizador</span>
+                              ) : (
+                                <span className="text-gray-400 text-xs">Usuario</span>
+                              )}
+                            </td>
+                            <td className="py-4 px-4 sticky right-0 bg-surface-dark z-10">
+                              <div className="flex items-center gap-1 flex-wrap">
+                                {isActive ? (
+                                  <button
+                                    onClick={() => setSelectedDeleteUser(user.id)}
+                                    title="Desactivar usuario"
+                                    className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
+                                  >
+                                    <Trash2 className="w-4 h-4 text-red-400" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => handleRestoreUser(user.id)}
+                                    title="Restaurar usuario"
+                                    className="p-1.5 hover:bg-emerald-500/20 rounded-lg transition-colors"
+                                  >
+                                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                  </button>
+                                )}
+                                <button className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors">
+                                  <MoreVertical className="w-4 h-4 text-gray-400" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="py-8 px-4 text-center text-gray-400">
+                          No hay usuarios disponibles
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
+              </div>
               </div>
             </div>
           )}
@@ -367,18 +524,19 @@ export function AdminDashboard() {
           {/* Tournaments Tab */}
           {activeTab === "tournaments" && (
             <div className="space-y-4">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-700/50">
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">Torneo</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden md:table-cell">Disciplina</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden lg:table-cell">Equipos</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden lg:table-cell">Fecha</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium hidden sm:table-cell">Estado</th>
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">Acciones</th>
-                    </tr>
-                  </thead>
+              <div className="relative overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-700/50">
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Torneo</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Disciplina</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Equipos</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Fecha</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium whitespace-nowrap">Estado</th>
+                        <th className="text-left py-3 px-4 text-gray-400 font-medium sticky right-0 bg-surface-dark z-10 whitespace-nowrap">Acciones</th>
+                      </tr>
+                    </thead>
                   <tbody>
                     {loadingTournaments ? (
                       <tr>
@@ -389,21 +547,20 @@ export function AdminDashboard() {
                     ) : filteredTournaments && filteredTournaments.length > 0 ? (
                       filteredTournaments.map((tournament) => (
                         <tr key={tournament.id} className="border-b border-gray-700/30 hover:bg-[#1f1f1f]/50 transition-colors">
-                          <td className="py-4 px-4">
+                          <td className="py-4 px-4 min-w-[200px]">
                             <div className="flex items-center gap-2">
                               <div className="min-w-0">
                                 <p className="font-medium truncate">{tournament.name}</p>
-                                <p className="text-gray-400 text-xs md:hidden">{tournament.discipline?.name || "N/A"}</p>
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 px-4 text-gray-400 hidden md:table-cell text-xs lg:text-sm">{tournament.discipline?.name || "N/A"}</td>
-                          <td className="py-4 px-4 hidden lg:table-cell">{tournament.teamsInscribed || 0}</td>
-                          <td className="py-4 px-4 hidden lg:table-cell text-gray-400 text-xs lg:text-sm">
+                          <td className="py-4 px-4 text-gray-400 text-xs lg:text-sm min-w-[150px]">{tournament.discipline?.name || "N/A"}</td>
+                          <td className="py-4 px-4 text-center min-w-[100px]">{tournament.teamsInscribed || 0}</td>
+                          <td className="py-4 px-4 text-gray-400 text-xs lg:text-sm whitespace-nowrap min-w-[110px]">
                             {new Date(tournament.startAt || tournament.createdAt).toLocaleDateString()}
                           </td>
-                          <td className="py-4 px-4 hidden sm:table-cell">{getStatusBadge(tournament.status)}</td>
-                          <td className="py-4 px-4">
+                          <td className="py-4 px-4 min-w-[120px]">{getStatusBadge(tournament.status)}</td>
+                          <td className="py-4 px-4 sticky right-0 bg-surface-dark z-10">
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => navigate(`/torneo/${tournament.id}`)}
@@ -419,7 +576,7 @@ export function AdminDashboard() {
                               >
                                 <Trash2 className="w-4 h-4 text-red-400" />
                               </button>
-                              <button className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors hidden md:inline-flex">
+                              <button className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors">
                                 <MoreVertical className="w-4 h-4 text-gray-400" />
                               </button>
                             </div>
@@ -436,60 +593,69 @@ export function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+              </div>
             </div>
           )}
 
           {/* Organizer Requests Tab */}
           {activeTab === "organizers" && (
             <div className="space-y-4">
-              {filteredOrganizerRequests.map((request) => (
-                <div
-                  key={request.id}
-                  className="bg-[#222222]/10 border border-gray-700/50 rounded-lg p-4 md:p-6 ring-1 ring-inset ring-white/[0.04] hover:border-violet-500/40 transition-colors"
-                >
-                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <h3 className="text-base md:text-lg font-semibold">{request.userName}</h3>
-                        <span className="px-2 py-1 bg-amber-500/10 text-amber-200 border border-amber-500/20 rounded-md text-xs font-medium">
-                          Pendiente
-                        </span>
+              {loadingOrganizerRequests ? (
+                <div className="text-center text-gray-400 py-10">Cargando solicitudes...</div>
+              ) : filteredOrganizerRequests.length > 0 ? (
+                filteredOrganizerRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="bg-[#222222]/10 border border-gray-700/50 rounded-lg p-4 md:p-6 ring-1 ring-inset ring-white/[0.04] hover:border-violet-500/40 transition-colors"
+                  >
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <h3 className="text-base md:text-lg font-semibold">Usuario #{request.userId}</h3>
+                          {getRequestStatusBadge(request.status)}
+                        </div>
+                        <p className="text-gray-400 text-xs md:text-sm flex items-center gap-1 mb-2">
+                          <Mail className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">ID: {request.userId}</span>
+                        </p>
                       </div>
-                      <p className="text-gray-400 text-xs md:text-sm flex items-center gap-1 mb-2">
-                        <Mail className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate">{request.email}</span>
+                      <div className="text-right text-xs md:text-sm">
+                        <p className="text-gray-500 text-xs">Solicitud del</p>
+                        <p className="text-gray-300">{formatDate(request.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#1f1f1f]/50 rounded-lg p-3 md:p-4 mb-4 border border-gray-700/20">
+                      <p className="text-gray-300 text-xs md:text-sm">
+                        {request.message || "Sin mensaje"}
                       </p>
                     </div>
-                    <div className="text-right text-xs md:text-sm">
-                      <p className="text-gray-500 text-xs">Solicitud del</p>
-                      <p className="text-gray-300">{request.requestDate}</p>
-                    </div>
-                  </div>
 
-                  <div className="bg-[#1f1f1f]/50 rounded-lg p-3 md:p-4 mb-4 border border-gray-700/20">
-                    <p className="text-gray-300 text-xs md:text-sm">{request.reason}</p>
+                    {request.status === "PENDING" && (
+                      <div className="flex gap-2 flex-col sm:flex-row">
+                        <button
+                          onClick={() => handleApproveRequest(request.id)}
+                          className="flex-1 px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors flex items-center justify-center gap-2 font-medium text-sm md:text-base"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="hidden sm:inline">Aceptar</span>
+                          <span className="sm:hidden">Aceptar</span>
+                        </button>
+                        <button
+                          onClick={() => handleRejectRequest(request.id)}
+                          className="flex-1 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors flex items-center justify-center gap-2 font-medium text-sm md:text-base"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          <span className="hidden sm:inline">Rechazar</span>
+                          <span className="sm:hidden">Rechazar</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
-
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-gray-400 text-xs md:text-sm">
-                      Torneos organizados: <span className="text-white font-semibold">{request.tournaments}</span>
-                    </span>
-                  </div>
-
-                  <div className="flex gap-2 flex-col sm:flex-row">
-                    <button className="flex-1 px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors flex items-center justify-center gap-2 font-medium text-sm md:text-base">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="hidden sm:inline">Aceptar</span>
-                      <span className="sm:hidden">Aceptar</span>
-                    </button>
-                    <button className="flex-1 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors flex items-center justify-center gap-2 font-medium text-sm md:text-base">
-                      <XCircle className="w-4 h-4" />
-                      <span className="hidden sm:inline">Rechazar</span>
-                      <span className="sm:hidden">Rechazar</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="text-center text-gray-400 py-10">No hay solicitudes disponibles</div>
+              )}
             </div>
           )}
         </div>
@@ -501,21 +667,137 @@ export function AdminDashboard() {
           <div className="bg-[#1a1a1a] border border-gray-700/50 rounded-xl md:rounded-2xl p-6 md:p-8 max-w-sm w-full ring-1 ring-inset ring-white/[0.04]">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
-              <h3 className="text-lg md:text-xl font-semibold">Eliminar Usuario</h3>
+              <h3 className="text-lg md:text-xl font-semibold">Desactivar Usuario</h3>
             </div>
             <p className="text-gray-300 mb-6 text-sm md:text-base">
-              ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.
+              ¿Estás seguro de que deseas desactivar este usuario? Esta acción se puede revertir más tarde.
             </p>
+            <label className="text-xs text-gray-400 mb-2 block">Motivo (opcional)</label>
+            <textarea
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              rows={3}
+              className="w-full mb-6 bg-[#1f1f1f] border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50"
+              placeholder="Describe el motivo de la desactivación"
+            />
             <div className="flex gap-3 flex-col sm:flex-row">
               <button
-                onClick={() => setSelectedDeleteUser(null)}
+                onClick={() => {
+                  setSelectedDeleteUser(null);
+                  setDeleteReason("");
+                }}
                 className="flex-1 px-4 py-2 rounded-lg bg-gray-700/30 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50 transition-colors font-medium text-sm md:text-base"
               >
                 Cancelar
               </button>
-              <button className="flex-1 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 transition-colors font-medium text-sm md:text-base">
-                Eliminar
+              <button
+                onClick={handleDeactivateUser}
+                className="flex-1 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 transition-colors font-medium text-sm md:text-base"
+              >
+                Desactivar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {approveDialog.open && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+          <div className="max-w-md w-full mx-4 bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-gray-800 bg-emerald-900/20">
+              <h3 className="text-white text-xl font-bold">Aprobar solicitud</h3>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-300 text-base leading-relaxed mb-4">
+                Puedes dejar una nota opcional para la aprobación.
+              </p>
+              <textarea
+                value={approveDialog.note}
+                onChange={(e) => setApproveDialog((prev) => ({ ...prev, note: e.target.value }))}
+                rows={3}
+                className="w-full bg-[#1f1f1f] border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50"
+                placeholder="Nota de aprobación (opcional)"
+              />
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={() => setApproveDialog({ open: false, id: null, note: "" })}
+                  className="px-4 py-2 rounded-lg bg-gray-700/30 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50 transition-colors font-medium text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmApproveRequest}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-800 hover:from-emerald-700 hover:to-emerald-900 text-white font-medium text-sm"
+                >
+                  Aprobar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {rejectDialog.open && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+          <div className="max-w-md w-full mx-4 bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-gray-800 bg-rose-900/20">
+              <h3 className="text-white text-xl font-bold">Rechazar solicitud</h3>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-300 text-base leading-relaxed mb-4">
+                Indica el motivo del rechazo (obligatorio).
+              </p>
+              <textarea
+                value={rejectDialog.reason}
+                onChange={(e) => setRejectDialog((prev) => ({ ...prev, reason: e.target.value }))}
+                rows={3}
+                className="w-full bg-[#1f1f1f] border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50"
+                placeholder="Motivo del rechazo"
+              />
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={() => setRejectDialog({ open: false, id: null, reason: "" })}
+                  className="px-4 py-2 rounded-lg bg-gray-700/30 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50 transition-colors font-medium text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmRejectRequest}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-rose-600 to-rose-800 hover:from-rose-700 hover:to-rose-900 text-white font-medium text-sm"
+                  disabled={!rejectDialog.reason.trim()}
+                >
+                  Rechazar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {restoreDialog.open && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+          <div className="max-w-md w-full mx-4 bg-[#1a1a1a] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-gray-800 bg-blue-900/20">
+              <h3 className="text-white text-xl font-bold">Restaurar usuario</h3>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-300 text-base leading-relaxed mb-6">
+                ¿Deseas restaurar este usuario?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setRestoreDialog({ open: false, id: null })}
+                  className="px-4 py-2 rounded-lg bg-gray-700/30 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50 transition-colors font-medium text-sm"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmRestoreUser}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-medium text-sm"
+                >
+                  Restaurar
+                </button>
+              </div>
             </div>
           </div>
         </div>

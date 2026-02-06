@@ -1,9 +1,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Sparkles, LogOut, User, ChevronDown, Bell } from "lucide-react";
+import { Menu, X, Sparkles, LogOut, User, ChevronDown, Bell, Shield } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGlobalContext } from "../../context/global.context";
+import { decodeJWT } from "../../services/utilities/jwt.utility";
 
 export interface NavItem {
   label: string;
@@ -27,12 +28,13 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
   const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { unreadNotifications } = useGlobalContext();
+  const { unreadNotifications, token } = useGlobalContext();
 
-  // Obtener el nombre del usuario del localStorage
+  // Obtener el nombre del usuario del localStorage y verificar si es admin
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -46,7 +48,15 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
         setUserProfileImage(null);
       }
     }
-  }, [isAuthenticated]);
+
+    // Verificar si el usuario es admin
+    if (token) {
+      const decoded = decodeJWT<{ authorities?: string[] }>(token);
+      setIsAdmin(decoded?.authorities?.includes("ROLE_ADMIN") ?? false);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [isAuthenticated, token]);
 
   // Escuchar cambios en localStorage para actualizar la imagen de perfil en tiempo real
   useEffect(() => {
@@ -324,6 +334,16 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                             <User className="w-4 h-4" />
                             <span>Mi Perfil</span>
                           </Link>
+                          {isAdmin && (
+                            <Link
+                              to="/admin"
+                              onClick={() => setUserMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3 text-gray-300 text-green-600 hover:bg-green-600/10 transition-all border-t border-purple-600/20"
+                            >
+                              <Shield className="w-4 h-4" />
+                              <span>Panel Admin</span>
+                            </Link>
+                          )}
                           <button
                             onClick={() => {
                               onLogout();
@@ -494,6 +514,20 @@ export function NavbarModern({ title, links, isAuthenticated, onLogout }: Navbar
                           Mi Perfil
                         </Button>
                       </Link>
+                      {isAdmin && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block"
+                        >
+                          <Button 
+                          variant="green" 
+                          className="w-full bg-gradient-to-r from-green-900/50 to-green-800/50 hover:from-green-800/60 hover:to-green-700/60 border border-green-600/30 text-white backdrop-blur-sm">
+                            <Shield className="w-4 h-4 mr-2" />
+                            Panel Admin
+                          </Button>
+                        </Link>
+                      )}
                       <Button
                         onClick={() => {
                           onLogout();

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Trophy, Calendar, Award, TrendingUp, PiggyBank, Lock } from "lucide-react";
+import { toast } from "sonner";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
@@ -8,7 +9,7 @@ import { ProfileCard } from "../../components/Profile/ProfileCard";
 import { ProfileImageUploadModal } from "../../components/Profile/ProfileImageUploadModal";
 import { ChangePasswordModal } from "../../components/Profile/ChangePasswordModal";
 import { DescriptionList } from "../../components/ui/DetailsUserForm/DescriptionList";
-import { getUsersByIdAndEmail } from "../../services/api.service";
+import { getUsersByIdAndEmail, requestOrganizerPermission } from "../../services/api.service";
 import type { UserDetails } from "../../models/userDetails.model";
 import { useApi } from "../../hooks/useApi";
 import type { UserFind } from "../../models/userFind.model";
@@ -22,6 +23,8 @@ export default function Dashboard() {
   const [showImageUploadModal, setShowImageUploadModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | undefined>();
+  const [organizerMessage, setOrganizerMessage] = useState("");
+  const [organizerSubmitting, setOrganizerSubmitting] = useState(false);
 
   // Llamar a la API al montar el componente
   useEffect(() => {
@@ -90,6 +93,31 @@ export default function Dashboard() {
   const handleChangePasswordSuccess = () => {
     console.log("[Dashboard] ✅ Contraseña cambiada exitosamente");
     setShowChangePasswordModal(false);
+  };
+
+  const handleOrganizerRequest = async () => {
+    try {
+      setOrganizerSubmitting(true);
+      const message = organizerMessage.trim() || undefined;
+      const { call } = requestOrganizerPermission(message);
+      const response = await call;
+      if (response.status >= 200 && response.status < 300) {
+        toast.success("Solicitud enviada. Se revisará tu petición.");
+        setShowOrganizerForm(false);
+        setOrganizerMessage("");
+      } else {
+        toast.error("No se pudo enviar la solicitud. Intenta nuevamente.");
+      }
+    } catch (error: any) {
+      console.error("Error al solicitar permiso de organizador:", error);
+      if (error?.response?.status === 409) {
+        toast.error("Ya tienes una solicitud pendiente.");
+        return;
+      }
+      toast.error("Error al solicitar permiso de organizador: " + (error?.response?.data?.message || "Error inesperado"));
+    } finally {
+      setOrganizerSubmitting(false);
+    }
   };
 
   return (
@@ -318,22 +346,31 @@ export default function Dashboard() {
                 Para organizar torneos, necesitamos verificar algunos datos adicionales.
                 Nuestro equipo se pondrá en contacto contigo.
               </p>
+              <label className="text-xs text-gray-400 mb-2 block">Mensaje (opcional)</label>
+              <textarea
+                value={organizerMessage}
+                onChange={(e) => setOrganizerMessage(e.target.value)}
+                rows={3}
+                className="w-full mb-6 bg-[#1f1f1f] border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50"
+                placeholder="Cuéntanos tu experiencia organizando torneos"
+              />
               <div className="flex gap-3">
                 <Button
-                  onClick={() => setShowOrganizerForm(false)}
+                  onClick={() => {
+                    setShowOrganizerForm(false);
+                    setOrganizerMessage("");
+                  }}
                   variant="outline"
                   className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800"
                 >
                   Cancelar
                 </Button>
                 <Button
-                  onClick={() => {
-                    alert("Solicitud enviada. Te contactaremos pronto.");
-                    setShowOrganizerForm(false);
-                  }}
+                  onClick={handleOrganizerRequest}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
+                  disabled={organizerSubmitting}
                 >
-                  Enviar Solicitud
+                  {organizerSubmitting ? "Enviando..." : "Enviar Solicitud"}
                 </Button>
               </div>
             </Card>

@@ -1,6 +1,6 @@
 import { loadAbort } from "./utilities/loadAbort.utility";
 import { getAxiosInstance } from "./axios.service";
-import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData, CreateTournament, UserDetails, TournamentDetails, UserFind, TournamentCreated, UpdateTournamentRequest } from "../models";
+import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData, CreateTournament, UserDetails, TournamentDetails, UserFind, TournamentCreated, UpdateTournamentRequest, OrganizerRequest, OrganizerRequestStatus, AdminUser } from "../models";
 import axios from "axios";
 
 
@@ -190,17 +190,97 @@ export const updateTournament = (
     };
 };
 
-export const requestOrganizerPermission = (userId?: number): UseApiCall<ApiResponse> => {
+export const requestOrganizerPermission = (message?: string): UseApiCall<OrganizerRequest> => {
     const controller = loadAbort();
     return {
-        call: axiosInstance.post<ApiResponse>(
-            `/api/users/organizer`,
-            {},
-            { params: { id: userId }, signal: controller.signal }
+        call: axiosInstance.post<OrganizerRequest>(
+            `/api/users/organizer-requests`,
+            message ? { message } : {},
+            { signal: controller.signal }
         ),
         controller,
     }
 }
+
+export const getMyOrganizerRequest = (): UseApiCall<OrganizerRequest> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<OrganizerRequest>(
+            `/api/users/organizer-requests/me`,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+export const getOrganizerRequestsAdmin = (params?: { status?: OrganizerRequestStatus }): UseApiCall<OrganizerRequest[]> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<OrganizerRequest[]>(
+            `/api/admin/organizer-requests`,
+            { params: { status: params?.status ?? "PENDING" }, signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+export const approveOrganizerRequest = (params: { id: number; note?: string }): UseApiCall<OrganizerRequest> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<OrganizerRequest>(
+            `/api/admin/organizer-requests/${params.id}/approve`,
+            params.note ? { note: params.note } : {},
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+export const rejectOrganizerRequest = (params: { id: number; reason: string }): UseApiCall<OrganizerRequest> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<OrganizerRequest>(
+            `/api/admin/organizer-requests/${params.id}/reject`,
+            { reason: params.reason },
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+export const getAdminUsers = (params?: { includeDeleted?: boolean }): UseApiCall<AdminUser[]> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.get<AdminUser[]>(
+            `/api/admin/users`,
+            { params: { includeDeleted: params?.includeDeleted ?? true }, signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+export const deactivateAdminUser = (params: { id: number; reason?: string }): UseApiCall<void> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.delete<void>(
+            `/api/admin/users/${params.id}`,
+            { data: params.reason ? { reason: params.reason } : {}, signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+export const restoreAdminUser = (id: number): UseApiCall<{ message: string }> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.patch<{ message: string }>(
+            `/api/admin/users/${id}/restore`,
+            {},
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
 
 export const registerTeam = (
     params?: {
