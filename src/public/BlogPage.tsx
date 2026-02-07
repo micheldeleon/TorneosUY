@@ -14,7 +14,6 @@ import { toast } from 'sonner';
 import { Button } from '../components/ui/Button';
 import {
   Plus,
-  Filter,
   MessageSquare,
   Newspaper,
   Search,

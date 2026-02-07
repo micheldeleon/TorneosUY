@@ -1,6 +1,6 @@
 import { useState, type FC } from 'react';
 import type { Comentario } from '../../models';
-import { Reply, User, Clock, Send, X } from 'lucide-react';
+import { User, Clock, Send, X } from 'lucide-react';
 
 interface ComentarioItemProps {
   comentario: Comentario;
@@ -48,9 +48,6 @@ const ComentarioItem: FC<ComentarioItemProps> = ({
       setIsSubmitting(false);
     }
   };
-
-  const maxNivel = 3; // Máximo nivel de anidación
-  const canReply = nivel < maxNivel && currentUserId;
 
   return (
     <div className={`${nivel > 0 ? 'ml-8' : ''} border-b border-gray-800/60 py-4`}>
