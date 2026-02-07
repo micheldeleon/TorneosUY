@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import type { Post } from '../../models';
 import { TipoPost, EstadoPost } from '../../models';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   MessageSquare, 
   Newspaper, 
@@ -10,8 +10,7 @@ import {
   Zap, 
   MapPin, 
   Clock,
-  Eye,
-  Phone 
+  Phone
 } from 'lucide-react';
 
 interface PostCardProps {
@@ -21,6 +20,7 @@ interface PostCardProps {
 }
 
 const PostCard: FC<PostCardProps> = ({ post, onContactar, currentUserId }) => {
+  const navigate = useNavigate();
   const isAutor = currentUserId === post.autorId;
   const isAviso = [
     TipoPost.BUSCO_EQUIPO as string,
@@ -77,99 +77,97 @@ const PostCard: FC<PostCardProps> = ({ post, onContactar, currentUserId }) => {
   };
 
   return (
-    <div className="group bg-gradient-to-br from-purple-700/10 via-pink-800/10 to-surface/10 rounded-xl shadow-lg hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 overflow-hidden hover:border-purple-500/50">
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
-              <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1.5 ${getTipoBadgeColor()}`}>
+    <article
+      className="group border-b border-gray-800/60 bg-transparent cursor-pointer"
+      onClick={() => navigate(`/posts/${post.id}`)}
+    >
+      <div className="px-4 py-4">
+        <div className="flex gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-xs overflow-hidden flex-shrink-0">
+            {post.autorProfileImageUrl ? (
+              <img src={post.autorProfileImageUrl} alt={post.autorNombre || 'Usuario'} className="w-full h-full object-cover" />
+            ) : (
+              post.autorNombre?.charAt(0).toUpperCase() || 'U'
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <span className="font-semibold text-gray-200 truncate">
+                {post.autorNombre || `Usuario #${post.autorId}`}
+              </span>
+              <span className="text-gray-500">•</span>
+              <div className="flex items-center gap-1 text-gray-500">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{formatDate(post.fechaCreacion)}</span>
+              </div>
+              {post.cantidadComentarios !== undefined && (
+                <>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-purple-400 text-xs">
+                    {post.cantidadComentarios} comentarios
+                  </span>
+                </>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-1">
+              <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border flex items-center gap-1.5 ${getTipoBadgeColor()}`}>
                 {getTipoIcon()}
                 {getTipoLabel()}
               </span>
               {post.estado === EstadoPost.CERRADO && (
-                <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-700/50 text-gray-400 border border-gray-600">
                   Cerrado
                 </span>
               )}
             </div>
-            <Link to={`/posts/${post.id}`}>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent group-hover:from-purple-300 group-hover:to-pink-300 transition-all line-clamp-2">
+
+            <Link to={`/posts/${post.id}`} className="block mt-2">
+              <h3 className="text-base font-semibold text-white line-clamp-2">
                 {post.titulo}
               </h3>
             </Link>
-          </div>
-        </div>
 
-        {/* Content Preview */}
-        <p className="text-gray-300 mb-4 line-clamp-3 leading-relaxed">
-          {post.contenido}
-        </p>
+            <p className="text-gray-300 text-sm mt-2 line-clamp-3 leading-relaxed">
+              {post.contenido}
+            </p>
 
-        {/* Meta Info */}
-        {(post.deporte || post.ubicacion) && (
-          <div className="flex flex-wrap gap-3 mb-4 text-sm">
-            {post.deporte && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600/10 text-purple-300 rounded-lg border border-purple-600/30">
-                <Zap className="w-4 h-4" />
-                <span className="font-medium">{post.deporte}</span>
-              </div>
-            )}
-            {post.ubicacion && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-600/10 text-pink-300 rounded-lg border border-pink-600/30">
-                <MapPin className="w-4 h-4" />
-                <span>{post.ubicacion}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-700">
-          <div className="flex items-center gap-4 text-sm text-gray-400">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-xs overflow-hidden flex-shrink-0">
-                {post.autorProfileImageUrl ? (
-                  <img src={post.autorProfileImageUrl} alt={post.autorNombre || 'Usuario'} className="w-full h-full object-cover" />
-                ) : (
-                  post.autorNombre?.charAt(0).toUpperCase() || 'U'
+            {(post.deporte || post.ubicacion) && (
+              <div className="flex flex-wrap gap-2 mt-3 text-xs">
+                {post.deporte && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-600/10 text-purple-300 rounded-lg border border-purple-600/30">
+                    <Zap className="w-3.5 h-3.5" />
+                    <span className="font-medium">{post.deporte}</span>
+                  </div>
+                )}
+                {post.ubicacion && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-pink-600/10 text-pink-300 rounded-lg border border-pink-600/30">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>{post.ubicacion}</span>
+                  </div>
                 )}
               </div>
-              <span className="font-medium text-gray-300">{post.autorNombre || `Usuario #${post.autorId}`}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              <span>{formatDate(post.fechaCreacion)}</span>
-            </div>
-            {post.cantidadComentarios !== undefined && (
-              <div className="flex items-center gap-1 text-purple-400">
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>{post.cantidadComentarios}</span>
-              </div>
             )}
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              to={`/posts/${post.id}`}
-              className="px-4 py-2 text-sm font-medium text-purple-300 hover:text-purple-200 hover:bg-purple-600/10 rounded-lg transition-all border border-transparent hover:border-purple-600/50 flex items-center gap-1.5"
-            >
-              <Eye className="w-4 h-4" />
-              Ver más
-            </Link>
             {isAviso && !isAutor && post.estado === EstadoPost.ACTIVO && onContactar && (
-              <button
-                onClick={() => onContactar(post.id)}
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-lg transition-all shadow-lg shadow-green-500/20 hover:shadow-green-500/40 flex items-center gap-1.5"
-              >
-                <Phone className="w-4 h-4" />
-                Contactar
-              </button>
+              <div className="flex justify-end mt-3">
+                <button
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onContactar(post.id);
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-full transition-all shadow-lg shadow-green-500/20 hover:shadow-green-500/40 flex items-center gap-1.5"
+                >
+                  <Phone className="w-4 h-4" />
+                  Contactar
+                </button>
+              </div>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

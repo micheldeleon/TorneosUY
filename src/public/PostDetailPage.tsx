@@ -30,6 +30,8 @@ import {
   Phone,
   Lock,
   Send,
+  Plus,
+  X,
   Loader2,
   AlertCircle
 } from 'lucide-react';
@@ -45,6 +47,7 @@ const PostDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [nuevoComentario, setNuevoComentario] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCommentForm, setShowCommentForm] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     show: boolean;
     title: string;
@@ -137,6 +140,11 @@ const PostDetailPage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmitComentario = async () => {
+    await handleCreateComentario(nuevoComentario);
+    setShowCommentForm(false);
   };
 
   const handleCerrarPost = async () => {
@@ -274,142 +282,173 @@ const PostDetailPage = () => {
   return (
     <div className="min-h-screen bg-surface pt-24 pb-12">
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Back Button */}
         <button
           onClick={() => navigate('/blog')}
-          className="mb-6 text-purple-400 hover:text-purple-300 font-medium flex items-center gap-2 transition-colors group"
+          className="mb-4 text-gray-300 hover:text-white font-medium flex items-center gap-2 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <ArrowLeft className="w-5 h-5" />
           Volver al Blog
         </button>
 
         {/* Post Content */}
-        <div className="bg-gradient-to-br from-purple-700/10 via-pink-800/10 to-surface/10 rounded-xl shadow-2xl overflow-hidden mb-8">
-          <div className="p-8">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className={`px-4 py-2 rounded-full text-sm font-semibold border flex items-center gap-2 ${getTipoBadgeColor()}`}>
+        <article className="border-b border-gray-800/60">
+          <div className="py-4">
+            <div className="flex gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-sm overflow-hidden flex-shrink-0">
+                {post.autorProfileImageUrl ? (
+                  <img src={post.autorProfileImageUrl} alt={post.autorNombre || 'Usuario'} className="w-full h-full object-cover" />
+                ) : (
+                  post.autorNombre?.charAt(0).toUpperCase() || <User className="w-4 h-4" />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span className="font-semibold text-gray-200 truncate">
+                    {post.autorNombre || `Usuario #${post.autorId}`}
+                  </span>
+                  <span className="text-gray-500">•</span>
+                  <div className="flex items-center gap-1 text-gray-500">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{new Date(post.fechaCreacion).toLocaleString('es-ES')}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mt-1">
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border flex items-center gap-1.5 ${getTipoBadgeColor()}`}>
                     {getTipoIcon()}
                     {getTipoLabel()}
                   </span>
                   {post.estado === EstadoPost.CERRADO && (
-                    <span className="px-4 py-2 rounded-full text-sm font-semibold bg-gray-700/50 text-gray-400 border border-gray-600 flex items-center gap-2">
-                      <Lock className="w-4 h-4" />
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-700/50 text-gray-400 border border-gray-600 flex items-center gap-1.5">
+                      <Lock className="w-3 h-3" />
                       Cerrado
                     </span>
                   )}
                 </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-4">
+
+                <h1 className="text-2xl sm:text-3xl font-semibold text-white mt-3 leading-tight">
                   {post.titulo}
                 </h1>
-              </div>
-            </div>
 
-            {/* Meta Info */}
-            <div className="flex flex-wrap gap-4 mb-6 pb-6 border-b border-gray-700">
-              <div className="flex items-center gap-2 text-sm text-gray-300 bg-gray-800/50 px-3 py-2 rounded-lg">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-xs overflow-hidden flex-shrink-0">
-                  {post.autorProfileImageUrl ? (
-                    <img src={post.autorProfileImageUrl} alt={post.autorNombre || 'Usuario'} className="w-full h-full object-cover" />
-                  ) : (
-                    post.autorNombre?.charAt(0).toUpperCase() || <User className="w-3 h-3" />
-                  )}
-                </div>
-                <span className="font-semibold">Por:</span> {post.autorNombre || `Usuario #${post.autorId}`}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-300 bg-gray-800/50 px-3 py-2 rounded-lg">
-                <Clock className="w-4 h-4 text-pink-400" />
-                <span>{new Date(post.fechaCreacion).toLocaleString('es-ES')}</span>
-              </div>
-              {post.deporte && (
-                <div className="flex items-center gap-2 text-sm bg-purple-600/10 text-purple-300 px-3 py-2 rounded-lg border border-purple-600/30">
-                  <Zap className="w-4 h-4" />
-                  <span className="font-semibold">{post.deporte}</span>
-                </div>
-              )}
-              {post.ubicacion && (
-                <div className="flex items-center gap-2 text-sm bg-pink-600/10 text-pink-300 px-3 py-2 rounded-lg border border-pink-600/30">
-                  <MapPin className="w-4 h-4" />
-                  <span>{post.ubicacion}</span>
-                </div>
-              )}
-            </div>
+                <p className="text-gray-300 whitespace-pre-wrap text-base leading-relaxed mt-3">
+                  {post.contenido}
+                </p>
 
-            {/* Content */}
-            <div className="prose max-w-none mb-6">
-              <p className="text-gray-300 whitespace-pre-wrap text-lg leading-relaxed">
-                {post.contenido}
-              </p>
-            </div>
+                {(post.deporte || post.ubicacion) && (
+                  <div className="flex flex-wrap gap-2 mt-4 text-xs">
+                    {post.deporte && (
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-600/10 text-purple-300 rounded-lg border border-purple-600/30">
+                        <Zap className="w-3.5 h-3.5" />
+                        <span className="font-medium">{post.deporte}</span>
+                      </div>
+                    )}
+                    {post.ubicacion && (
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-pink-600/10 text-pink-300 rounded-lg border border-pink-600/30">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>{post.ubicacion}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-            {/* Actions */}
-            <div className="flex gap-3 pt-6 border-t border-gray-700">
-              {isAutor && post.estado === EstadoPost.ACTIVO && (
-                <button
-                  onClick={handleCerrarPost}
-                  className="px-6 py-2.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-all border border-gray-700 flex items-center gap-2"
-                >
-                  <Lock className="w-4 h-4" />
-                  Cerrar Publicación
-                </button>
-              )}
-              {isAviso && !isAutor && post.estado === EstadoPost.ACTIVO && user && (
-                <button
-                  onClick={handleContactar}
-                  className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-lg transition-all shadow-lg shadow-green-500/20 hover:shadow-green-500/40 flex items-center gap-2"
-                >
-                  <Phone className="w-5 h-5" />
-                  Contactar
-                </button>
-              )}
+                {(isAutor && post.estado === EstadoPost.ACTIVO) || (isAviso && !isAutor && post.estado === EstadoPost.ACTIVO && user) ? (
+                  <div className="flex justify-end gap-2 mt-4">
+                    {isAutor && post.estado === EstadoPost.ACTIVO && (
+                      <button
+                        onClick={handleCerrarPost}
+                        className="px-4 py-1.5 text-xs font-semibold text-gray-200 border border-gray-700 rounded-full hover:bg-gray-800 transition-colors flex items-center gap-2"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        Cerrar
+                      </button>
+                    )}
+                    {isAviso && !isAutor && post.estado === EstadoPost.ACTIVO && user && (
+                      <button
+                        onClick={handleContactar}
+                        className="px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-full transition-all shadow-lg shadow-green-500/20 hover:shadow-green-500/40 flex items-center gap-2"
+                      >
+                        <Phone className="w-4 h-4" />
+                        Contactar
+                      </button>
+                    )}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
-        </div>
+        </article>
 
         {/* Comments Section */}
-        <div className="bg-gradient-to-br from-purple-700/10 via-pink-800/10 to-surface/10 rounded-xl shadow-2xl p-8 ">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-6 flex items-center gap-2">
-            <MessageSquare className="w-6 h-6 text-purple-400" />
-            Comentarios ({comentarios.length})
-          </h2>
+        <section className="mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-purple-400" />
+              Comentarios ({comentarios.length})
+            </h2>
+            {user ? (
+              <button
+                onClick={() => setShowCommentForm((prev) => !prev)}
+                className="px-3 py-1.5 text-xs font-semibold text-gray-200 border border-gray-700 rounded-full hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
+                {showCommentForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                {showCommentForm ? 'Cerrar' : 'Agregar comentario'}
+              </button>
+            ) : (
+              <span className="text-xs text-gray-500">Inicia sesion para comentar</span>
+            )}
+          </div>
 
           {/* New Comment Form */}
           {user && (
-            <div className="mb-8">
-              <textarea
-                value={nuevoComentario}
-                onChange={(e) => setNuevoComentario(e.target.value)}
-                placeholder="Escribe un comentario..."
-                className="w-full px-4 py-3 bg-gray-950 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-gray-200 placeholder-gray-500"
-                rows={4}
-                disabled={isSubmitting}
-              />
-              <div className="flex justify-end mt-3">
-                <button
-                  onClick={() => handleCreateComentario(nuevoComentario)}
-                  disabled={!nuevoComentario.trim() || isSubmitting}
-                  className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/30 flex items-center gap-2"
-                >
-                  <Send className="w-4 h-4" />
-                  {isSubmitting ? 'Enviando...' : 'Comentar'}
-                </button>
+            <div
+              className={`mb-4 overflow-hidden transition-[max-height] duration-300 ease-out ${
+                showCommentForm ? 'max-h-[260px]' : 'max-h-0'
+              }`}
+            >
+              <div
+                className={`rounded-2xl p-4 transition-all duration-300 ${
+                  showCommentForm ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
+                }`}
+              >
+                <div className="text-xs text-gray-500 mb-2">Escribe tu comentario</div>
+                <textarea
+                  value={nuevoComentario}
+                  onChange={(e) => setNuevoComentario(e.target.value)}
+                  placeholder="Que opinas?"
+                  className="w-full px-3 py-2 bg-transparent outline-none resize-none text-gray-200 placeholder-gray-600 text-sm"
+                  rows={3}
+                  disabled={isSubmitting}
+                />
+                <div className="flex items-center justify-between mt-3">
+                  <div className="text-xs text-gray-600">
+                    {nuevoComentario.trim().length}/500
+                  </div>
+                  <button
+                    onClick={handleSubmitComentario}
+                    disabled={!nuevoComentario.trim() || isSubmitting}
+                    className="px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/30 flex items-center gap-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    {isSubmitting ? 'Enviando...' : 'Comentar'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
           {/* Comments List */}
           {comentarios.length === 0 ? (
-            <div className="text-center py-12 bg-gray-950/50 rounded-xl border border-gray-800">
+            <div className="text-center py-10 border border-gray-800/60 rounded-xl">
               <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-3" />
               <p className="text-gray-500">
                 No hay comentarios aún. ¡Sé el primero en comentar!
               </p>
             </div>
           ) : (
-            <div>
+            <div className="divide-y divide-gray-800/60">
               {comentarios.map((comentario) => (
                 <ComentarioItem
                   key={comentario.id}
@@ -420,7 +459,7 @@ const PostDetailPage = () => {
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
 
       {/* Confirmation Dialog */}

@@ -1,24 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PostCard, CreatePostForm } from '../components';
-import { 
-  getPosts, 
-  getPostsByTipo, 
-  createPost, 
-  contactarAviso 
+import {
+  getPosts,
+  getPostsByTipo,
+  createPost,
+  contactarAviso
 } from '../services/post.service';
 import { TipoPost } from '../models';
 import type { Post, CreatePostRequest } from '../models';
 import { useGlobalContext } from '../context/global.context';
 import { toast } from 'sonner';
 import { Button } from '../components/ui/Button';
-import { 
-  Plus, 
+import {
+  Plus,
   Filter,
-  MessageSquare, 
-  Newspaper, 
-  Search, 
-  Users, 
+  MessageSquare,
+  Newspaper,
+  Search,
+  Users,
   Zap,
   LayoutGrid,
   Loader2,
@@ -41,7 +41,7 @@ const BlogPage = () => {
     onConfirm: () => void;
     confirmText?: string;
     cancelText?: string;
-  }>({ show: false, title: '', message: '', onConfirm: () => {} });
+  }>({ show: false, title: '', message: '', onConfirm: () => { } });
 
   const filters = [
     { value: 'TODOS', label: 'Todos', icon: <LayoutGrid className="w-4 h-4" /> },
@@ -60,10 +60,10 @@ const BlogPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const { call } = selectedFilter === 'TODOS' 
-        ? getPosts() 
+      const { call } = selectedFilter === 'TODOS'
+        ? getPosts()
         : getPostsByTipo(selectedFilter);
-      
+
       const response = await call;
       setPosts(response.data);
     } catch (err) {
@@ -100,12 +100,12 @@ const BlogPage = () => {
       confirmText: 'Contactar',
       cancelText: 'Cancelar',
       onConfirm: async () => {
-        setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => {} });
+        setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => { } });
         setContactandoPostId(postId);
         try {
           const { call } = contactarAviso(postId, user.id);
           const response = await call;
-          
+
           // Copiar teléfono al portapapeles
           try {
             await navigator.clipboard.writeText(response.data.telefonoRevelado);
@@ -119,7 +119,7 @@ const BlogPage = () => {
               duration: 5000,
             });
           }
-          
+
           // Recargar posts para actualizar estado
           loadPosts();
         } catch (err: any) {
@@ -158,7 +158,7 @@ const BlogPage = () => {
 
   return (
     <div className="min-h-screen bg-surface pt-24 pb-12">
-    
+
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
@@ -172,22 +172,44 @@ const BlogPage = () => {
                 Noticias, chats y avisos de la comunidad
               </p>
             </div>
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-medium rounded-lg transition-all shadow-lg shadow-purple-500/30 flex items-center gap-2 justify-center"
-            >
-              {showCreateForm ? (
-                <>
-                  <Filter className="w-5 h-5" />
-                  Ver Posts
-                </>
-              ) : (
-                <>
-                  <Plus className="w-5 h-5" />
-                  Nueva Publicación
-                </>
-              )}
-            </button>
+          </div>
+
+          {/* Sticky Create Form */}
+          <div className="sticky top-20 z-20 -mx-4 sm:mx-0 mb-6">
+            <div className="rounded-2xl bg-surface/80 backdrop-blur px-3 py-3 sm:px-4">
+              <div
+                className={`overflow-hidden transition-[max-height] duration-300 ease-out ${
+                  showCreateForm ? 'max-h-[900px]' : 'max-h-0'
+                }`}
+                aria-hidden={!showCreateForm}
+              >
+                <div
+                  className={`transition-all duration-300 ${
+                    showCreateForm ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
+                  }`}
+                >
+                  <CreatePostForm
+                    onSubmit={handleCreatePost}
+                    currentUserId={user.id}
+                    onCancel={() => setShowCreateForm(false)}
+                  />
+                </div>
+              </div>
+              <div
+                className={`transition-all duration-300 ${
+                  showCreateForm ? 'opacity-0 pointer-events-none max-h-0' : 'opacity-100 max-h-[96px]'
+                }`}
+                aria-hidden={showCreateForm}
+              >
+                <button
+                  onClick={() => setShowCreateForm(true)}
+                  className="w-full px-4 py-3 rounded-full border border-gray-800/60 text-gray-400 hover:text-white hover:border-purple-500/60 transition-colors flex items-center justify-between"
+                >
+                  <span>Que quieres publicar hoy?</span>
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Filters */}
@@ -197,13 +219,11 @@ const BlogPage = () => {
                 key={filter.value}
                 onClick={() => {
                   setSelectedFilter(filter.value);
-                  setShowCreateForm(false);
                 }}
-                className={`px-4 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                  selectedFilter === filter.value
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-                    : 'hover:bg-gray-700/20 border border-gray-700'
-                }`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-2 border ${selectedFilter === filter.value
+                    ? 'border-purple-500 bg-purple-500/15 text-purple-300'
+                    : 'border-gray-700 text-gray-400 hover:border-purple-500/50 hover:text-purple-300'
+                  }`}
               >
                 {filter.icon}
                 <span>{filter.label}</span>
@@ -212,16 +232,7 @@ const BlogPage = () => {
           </div>
         </div>
 
-        {/* Create Form */}
-        {showCreateForm && (
-          <div className="mb-8">
-            <CreatePostForm
-              onSubmit={handleCreatePost}
-              currentUserId={user.id}
-              onCancel={() => setShowCreateForm(false)}
-            />
-          </div>
-        )}
+
 
         {/* Content */}
         {loading ? (
@@ -251,7 +262,7 @@ const BlogPage = () => {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="flex flex-col divide-y divide-gray-800/60 -mx-4 sm:mx-0">
             {posts.map((post) => (
               <PostCard
                 key={post.id}
@@ -277,7 +288,7 @@ const BlogPage = () => {
               </p>
               <div className="flex gap-3 justify-end">
                 <Button
-                  onClick={() => setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => {} })}
+                  onClick={() => setConfirmDialog({ show: false, title: '', message: '', onConfirm: () => { } })}
                   variant="outline"
                   className="border-gray-700 text-gray-300 hover:bg-gray-800"
                 >
