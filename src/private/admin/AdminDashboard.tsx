@@ -19,9 +19,11 @@ import { useApi } from "../../hooks/useApi";
 import {
   approveOrganizerRequest,
   deactivateAdminUser,
+  deactivateAdminTournament,
   getAdminUsers,
   getAllTournaments,
   getOrganizerRequestsAdmin,
+  reactivateAdminTournament,
   rejectOrganizerRequest,
   restoreAdminUser,
 } from "../../services/api.service";
@@ -32,7 +34,6 @@ export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"users" | "tournaments" | "organizers">("users");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDeleteUser, setSelectedDeleteUser] = useState<number | null>(null);
-  const [selectedDeleteTournament, setSelectedDeleteTournament] = useState<number | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [disciplineFilter, setDisciplineFilter] = useState<string>("all");
   const [dateSort, setDateSort] = useState<"asc" | "desc">("desc");
@@ -52,6 +53,16 @@ export function AdminDashboard() {
   const [restoreDialog, setRestoreDialog] = useState<{ open: boolean; id: number | null }>({
     open: false,
     id: null,
+  });
+  const [deactivateTournamentDialog, setDeactivateTournamentDialog] = useState<{ open: boolean; id: number | null; reason: string }>({
+    open: false,
+    id: null,
+    reason: "",
+  });
+  const [reactivateTournamentDialog, setReactivateTournamentDialog] = useState<{ open: boolean; id: number | null; reason: string }>({
+    open: false,
+    id: null,
+    reason: "",
   });
 
   // API call para obtener torneos
@@ -116,10 +127,12 @@ export function AdminDashboard() {
       const name = t.name?.toLowerCase() || "";
       const discipline = t.discipline?.name?.toLowerCase() || "";
       const status = t.status?.toLowerCase() || "";
+      const moderation = t.moderationStatus?.toLowerCase() || "";
       return (
         name.includes(normalizedQuery) ||
         discipline.includes(normalizedQuery) ||
-        status.includes(normalizedQuery)
+        status.includes(normalizedQuery) ||
+        moderation.includes(normalizedQuery)
       );
     })
     .filter((t) => disciplineFilter === "all" || t.discipline?.name === disciplineFilter)
@@ -169,6 +182,17 @@ export function AdminDashboard() {
           </span>
         );
     }
+  };
+
+  const getTournamentBadge = (status: string, moderationStatus?: string | null) => {
+    if (moderationStatus === "DEACTIVATED") {
+      return (
+        <span className="px-2 py-1 bg-red-500/10 text-red-200 border border-red-500/20 rounded-md text-xs font-medium">
+          Desactivado
+        </span>
+      );
+    }
+    return getStatusBadge(status);
   };
 
   const getRequestStatusBadge = (status: OrganizerRequestStatus) => {
@@ -283,6 +307,48 @@ export function AdminDashboard() {
     } catch (error: any) {
       console.error("Error al restaurar usuario:", error);
       toast.error(error?.response?.data || "No se pudo restaurar el usuario");
+    }
+  };
+
+  const handleDeactivateTournament = (id: number) => {
+    setDeactivateTournamentDialog({ open: true, id, reason: "" });
+  };
+
+  const confirmDeactivateTournament = async () => {
+    if (!deactivateTournamentDialog.id) return;
+    const reason = deactivateTournamentDialog.reason.trim();
+    if (!reason) {
+      toast.error("Debes ingresar un motivo de desactivacion.");
+      return;
+    }
+    try {
+      const { call } = deactivateAdminTournament({ id: deactivateTournamentDialog.id, reason });
+      await call;
+      toast.success("Torneo desactivado correctamente");
+      setDeactivateTournamentDialog({ open: false, id: null, reason: "" });
+      fetchTournaments();
+    } catch (error: any) {
+      console.error("Error al desactivar torneo:", error);
+      toast.error(error?.response?.data?.message || "No se pudo desactivar el torneo");
+    }
+  };
+
+  const handleReactivateTournament = (id: number) => {
+    setReactivateTournamentDialog({ open: true, id, reason: "" });
+  };
+
+  const confirmReactivateTournament = async () => {
+    if (!reactivateTournamentDialog.id) return;
+    try {
+      const reason = reactivateTournamentDialog.reason.trim() || undefined;
+      const { call } = reactivateAdminTournament({ id: reactivateTournamentDialog.id, reason });
+      await call;
+      toast.success("Torneo reactivado correctamente");
+      setReactivateTournamentDialog({ open: false, id: null, reason: "" });
+      fetchTournaments();
+    } catch (error: any) {
+      console.error("Error al reactivar torneo:", error);
+      toast.error(error?.response?.data?.message || "No se pudo reactivar el torneo");
     }
   };
 
@@ -545,7 +611,9 @@ export function AdminDashboard() {
                         </td>
                       </tr>
                     ) : filteredTournaments && filteredTournaments.length > 0 ? (
-                      filteredTournaments.map((tournament) => (
+                      filteredTournaments.map((tournament) => {
+                        const isDeactivated = tournament.moderationStatus === "DEACTIVATED";
+                        return (
                         <tr key={tournament.id} className="border-b border-gray-700/30 hover:bg-[#1f1f1f]/50 transition-colors">
                           <td className="py-4 px-4 min-w-[200px]">
                             <div className="flex items-center gap-2">
@@ -559,7 +627,7 @@ export function AdminDashboard() {
                           <td className="py-4 px-4 text-gray-400 text-xs lg:text-sm whitespace-nowrap min-w-[110px]">
                             {new Date(tournament.startAt || tournament.createdAt).toLocaleDateString()}
                           </td>
-                          <td className="py-4 px-4 min-w-[120px]">{getStatusBadge(tournament.status)}</td>
+                          <td className="py-4 px-4 min-w-[120px]">{getTournamentBadge(tournament.status, tournament.moderationStatus)}</td>
                           <td className="py-4 px-4 sticky right-0 bg-surface-dark z-10">
                             <div className="flex items-center gap-2">
                               <button
@@ -569,20 +637,30 @@ export function AdminDashboard() {
                               >
                                 <Trophy className="w-4 h-4 text-violet-400" />
                               </button>
-                              <button
-                                onClick={() => setSelectedDeleteTournament(tournament.id)}
-                                title="Eliminar torneo"
-                                className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4 text-red-400" />
-                              </button>
+                              {isDeactivated ? (
+                                <button
+                                  onClick={() => handleReactivateTournament(tournament.id)}
+                                  title="Reactivar torneo"
+                                  className="p-1.5 hover:bg-emerald-500/20 rounded-lg transition-colors"
+                                >
+                                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleDeactivateTournament(tournament.id)}
+                                  title="Desactivar torneo"
+                                  className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-400" />
+                                </button>
+                              )}
                               <button className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors">
                                 <MoreVertical className="w-4 h-4 text-gray-400" />
                               </button>
                             </div>
                           </td>
                         </tr>
-                      ))
+                      )})
                     ) : (
                       <tr>
                         <td colSpan={6} className="py-8 px-4 text-center text-gray-400">
@@ -803,26 +881,73 @@ export function AdminDashboard() {
         </div>
       )}
 
-      {/* Delete Tournament Confirmation Modal */}
-      {selectedDeleteTournament && (
+      {deactivateTournamentDialog.open && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-[#1a1a1a] border border-gray-700/50 rounded-xl md:rounded-2xl p-6 md:p-8 max-w-sm w-full ring-1 ring-inset ring-white/[0.04]">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
-              <h3 className="text-lg md:text-xl font-semibold">Eliminar Torneo</h3>
+              <h3 className="text-lg md:text-xl font-semibold">Desactivar Torneo</h3>
             </div>
-            <p className="text-gray-300 mb-6 text-sm md:text-base">
-              ¿Estás seguro de que deseas eliminar este torneo? Esta acción no se puede deshacer.
+            <p className="text-gray-300 mb-4 text-sm md:text-base">
+              Este torneo dejara de estar visible para usuarios no administradores.
             </p>
+            <label className="text-xs text-gray-400 mb-2 block">Motivo (obligatorio)</label>
+            <textarea
+              value={deactivateTournamentDialog.reason}
+              onChange={(e) => setDeactivateTournamentDialog((prev) => ({ ...prev, reason: e.target.value }))}
+              rows={3}
+              className="w-full mb-6 bg-[#1f1f1f] border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50"
+              placeholder="Motivo de la desactivacion"
+            />
             <div className="flex gap-3 flex-col sm:flex-row">
               <button
-                onClick={() => setSelectedDeleteTournament(null)}
+                onClick={() => setDeactivateTournamentDialog({ open: false, id: null, reason: "" })}
                 className="flex-1 px-4 py-2 rounded-lg bg-gray-700/30 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50 transition-colors font-medium text-sm md:text-base"
               >
                 Cancelar
               </button>
-              <button className="flex-1 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 transition-colors font-medium text-sm md:text-base">
-                Eliminar
+              <button
+                onClick={confirmDeactivateTournament}
+                className="flex-1 px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 transition-colors font-medium text-sm md:text-base"
+                disabled={!deactivateTournamentDialog.reason.trim()}
+              >
+                Desactivar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reactivateTournamentDialog.open && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#1a1a1a] border border-gray-700/50 rounded-xl md:rounded-2xl p-6 md:p-8 max-w-sm w-full ring-1 ring-inset ring-white/[0.04]">
+            <div className="flex items-center gap-3 mb-4">
+              <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0" />
+              <h3 className="text-lg md:text-xl font-semibold">Reactivar Torneo</h3>
+            </div>
+            <p className="text-gray-300 mb-4 text-sm md:text-base">
+              El torneo volvera a estar disponible para usuarios no administradores.
+            </p>
+            <label className="text-xs text-gray-400 mb-2 block">Motivo (opcional)</label>
+            <textarea
+              value={reactivateTournamentDialog.reason}
+              onChange={(e) => setReactivateTournamentDialog((prev) => ({ ...prev, reason: e.target.value }))}
+              rows={3}
+              className="w-full mb-6 bg-[#1f1f1f] border border-gray-700/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-violet-500/50"
+              placeholder="Motivo de la reactivacion"
+            />
+            <div className="flex gap-3 flex-col sm:flex-row">
+              <button
+                onClick={() => setReactivateTournamentDialog({ open: false, id: null, reason: "" })}
+                className="flex-1 px-4 py-2 rounded-lg bg-gray-700/30 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50 transition-colors font-medium text-sm md:text-base"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmReactivateTournament}
+                className="flex-1 px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/50 transition-colors font-medium text-sm md:text-base"
+              >
+                Reactivar
               </button>
             </div>
           </div>

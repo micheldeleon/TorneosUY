@@ -11,6 +11,14 @@ const LOGIN_URL = BASE_URL.includes("localhost") || BASE_URL.includes("127.0.0.1
     : "/api/login";
 const axiosInstance = getAxiosInstance();
 
+type AdminTournamentModerationResponse = {
+    tournamentId: number;
+    moderationStatus: "ACTIVE" | "DEACTIVATED" | string;
+    moderatedAt: string;
+    moderatedByAdminId: number;
+    reason: string | null;
+};
+
 
 export const getUsers = (): UseApiCall<User> => {
     const controller = loadAbort();
@@ -276,6 +284,30 @@ export const restoreAdminUser = (id: number): UseApiCall<{ message: string }> =>
         call: axiosInstance.patch<{ message: string }>(
             `/api/admin/users/${id}/restore`,
             {},
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+export const deactivateAdminTournament = (params: { id: number; reason?: string }): UseApiCall<AdminTournamentModerationResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<AdminTournamentModerationResponse>(
+            `/api/admin/tournaments/${params.id}/deactivate`,
+            params.reason ? { reason: params.reason } : {},
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
+
+export const reactivateAdminTournament = (params: { id: number; reason?: string }): UseApiCall<AdminTournamentModerationResponse> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<AdminTournamentModerationResponse>(
+            `/api/admin/tournaments/${params.id}/reactivate`,
+            params.reason ? { reason: params.reason } : {},
             { signal: controller.signal }
         ),
         controller,

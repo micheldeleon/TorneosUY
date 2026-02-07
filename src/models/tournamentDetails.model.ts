@@ -16,6 +16,10 @@ export type TournamentDetails = {
   maxParticipantsPerTournament: number;
   organizerId?: number;
   status: string;
+  moderationStatus?: "ACTIVE" | "DEACTIVATED" | string;
+  moderatedAt?: string | null;
+  moderatedByAdminId?: number | null;
+  moderationReason?: string | null;
   isDoubleRound?: boolean;
   _status?: number;
   imageUrl?: string;
