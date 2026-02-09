@@ -21,7 +21,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   ghost:
     "bg-transparent text-inherit hover:bg-black/5",
   danger:
-    "bg-rose-600 text-white hover:bg-rose-500",
+    "bg-gradient-to-r from-red-600/50 to-red-800/50 hover:from-red-700 hover:to-red-900 text-white",
   green:
     "bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white",
 };

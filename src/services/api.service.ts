@@ -793,3 +793,21 @@ export const withdrawRunnerFromTournament = (
         controller,
     };
 };
+
+export const leaveTournament = (
+    params?: {
+        tournamentId: number;
+        reason?: string;
+        teamId?: number;
+    }
+): UseApiCall<{ mode: "INDIVIDUAL" | "TEAM" | string; teamId?: number; message?: string }> => {
+    const controller = loadAbort();
+    return {
+        call: axiosInstance.post<{ mode: "INDIVIDUAL" | "TEAM" | string; teamId?: number; message?: string }>(
+            `/api/tournaments/${params?.tournamentId}/leave`,
+            params?.reason || params?.teamId ? { reason: params?.reason, teamId: params?.teamId } : {},
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};

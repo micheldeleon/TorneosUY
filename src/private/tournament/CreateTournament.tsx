@@ -477,7 +477,7 @@ export default function CreateTournament() {
                         <RHFRichTextEditor
                           name="prize"
                           control={control}
-                          label="Premio (Opcional)"
+                          label="Premio"
                           placeholder="Ej: $1000 USD + Trofeo"
                           rows={2}
                           disabled={!isFormatSelected}
@@ -486,7 +486,7 @@ export default function CreateTournament() {
                         <RHFRichTextEditor
                           name="detalles"
                           control={control}
-                          label="Detalles (Opcional)"
+                          label="Detalles"
                           placeholder="Agrega información adicional sobre el torneo..."
                           rows={3}
                           disabled={!isFormatSelected}

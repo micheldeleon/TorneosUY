@@ -80,7 +80,7 @@ export function Contact() {
                   </div>
                   <div>
                     <div className="text-gray-400 text-sm mb-1">Email</div>
-                    <div className="text-white">contacto@tutorneo.com</div>
+                    <div className="text-white">gestiontorneosuy@gmail.com</div>
                   </div>
                 </div>
 
@@ -90,7 +90,7 @@ export function Contact() {
                   </div>
                   <div>
                     <div className="text-gray-400 text-sm mb-1">Teléfono</div>
-                    <div className="text-white">+598 123 456 789</div>
+                    <div className="text-white">+598 097 346 185</div>
                   </div>
                 </div>
 

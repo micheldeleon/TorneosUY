@@ -11,12 +11,14 @@ import { Progress } from "../components/ui/Progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/Avatar";
 import { Separator } from "../components/ui/Separator";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useApi } from "../hooks/useApi";
 import type { TournamentDetails, UserDetails } from "../models";
 import { getTournamentById, getUserDetailsById } from "../services/api.service";
 import { OrganizerReputation } from "../components/Reputation";
 import { toast } from "sonner";
+import { useGlobalContext } from "../context/global.context";
+import { useWithdrawFromTournament } from "../hooks/useWithdrawFromTournament";
 
 
 
@@ -33,6 +35,8 @@ function formatDate(iso: string) {
 export function TournamentDetailsAlt() {
     const navigate = useNavigate();
     const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [showOrganizerLeaveNotice, setShowOrganizerLeaveNotice] = useState(false);
+    const { user } = useGlobalContext();
 
     const { id } = useParams();
 
@@ -69,12 +73,63 @@ export function TournamentDetailsAlt() {
 
     // Fetch organizer details when organizerId is available
     const { data: organizerData, fetch: fetchOrganizer } = useApi<UserDetails, number>(memorizedGetUserDetailsById);
+    const { data: currentUserDetails, fetch: fetchCurrentUser } = useApi<UserDetails, number>(memorizedGetUserDetailsById);
 
     useEffect(() => {
         if (t?.organizerId) {
             fetchOrganizer(t.organizerId);
         }
     }, [t?.organizerId, fetchOrganizer]);
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchCurrentUser(user.id);
+        }
+    }, [user?.id, fetchCurrentUser]);
+
+    const isRaceFormat = t?.format?.name?.toLowerCase() === "carrera";
+    const isOrganizer = Boolean(user?.id && t?.organizerId && user.id === t.organizerId);
+    const { withdraw, loading: withdrawLoading } = useWithdrawFromTournament({
+        tournamentId: t?.id ?? Number(id ?? 0),
+        format: isRaceFormat ? "runner" : "team",
+        onSuccess: () => {
+            if (!id) return;
+            fetch(Number(id));
+        },
+    });
+
+    const isUserInscribed = useMemo(() => {
+        if (!t?.teams || t.teams.length === 0) return false;
+
+        const userFullName = currentUserDetails
+            ? `${currentUserDetails.name} ${currentUserDetails.lastName}`.trim()
+            : user?.fullName?.trim();
+
+        return t.teams.some((team: any) => {
+            if (!team.participants || !Array.isArray(team.participants)) return false;
+            return team.participants.some((p: any) => {
+                if (currentUserDetails?.nationalId && p.nationalId === currentUserDetails.nationalId) {
+                    return true;
+                }
+                if (userFullName && p.fullName === userFullName) {
+                    return true;
+                }
+                return false;
+            });
+        });
+    }, [t?.teams, currentUserDetails, user?.fullName]);
+
+    const handleWithdrawClick = () => {
+        if (!t?.id) {
+            toast.error("No se pudo identificar el torneo");
+            return;
+        }
+        if (isOrganizer) {
+            setShowOrganizerLeaveNotice(true);
+            return;
+        }
+        withdraw();
+    };
 
     // Mostrar error SOLO si hay error
     if (error) {
@@ -410,33 +465,56 @@ export function TournamentDetailsAlt() {
 
                                     <Separator className="bg-gray-800" />
 
-                                    <div className="flex items-start gap-3 bg-purple-900/20 border border-purple-700/30 rounded-xl p-4">
-                                        <Checkbox
-                                            id="terms-alt"
-                                            checked={acceptedTerms}
-                                            onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                                            className="mt-0.5 border-purple-600 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-                                        />
-                                        <label
-                                            htmlFor="terms-alt"
-                                            className="text-sm text-gray-300 cursor-pointer leading-relaxed"
-                                        >
-                                            Acepto los <span className="text-purple-400">Términos y Condiciones</span> del torneo
-                                        </label>
-                                    </div>
+                                    {!isUserInscribed ? (
+                                        <>
+                                            <div className="flex items-start gap-3 bg-purple-900/20 border border-purple-700/30 rounded-xl p-4">
+                                                <Checkbox
+                                                    id="terms-alt"
+                                                    checked={acceptedTerms}
+                                                    onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                                                    className="mt-0.5 border-purple-600 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                                                />
+                                                <label
+                                                    htmlFor="terms-alt"
+                                                    className="text-sm text-gray-300 cursor-pointer leading-relaxed"
+                                                >
+                                                    Acepto los <span className="text-purple-400">Términos y Condiciones</span> del torneo
+                                                </label>
+                                            </div>
 
-                                    <Button
-                                        disabled={!acceptedTerms || spotsLeft === 0}
-                                        onClick={() => navigate(`/inscripcion-torneo/${t.id}`)}
-                                        className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
-                                    >
-                                        <Users className="w-4 h-4 mr-2" />
-                                        Inscribirme Ahora
-                                    </Button>
+                                            <Button
+                                                disabled={!acceptedTerms || spotsLeft === 0}
+                                                onClick={() => navigate(`/inscripcion-torneo/${t.id}`)}
+                                                className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
+                                            >
+                                                <Users className="w-4 h-4 mr-2" />
+                                                Inscribirme Ahora
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex items-start gap-3 bg-emerald-900/20 border border-emerald-700/30 rounded-xl p-4">
+                                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                                                <p className="text-sm text-emerald-200 leading-relaxed">
+                                                    Ya estás inscrito en este torneo.
+                                                </p>
+                                            </div>
 
-                                    <p className="text-gray-500 text-xs text-center">
-                                        Confirmación instantánea por email
-                                    </p>
+                                            <Button
+                                                variant="danger"
+                                                disabled={withdrawLoading}
+                                                onClick={handleWithdrawClick}
+                                                className="w-full"
+                                            >
+                                                {withdrawLoading ? "Saliendo..." : "Salir del torneo"}
+                                            </Button>
+                                            {showOrganizerLeaveNotice && isOrganizer && (
+                                                <p className="text-xs text-amber-200 text-center">
+                                                    El organizador no puede salir de su propio torneo por ahora.
+                                                </p>
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             </div>
 

@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { withdrawTeamFromTournament, withdrawRunnerFromTournament } from "../services/api.service";
+import { leaveTournament } from "../services/api.service";
 import { toast } from "sonner";
 
 interface UseWithdrawFromTournamentOptions {
   tournamentId: number;
   format: "team" | "runner"; // "team" for team formats, "runner" for race format
+  reason?: string;
   onSuccess?: () => void;
   onError?: (error: string) => void;
 }
 
 export function useWithdrawFromTournament({
   tournamentId,
-  format,
+  format: _format,
+  reason,
   onSuccess,
   onError,
 }: UseWithdrawFromTournamentOptions) {
@@ -23,24 +25,18 @@ export function useWithdrawFromTournament({
     setError(null);
 
     try {
-      let response;
-
-      if (format === "team") {
-        const { call } = withdrawTeamFromTournament({
-          tournamentId,
-        });
-        response = await call;
-      } else {
-        const { call } = withdrawRunnerFromTournament({
-          tournamentId,
-        });
-        response = await call;
-      }
+      const { call } = leaveTournament({
+        tournamentId,
+        reason,
+      });
+      const response = await call;
 
       if (response.data?.message) {
         toast.success(response.data.message || "Te has desuscrito del torneo correctamente");
-        onSuccess?.();
+      } else {
+        toast.success("Te has desuscrito del torneo correctamente");
       }
+      onSuccess?.();
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||
