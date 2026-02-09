@@ -1076,7 +1076,7 @@ export default function DashboardAlt() {
                                     <h3 className="text-white mb-2 text-sm sm:text-base">No estás participando en torneos activos</h3>
                                     <p className="text-gray-400 mb-6 text-xs sm:text-sm">Explora torneos disponibles y únete a la competencia</p>
                                     <Button
-                                        onClick={() => navigate("/explorar-torneos")}
+                                        onClick={() => navigate("/torneos")}
                                         className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white text-sm"
                                     >
                                         Explorar Torneos
