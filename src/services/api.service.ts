@@ -1,6 +1,6 @@
 import { loadAbort } from "./utilities/loadAbort.utility";
 import { getAxiosInstance } from "./axios.service";
-import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData, CreateTournament, UserDetails, TournamentDetails, UserFind, TournamentCreated, UpdateTournamentRequest, OrganizerRequest, OrganizerRequestStatus, AdminUser } from "../models";
+import type { User, UseApiCall, UserRegister, UserLogin, ApiResponse, AuthData, CreateTournament, UserDetails, TournamentDetails, UserFind, TournamentCreated, UpdateTournamentRequest, OrganizerRequest, OrganizerRequestStatus, AdminUser, ContactMessageRequest, ContactMessageResponse } from "../models";
 import axios from "axios";
 
 
@@ -618,6 +618,23 @@ export const removeTeamFromTournament = (
         controller,
     };
 }
+
+export const sendContactMessage = (payload?: ContactMessageRequest): UseApiCall<ContactMessageResponse> => {
+    const controller = loadAbort();
+
+    if (!payload) {
+        throw new Error("Contact payload is required");
+    }
+
+    return {
+        call: axiosInstance.post<ContactMessageResponse>(
+            `${BASE_URL}/api/contact`,
+            payload,
+            { signal: controller.signal }
+        ),
+        controller,
+    };
+};
 
 // Notifications
 export const getAllNotifications = (): UseApiCall<import("../models").NotificationResponse> => {

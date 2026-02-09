@@ -1,14 +1,53 @@
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Input } from "../components/ui/Input";
 import { Textarea } from "../components/ui/Textarea";
 import { Button } from "../components/ui/Button";
+import { Alert, AlertDescription } from "../components/ui/Alert";
+import { useApi } from "../hooks/useApi";
+import { sendContactMessage } from "../services/api.service";
+import type { ContactMessageRequest, ContactMessageResponse } from "../models";
 
 export function Contact() {
+  const [formValues, setFormValues] = useState<ContactMessageRequest>({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const { fetch, data: response, error, loading } = useApi<ContactMessageResponse, ContactMessageRequest>(
+    sendContactMessage
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Aquí iría la lógica para enviar el formulario
-    console.log("Formulario enviado");
+    setFeedback(null);
+    fetch(formValues);
   };
+
+  useEffect(() => {
+    if (!response) return;
+    setFeedback({
+      type: "success",
+      text: response.message || "Mensaje enviado",
+    });
+    setFormValues({ name: "", email: "", message: "" });
+  }, [response]);
+
+  useEffect(() => {
+    if (!error) return;
+    const errorMsg =
+      (error as any)?.response?.data?.message ||
+      (error as any)?.message ||
+      "No se pudo enviar el mensaje";
+    setFeedback({ type: "error", text: errorMsg });
+  }, [error]);
+
+  const handleChange = (field: keyof ContactMessageRequest) =>
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFormValues((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   return (
     <div className="relative pt-20 pb-20">
@@ -69,30 +108,61 @@ export function Contact() {
 
             <div className="bg-surface-dark/80 border border-white/20 rounded-2xl p-8">
               <form className="space-y-6" onSubmit={handleSubmit}>
+                {feedback && (
+                  <Alert
+                    className={`border ${
+                      feedback.type === "success"
+                        ? "border-green-500/40 bg-green-900/20 text-green-200"
+                        : "border-red-500/40 bg-red-900/20 text-red-200"
+                    }`}
+                  >
+                    {feedback.type === "success" ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4" />
+                    )}
+                    <AlertDescription className="text-current">
+                      {feedback.text}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="space-y-2">
-                  <label className="text-gray-400">Nombre</label>
+                  <label className="text-gray-400" htmlFor="contact-name">Nombre</label>
                   <Input
+                    id="contact-name"
                     placeholder="Tu nombre"
+                    value={formValues.name}
+                    onChange={handleChange("name")}
+                    maxLength={120}
                     required
                     className="bg-[#1a1a1a] border-gray-700 text-white placeholder:text-gray-600 focus:border-purple-600"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-gray-400">Email</label>
+                  <label className="text-gray-400" htmlFor="contact-email">Email</label>
                   <Input
+                    id="contact-email"
                     type="email"
                     placeholder="tu@email.com"
+                    value={formValues.email}
+                    onChange={handleChange("email")}
+                    maxLength={254}
                     required
                     className="bg-[#1a1a1a] border-gray-700 text-white placeholder:text-gray-600 focus:border-purple-600"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-gray-400">Mensaje</label>
+                  <label className="text-gray-400" htmlFor="contact-message">Mensaje</label>
                   <Textarea
+                    id="contact-message"
                     placeholder="¿En qué podemos ayudarte?"
                     rows={5}
+                    value={formValues.message}
+                    onChange={handleChange("message")}
+                    maxLength={4000}
                     required
                     className="bg-[#1a1a1a] border-gray-700 text-white placeholder:text-gray-600 focus:border-purple-600 resize-none"
                   />
@@ -101,8 +171,10 @@ export function Contact() {
                 <Button
                   type="submit"
                   className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white"
+                  disabled={loading}
+                  aria-busy={loading}
                 >
-                  Enviar Mensaje
+                  {loading ? "Enviando..." : "Enviar Mensaje"}
                 </Button>
               </form>
             </div>
