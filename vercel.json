@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/login",
-      "destination": "http://torneosuy-backend-prod-v2-env.eba-sbi5bher.us-east-2.elasticbeanstalk.com/login"
+      "destination": "https://tutorneo.mdr-dev.com/login"
     },
     {
       "source": "/api/:path*",
-      "destination": "http://torneosuy-backend-prod-v2-env.eba-sbi5bher.us-east-2.elasticbeanstalk.com/api/:path*"
+      "destination": "https://tutorneo.mdr-dev.com/api/:path*"
     },
     {
       "source": "/(.*)",
@@ -14,4 +14,3 @@
     }
   ]
 }
-
